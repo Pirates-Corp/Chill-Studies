@@ -1,0 +1,16 @@
+{
+  "presets": [[
+    "@babel/preset-env",
+    {
+      "useBuiltIns": "entry",
+      "targets" : {
+        "esmodules": true
+      }
+    }
+  ],
+    [
+    "@babel/preset-react"
+   ]
+  ],
+  "plugins": ["transform-object-rest-spread","@babel/plugin-proposal-class-properties"]
+}
