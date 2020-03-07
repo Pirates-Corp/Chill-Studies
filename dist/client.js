@@ -99,10 +99,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
 /* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _Shared_App__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../Shared/App */ "./React/Shared/App.js");
+/* harmony import */ var _Shared_Components_App__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../Shared/Components/App */ "./React/Shared/Components/App.js");
 /* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @material-ui/core */ "./node_modules/@material-ui/core/es/index.js");
 /* harmony import */ var _material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @material-ui/core/CssBaseline */ "./node_modules/@material-ui/core/es/CssBaseline/index.js");
-/* harmony import */ var _Shared_theme__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../Shared/theme */ "./React/Shared/theme.js");
+/* harmony import */ var _Shared_Components_theme__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../Shared/Components/theme */ "./React/Shared/Components/theme.js");
 /* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router-dom/esm/react-router-dom.js");
 
 
@@ -114,18 +114,18 @@ __webpack_require__.r(__webpack_exports__);
 
 function Main() {
   return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_6__["BrowserRouter"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_3__["ThemeProvider"], {
-    theme: _Shared_theme__WEBPACK_IMPORTED_MODULE_5__["default"]
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_4__["default"], null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_Shared_App__WEBPACK_IMPORTED_MODULE_2__["default"], null)));
+    theme: _Shared_Components_theme__WEBPACK_IMPORTED_MODULE_5__["default"]
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_4__["default"], null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_Shared_Components_App__WEBPACK_IMPORTED_MODULE_2__["default"], null)));
 }
 
 react_dom__WEBPACK_IMPORTED_MODULE_1___default.a.hydrate(react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Main, null), document.getElementById('root'));
 
 /***/ }),
 
-/***/ "./React/Shared/App.js":
-/*!*****************************!*\
-  !*** ./React/Shared/App.js ***!
-  \*****************************/
+/***/ "./React/Shared/Components/App.js":
+/*!****************************************!*\
+  !*** ./React/Shared/Components/App.js ***!
+  \****************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -134,7 +134,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router-dom/esm/react-router-dom.js");
-/* harmony import */ var _routes__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./routes */ "./React/Shared/routes.js");
+/* harmony import */ var _Data_routes__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../Data/routes */ "./React/Shared/Data/routes.js");
 function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 
 
@@ -143,7 +143,7 @@ function _extends() { _extends = Object.assign || function (target) { for (var i
 
 class App extends react__WEBPACK_IMPORTED_MODULE_0___default.a.Component {
   render() {
-    return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Switch"], null, _routes__WEBPACK_IMPORTED_MODULE_2__["default"].map((route, i) => react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Route"], _extends({
+    return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Switch"], null, _Data_routes__WEBPACK_IMPORTED_MODULE_2__["default"].map((route, i) => react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Route"], _extends({
       key: i + 1
     }, route)))));
   }
@@ -154,10 +154,10 @@ class App extends react__WEBPACK_IMPORTED_MODULE_0___default.a.Component {
 
 /***/ }),
 
-/***/ "./React/Shared/Course.js":
-/*!********************************!*\
-  !*** ./React/Shared/Course.js ***!
-  \********************************/
+/***/ "./React/Shared/Components/Courses/Course.js":
+/*!***************************************************!*\
+  !*** ./React/Shared/Components/Courses/Course.js ***!
+  \***************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -166,7 +166,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return JavaClass1; });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _courses__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./courses */ "./React/Shared/courses.js");
+/* harmony import */ var _Data_courses__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../Data/courses */ "./React/Shared/Data/courses.js");
 /* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @material-ui/core */ "./node_modules/@material-ui/core/es/index.js");
 
 
@@ -208,7 +208,7 @@ var useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["makeStyle
 }));
 function JavaClass1(props) {
   var classes = useStyles();
-  var course = _courses__WEBPACK_IMPORTED_MODULE_1__["default"].find(course => props.match.params.course === course.name),
+  var course = _Data_courses__WEBPACK_IMPORTED_MODULE_1__["default"].find(course => props.match.params.course === course.name),
       course_no = props.match.params.course_no;
   return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["AppBar"], {
     position: "relative"
@@ -236,10 +236,10 @@ function JavaClass1(props) {
 
 /***/ }),
 
-/***/ "./React/Shared/CourseHome.js":
-/*!************************************!*\
-  !*** ./React/Shared/CourseHome.js ***!
-  \************************************/
+/***/ "./React/Shared/Components/Courses/CourseHome.js":
+/*!*******************************************************!*\
+  !*** ./React/Shared/Components/Courses/CourseHome.js ***!
+  \*******************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -259,7 +259,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _material_ui_core_styles__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @material-ui/core/styles */ "./node_modules/@material-ui/core/es/styles/index.js");
 /* harmony import */ var _material_ui_core_Container__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @material-ui/core/Container */ "./node_modules/@material-ui/core/es/Container/index.js");
 /* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router-dom/esm/react-router-dom.js");
-/* harmony import */ var _courses__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./courses */ "./React/Shared/courses.js");
+/* harmony import */ var _Data_courses__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../Data/courses */ "./React/Shared/Data/courses.js");
 
 
 
@@ -324,7 +324,7 @@ var useStyles = Object(_material_ui_core_styles__WEBPACK_IMPORTED_MODULE_9__["ma
 var cards = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 function ClassHome(props) {
   var classes = useStyles();
-  var course = _courses__WEBPACK_IMPORTED_MODULE_12__["default"].find(course => props.match.params.course === course.name);
+  var course = _Data_courses__WEBPACK_IMPORTED_MODULE_12__["default"].find(course => props.match.params.course === course.name);
   return course ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_5__["default"], null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_AppBar__WEBPACK_IMPORTED_MODULE_1__["default"], {
     position: "relative"
   }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Toolbar__WEBPACK_IMPORTED_MODULE_7__["default"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_8__["default"], {
@@ -389,10 +389,10 @@ function ClassHome(props) {
 
 /***/ }),
 
-/***/ "./React/Shared/Dashboard.js":
-/*!***********************************!*\
-  !*** ./React/Shared/Dashboard.js ***!
-  \***********************************/
+/***/ "./React/Shared/Components/Dashboard.js":
+/*!**********************************************!*\
+  !*** ./React/Shared/Components/Dashboard.js ***!
+  \**********************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -412,7 +412,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _material_ui_core_styles__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @material-ui/core/styles */ "./node_modules/@material-ui/core/es/styles/index.js");
 /* harmony import */ var _material_ui_core_Container__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @material-ui/core/Container */ "./node_modules/@material-ui/core/es/Container/index.js");
 /* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router-dom/esm/react-router-dom.js");
-/* harmony import */ var _courses__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./courses */ "./React/Shared/courses.js");
+/* harmony import */ var _Data_courses__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../Data/courses */ "./React/Shared/Data/courses.js");
 
 
 
@@ -503,7 +503,7 @@ function Album() {
   }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_6__["default"], {
     container: true,
     spacing: 4
-  }, _courses__WEBPACK_IMPORTED_MODULE_12__["default"].map(course => react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_6__["default"], {
+  }, _Data_courses__WEBPACK_IMPORTED_MODULE_12__["default"].map(course => react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_6__["default"], {
     item: true,
     key: course,
     xs: 12,
@@ -540,10 +540,10 @@ function Album() {
 
 /***/ }),
 
-/***/ "./React/Shared/Login.js":
-/*!*******************************!*\
-  !*** ./React/Shared/Login.js ***!
-  \*******************************/
+/***/ "./React/Shared/Components/Login.js":
+/*!******************************************!*\
+  !*** ./React/Shared/Components/Login.js ***!
+  \******************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -758,10 +758,10 @@ function Login(props) {
 
 /***/ }),
 
-/***/ "./React/Shared/Signup.js":
-/*!********************************!*\
-  !*** ./React/Shared/Signup.js ***!
-  \********************************/
+/***/ "./React/Shared/Components/Signup.js":
+/*!*******************************************!*\
+  !*** ./React/Shared/Components/Signup.js ***!
+  \*******************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -967,10 +967,44 @@ function SignUp(props) {
 
 /***/ }),
 
-/***/ "./React/Shared/courses.js":
-/*!*********************************!*\
-  !*** ./React/Shared/courses.js ***!
-  \*********************************/
+/***/ "./React/Shared/Components/theme.js":
+/*!******************************************!*\
+  !*** ./React/Shared/Components/theme.js ***!
+  \******************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _material_ui_core_styles__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @material-ui/core/styles */ "./node_modules/@material-ui/core/es/styles/index.js");
+/* harmony import */ var _material_ui_core_colors__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core/colors */ "./node_modules/@material-ui/core/es/colors/index.js");
+
+ // Create a theme instance.
+
+var theme = Object(_material_ui_core_styles__WEBPACK_IMPORTED_MODULE_0__["createMuiTheme"])({
+  palette: {
+    primary: {
+      main: '#556cd6'
+    },
+    secondary: {
+      main: '#19857b'
+    },
+    error: {
+      main: _material_ui_core_colors__WEBPACK_IMPORTED_MODULE_1__["red"].A400
+    },
+    background: {
+      default: '#fff'
+    }
+  }
+});
+/* harmony default export */ __webpack_exports__["default"] = (theme);
+
+/***/ }),
+
+/***/ "./React/Shared/Data/courses.js":
+/*!**************************************!*\
+  !*** ./React/Shared/Data/courses.js ***!
+  \**************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -1017,20 +1051,20 @@ var courses = [{
 
 /***/ }),
 
-/***/ "./React/Shared/routes.js":
-/*!********************************!*\
-  !*** ./React/Shared/routes.js ***!
-  \********************************/
+/***/ "./React/Shared/Data/routes.js":
+/*!*************************************!*\
+  !*** ./React/Shared/Data/routes.js ***!
+  \*************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _Login__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Login */ "./React/Shared/Login.js");
-/* harmony import */ var _Signup__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Signup */ "./React/Shared/Signup.js");
-/* harmony import */ var _Dashboard__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Dashboard */ "./React/Shared/Dashboard.js");
-/* harmony import */ var _Course__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Course */ "./React/Shared/Course.js");
-/* harmony import */ var _CourseHome__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./CourseHome */ "./React/Shared/CourseHome.js");
+/* harmony import */ var _Components_Login__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../Components/Login */ "./React/Shared/Components/Login.js");
+/* harmony import */ var _Components_Signup__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../Components/Signup */ "./React/Shared/Components/Signup.js");
+/* harmony import */ var _Components_Dashboard__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../Components/Dashboard */ "./React/Shared/Components/Dashboard.js");
+/* harmony import */ var _Components_Courses_Course__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../Components/Courses/Course */ "./React/Shared/Components/Courses/Course.js");
+/* harmony import */ var _Components_Courses_CourseHome__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../Components/Courses/CourseHome */ "./React/Shared/Components/Courses/CourseHome.js");
 
 
 
@@ -1038,60 +1072,26 @@ __webpack_require__.r(__webpack_exports__);
 
 var routes = [{
   path: "/",
-  component: _Login__WEBPACK_IMPORTED_MODULE_0__["default"],
+  component: _Components_Login__WEBPACK_IMPORTED_MODULE_0__["default"],
   exact: true
 }, {
   path: "/signup",
-  component: _Signup__WEBPACK_IMPORTED_MODULE_1__["default"],
+  component: _Components_Signup__WEBPACK_IMPORTED_MODULE_1__["default"],
   exact: true
 }, {
   path: "/dashboard",
-  component: _Dashboard__WEBPACK_IMPORTED_MODULE_2__["default"],
+  component: _Components_Dashboard__WEBPACK_IMPORTED_MODULE_2__["default"],
   exact: true
 }, {
   path: "/:course",
-  component: _CourseHome__WEBPACK_IMPORTED_MODULE_4__["default"],
+  component: _Components_Courses_CourseHome__WEBPACK_IMPORTED_MODULE_4__["default"],
   exact: true
 }, {
   path: "/:course/:course_no",
-  component: _Course__WEBPACK_IMPORTED_MODULE_3__["default"],
+  component: _Components_Courses_Course__WEBPACK_IMPORTED_MODULE_3__["default"],
   exact: true
 }];
 /* harmony default export */ __webpack_exports__["default"] = (routes);
-
-/***/ }),
-
-/***/ "./React/Shared/theme.js":
-/*!*******************************!*\
-  !*** ./React/Shared/theme.js ***!
-  \*******************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _material_ui_core_styles__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @material-ui/core/styles */ "./node_modules/@material-ui/core/es/styles/index.js");
-/* harmony import */ var _material_ui_core_colors__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core/colors */ "./node_modules/@material-ui/core/es/colors/index.js");
-
- // Create a theme instance.
-
-var theme = Object(_material_ui_core_styles__WEBPACK_IMPORTED_MODULE_0__["createMuiTheme"])({
-  palette: {
-    primary: {
-      main: '#556cd6'
-    },
-    secondary: {
-      main: '#19857b'
-    },
-    error: {
-      main: _material_ui_core_colors__WEBPACK_IMPORTED_MODULE_1__["red"].A400
-    },
-    background: {
-      default: '#fff'
-    }
-  }
-});
-/* harmony default export */ __webpack_exports__["default"] = (theme);
 
 /***/ }),
 

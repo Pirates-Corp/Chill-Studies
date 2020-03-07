@@ -10,7 +10,7 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import { Link as Linkto } from 'react-router-dom'
-import courses from './courses'
+import courses from '../Data/courses'
 
 function Copyright() {
     const classes = useStyles();

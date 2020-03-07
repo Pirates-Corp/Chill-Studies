@@ -1,8 +1,8 @@
-import Login from './Login'
-import Signup from './Signup'
-import Dashboard from './Dashboard'
-import Course from './Course'
-import CourseHome from './CourseHome'
+import Login from '../Components/Login'
+import Signup from '../Components/Signup'
+import Dashboard from '../Components/Dashboard'
+import Course from '../Components/Courses/Course'
+import CourseHome from '../Components/Courses/CourseHome'
 
 const routes = [
     {

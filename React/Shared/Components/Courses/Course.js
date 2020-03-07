@@ -1,5 +1,5 @@
 import React from 'react'
-import courses from './courses'
+import courses from '../../Data/courses'
 
 import { Typography, 
     Paper, 
@@ -65,13 +65,16 @@ export default function JavaClass1 (props) {
             <Card className={classes.card}>
                 <CardContent className={classes.cardContent}>
                     <div>
-                        <iframe width="1280" 
+                        {/* <iframe width="1280" 
                             height="720" 
                             src="https://www.youtube.com/embed/I2wvhRUVNTM" 
                             frameborder="0" 
                             allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" 
                             allowfullscreen>                    
-                        </iframe>
+                        </iframe> */}
+
+                        
+
                     </div >
                     <Typography gutterBottom variant="h5" component="h2">
                         Hello World

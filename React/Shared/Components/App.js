@@ -1,6 +1,6 @@
 import React from 'react'
 import { Switch, Route } from 'react-router-dom'
-import routes from './routes'
+import routes from '../Data/routes'
 
 class App extends React.Component {
     render () {
