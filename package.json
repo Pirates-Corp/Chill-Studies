@@ -5,7 +5,7 @@
   "main": "dist/client.js",
   "scripts": {
     "start": "nodemon dist/server.js ",
-    "watch": "rm -rf dist && webpack --watch & nodemon dist/server.js",
+    "watch": "webpack -w -d",
     "dev": "rm -rf dist && webpack --mode development --progress",
     "build": "rm -rf dist && webpack --mode production --progress"
   },

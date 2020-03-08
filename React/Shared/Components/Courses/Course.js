@@ -1,14 +1,20 @@
-import React from 'react'
+import React, {useState, useEffect} from 'react'
 import courses from '../../Data/courses'
-
 import { Typography, 
     Paper, 
     makeStyles, 
+    TextField,
+    Button,
     AppBar, 
     CardContent, 
     CardMedia, 
     Card,
-    Toolbar,withStyles } from '@material-ui/core'
+    List,
+    ListItem,
+    ListItemIcon,
+    Divider,
+    Toolbar,withStyles, Container } from '@material-ui/core'
+import ArrowForwardIosRoundedIcon from '@material-ui/icons/ArrowForwardIosRounded';
 
 
 const useStyles = makeStyles(theme => ({
@@ -23,7 +29,7 @@ const useStyles = makeStyles(theme => ({
       padding: theme.spacing(8, 0, 6),
     },
     heroButtons: {
-      marginTop: theme.spacing(4),
+      margin: theme.spacing(4),
     },
     cardGrid: {
       paddingTop: theme.spacing(8),
@@ -47,8 +53,33 @@ const useStyles = makeStyles(theme => ({
   }));
 
 
+ const handleSubmit = (e,props,startTime) => {
+   e.preventDefault()
+   const q1 = (document.getElementById('q1').value).toLowerCase(),
+   q2 = document.getElementById('q2').value.toLowerCase(),
+   q3 = document.getElementById('q3').value.toLowerCase(),
+   q4 = document.getElementById('q4').value.toLowerCase(),
+   q5 = document.getElementById('q5').value.toLowerCase()
+
+   let score = 0
+
+   if(q1.includes('java virtual machine')) score++
+   if(q2.includes('import')) score++
+   if(q3.includes('3')) score++
+   if(q4.includes('java runtime environment')) score++
+   if(q5.includes('java development kit')) score++
+
+   score*=20
+
+   console.log((Date.now() - startTime)/1000)
+   console.log(score)
+
+ }
+
 export default function JavaClass1 (props) {
     const classes = useStyles()
+
+    const startTime = Date.now()
 
     const course =  courses.find((course) => props.match.params.course === course.name),
         course_no = props.match.params.course_no
@@ -63,26 +94,81 @@ export default function JavaClass1 (props) {
                 </Toolbar>
             </AppBar>
             <Card className={classes.card}>
+              <Container maxWidth="md">
                 <CardContent className={classes.cardContent}>
-                    <div>
-                        {/* <iframe width="1280" 
-                            height="720" 
-                            src="https://www.youtube.com/embed/I2wvhRUVNTM" 
-                            frameborder="0" 
-                            allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" 
-                            allowfullscreen>                    
-                        </iframe> */}
-
-                        
-
-                    </div >
-                    <Typography gutterBottom variant="h5" component="h2">
-                        Hello World
+                    <Typography gutterBottom variant="h5" component="h2" >
+                        Acitivity
                     </Typography>
-                    <Typography>
-                        Not as a tredition, but as a newbie lets learn whats the so called hello world is.
-                    </Typography>
+                    <br/>
+                    <form  autoComplete="off" noValidate>
+                    <List >
+                      <ListItem>
+                        <ListItemIcon>
+                          <ArrowForwardIosRoundedIcon />
+                        </ListItemIcon>
+                        <ListItem >
+                          <Typography variant='subtitle1'>
+                            Lets see if you can find the abbreviation for JVM
+                          </Typography>
+                        </ListItem>
+                        <ListItem>  <TextField id="q1" label="Answer"/> </ListItem>
+                      </ListItem> 
+                      <ListItem>
+                        <ListItemIcon>
+                          <ArrowForwardIosRoundedIcon />
+                        </ListItemIcon>
+                        <ListItem >
+                          <Typography variant='subtitle1'>
+                            Can you find the keyword used to include java packages ?
+                          </Typography>
+                        </ListItem>
+                        <ListItem><TextField id="q2" label="Answer"/></ListItem>
+                      </ListItem>
+                      <ListItem>
+                        <ListItemIcon>
+                          <ArrowForwardIosRoundedIcon />
+                        </ListItemIcon>
+                        <ListItem >
+                          <Typography variant='subtitle1'>
+                            what could be the value of 'a++' if 'a=2' ? 
+                          </Typography> 
+                        </ListItem>
+                        <ListItem><TextField id="q3" label="Answer"/></ListItem>
+                      </ListItem>
+                      <ListItem>
+                        <ListItemIcon>
+                          <ArrowForwardIosRoundedIcon />
+                        </ListItemIcon>
+                        <ListItem >
+                          <Typography variant='subtitle1'>
+                          Lets see if you can find the abbreviation for JRE
+                          </Typography>
+                        </ListItem>
+                        <ListItem><TextField id="q4" label="Answer"/></ListItem>
+                      </ListItem>
+                      <ListItem>
+                        <ListItemIcon>
+                          <ArrowForwardIosRoundedIcon />
+                        </ListItemIcon>
+                        <ListItem >
+                          <Typography variant='subtitle1'>
+                            Lets see if you can find the abbreviation for JDK
+                          </Typography>
+                        </ListItem>
+                        <ListItem><TextField id="q5" label="Answer"/></ListItem>
+                      </ListItem>
+                      <Divider variant="middle" />
+                    </List>
+                      <br/>
+                      <Button variant="contained" color="primary" className={classes.heroButtons} onClick={(e)=>{ handleSubmit(e,props,startTime) }}>
+                        Submit
+                      </Button>
+                      <Button variant="contained" color="seondary" className={classes.heroButtons} onClick={(e)=>{ handleSkip(e,props) } }>
+                        Skip
+                      </Button>
+                    </form>
                 </CardContent>
+              </Container>
             </Card>
         </div>
     )
