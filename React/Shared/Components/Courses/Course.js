@@ -69,10 +69,10 @@ const useStyles = makeStyles(theme => ({
    if(q4.includes('java runtime environment')) score++
    if(q5.includes('java development kit')) score++
 
-   score*=20
-
-   console.log((Date.now() - startTime)/1000)
-   console.log(score)
+  score*=2
+  const sec = (Date.now() - startTime)/1000
+  console.log(Math.round(sec/60))
+  console.log(score)
 
  }
 
