@@ -1,6 +1,9 @@
 
 const knn = require('./knn');
 
+ knn.getType([1,1,4,4,1,8,0,0,0,9,9])
+    .then(type => console.log(type))
+    .catch(err => console.log(err))
 
-knn.getType([1,8,0,7,9,6,2,7,8,4,1])
+
 
