@@ -9,8 +9,6 @@ function csvJSON(csv){
     var result = [];
   
     var headers=lines[0].trim().split(",");
-
-    console.log(headers)
   
     for(var i=1;i<lines.length;i++){
   
@@ -19,10 +17,6 @@ function csvJSON(csv){
   
         for(var j=0;j<headers.length;j++){
             obj[headers[j]] = currentline[j];
-
-            if(currentline[0] === '') {
-                console.log(currentline)
-            }
         }
   
         result.push(obj);
@@ -33,7 +27,7 @@ function csvJSON(csv){
     return JSON.parse(JSON.stringify(result)); //JSON
   }
 
-exports.getType = async (input) => {
+exports.getType = (input) => {
 
     let knn;
     let type;
@@ -54,18 +48,18 @@ exports.getType = async (input) => {
 
     typesArray = [...types]; 
 
-    console.log(typesArray)
-
     data.forEach((row) => {
 
         let rowArray, typeNumber;
 
         rowArray = Object.values(row).map(key => parseFloat(key)).slice(0,11)
 
-        typeNumber = typesArray.indexOf(row.LS); 
+        // typeNumber = typesArray.indexOf(row.LS); 
+
+        type = row.LS
 
         X.push(rowArray);
-        Y.push(typeNumber);
+        Y.push(type);
     });
 
     knn = new KNN(X, Y, {k: 1});
