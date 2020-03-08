@@ -5,7 +5,7 @@
   "main": "dist/client.js",
   "scripts": {
     "start": "nodemon dist/server.js ",
-    "watch": "rm -rf dist && webpack --watch & nodemon dist/server.js",
+    "watch": "webpack -w -d",
     "dev": "rm -rf dist && webpack --mode development --progress",
     "build": "rm -rf dist && webpack --mode production --progress"
   },
@@ -31,6 +31,7 @@
     "react-redux": "^7.2.0",
     "react-router-dom": "latest",
     "redux": "^4.0.5",
+    "serialize-javascript": "^3.0.0",
     "validator": "latest"
   },
   "devDependencies": {

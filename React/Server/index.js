@@ -2,12 +2,12 @@ import express from 'express'
 import { ServerStyleSheets, ThemeProvider } from '@material-ui/core/styles'
 import React from 'react'
 import {renderToString } from 'react-dom/server'
-import App from '../Shared/App'
+import App from '../Shared/Components/App'
 import CssBaseline from '@material-ui/core/CssBaseline';
-import theme from '../Shared/theme'
+import theme from '../Shared/Components/theme'
 import { StaticRouter, matchPath } from 'react-router-dom';
 import serialize from "serialize-javascript";
-import routes from '../Shared/routes'
+import routes from '../Shared/Data/routes'
 
 const router =express.Router()
 
