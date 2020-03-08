@@ -20,6 +20,8 @@ public class DataSet {
 
 		FileWriter myWriter = new FileWriter("DataSet.csv");
 
+		myWriter.write("ABC_%,D_%,C_%,AAC_%,A_%,V_%,ABC_T,D_T,C_T,AAC_T,A_T,LS\n");
+
 		for(int i=0; i<aList.size(); i++) {
 			List<String> rowArr = Arrays.asList((aList.get(i)+"").split(""));
 			String rowString = String.join(",",rowArr)+",";
@@ -56,7 +58,7 @@ public class DataSet {
 			if(ABC+AAC+ABC_T > ABC+C+AAC) rowString+='g';
 			else rowString+='s';
 
-      		myWriter.write(rowString+",\n");
+      		myWriter.write(rowString+"\n");
   		}
 
       myWriter.close(); 
