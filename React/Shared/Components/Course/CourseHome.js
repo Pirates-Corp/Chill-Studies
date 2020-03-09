@@ -46,6 +46,10 @@ const useStyles = makeStyles(theme => ({
     paddingTop: theme.spacing(8),
     paddingBottom: theme.spacing(8),
   },
+  handleButton :{
+    margin: theme.spacing(4),
+    float:'left'
+  },
   card: {
     height: '100%',
     display: 'flex',

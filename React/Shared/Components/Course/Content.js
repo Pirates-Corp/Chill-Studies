@@ -23,6 +23,10 @@ const useStyles = makeStyles(theme => ({
     icon: {
         marginRight: theme.spacing(2),
     },
+    handleButton :{
+        margin: theme.spacing(4),
+        float:'right'
+      },
     link: {
         textDecoration: 'none',
     },
@@ -57,8 +61,9 @@ const useStyles = makeStyles(theme => ({
 
 const handleSubmit = (e, props, startTime) => {
     e.preventDefault()
-    const time = Math.round(((Date.now() - startTime)/1000)/60)
-    const score = time
+    let time = Math.round(((Date.now() - startTime)/1000)/60)
+    let score = time
+    time = time >= 9 ? 9 : time
     console.log("score"+score)
     console.log("time"+time)
     props.history.push('/' + props.match.params.course + '/visual')
@@ -308,7 +313,7 @@ The use of universal bytecode makes porting simple. However, the overhead of int
                 </ListItem>
             </List>
             <br />
-            <Button variant="contained" color="primary" className={classes.heroButtons} onClick={(e) => { handleSubmit(e, props, startTime) }}>
+            <Button variant="contained" color="primary" className={classes.handleButton} onClick={(e) => { handleSubmit(e, props, startTime) }}>
                 Next
             </Button>
         </form>

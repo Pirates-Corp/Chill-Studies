@@ -144,7 +144,7 @@ export default function SignUp(props) {
           />
           <Button
               fullWidth
-              variant="contained"
+              variant="outlined"
               color="primary"
               className={classes.submit}
               onClick = { (e) => handleClick(e,props)} 

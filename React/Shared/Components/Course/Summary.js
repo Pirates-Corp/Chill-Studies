@@ -27,6 +27,10 @@ const useStyles = makeStyles(theme => ({
       paddingTop: theme.spacing(8),
       paddingBottom: theme.spacing(8),
     },
+    handleButton :{
+        margin: theme.spacing(4),
+        float:'right'
+    },
     card: {
       height: '100%',
       display: 'flex',
@@ -51,7 +55,8 @@ const useStyles = makeStyles(theme => ({
 const handleSubmit = (e,props,startTime,score) => {
     e.preventDefault()
     score*= 2
-    const time = Math.round(((Date.now() - startTime)/1000)/60)
+    let time = Math.round(((Date.now() - startTime)/1000)/60)
+    time = time >= 9 ? 9 : time
     console.log("score"+score)
     console.log("time"+time)
 
@@ -183,7 +188,7 @@ export default function Summary (props) {
                     <Divider variant="middle" />
                 </List>
                 <br/>
-                <Button variant="contained" color="primary" className={classes.heroButtons} onClick={(e)=>{ 
+                <Button variant="contained" color="primary" className={classes.handleButton} onClick={(e)=>{ 
                     let score = 0;
                     
                     java ? score++:score

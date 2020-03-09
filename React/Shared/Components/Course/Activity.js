@@ -21,6 +21,10 @@ const useStyles = makeStyles(theme => ({
     icon: {
       marginRight: theme.spacing(2),
     },
+    handleButton :{
+      margin: theme.spacing(4),
+      float:'right'
+    },
     link : {
       textDecoration : 'none',
     },
@@ -70,7 +74,8 @@ const useStyles = makeStyles(theme => ({
     if(q5.includes('java development kit')) score++
  
    score*=2
-   const time = Math.round(((Date.now() - startTime)/1000)/60)
+   let time = Math.round(((Date.now() - startTime)/1000)/60)
+   time = time >= 9 ? 9 : time
    console.log("score"+score)
     console.log("time"+time)
    props.history.push('/'+ props.match.params.course +'/content')
@@ -144,7 +149,7 @@ export default function Activity (props) {
                 <Divider variant="middle" />
             </List>
             <br/>
-            <Button variant="contained" color="primary" className={classes.heroButtons} onClick={(e)=>{ handleSubmit(e,props,startTime) }}>
+            <Button variant="contained" color="primary" className={classes.handleButton} onClick={(e)=>{ handleSubmit(e,props,startTime) }}>
             Next
             </Button>
         </form>
