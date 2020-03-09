@@ -1,22 +1,12 @@
 import React, {useState, useEffect} from 'react'
-import courses from '../../Data/courses'
 import { Typography, 
     Paper, 
     makeStyles, 
-    TextField,
     Button,
-    AppBar, 
-    CardContent, 
-    CardMedia, 
-    Card,
     List,
     ListItem,
-    ListItemIcon,
     Divider,
-    Toolbar,
-    withStyles, 
-    Container,
-    Popper } from '@material-ui/core'
+    Container} from '@material-ui/core'
 
 
 const useStyles = makeStyles(theme => ({

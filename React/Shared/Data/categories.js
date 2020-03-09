@@ -3,6 +3,7 @@ import Content from '../Components/Course/Content'
 import Definitions from '../Components/Course/Definitions'
 import Summary from '../Components/Course/Summary'
 import Visual from '../Components/Course/Visual'
+import Overview from '../Components/Course/Overview'
 
 const categories = [
     {
@@ -25,6 +26,10 @@ const categories = [
         name: 'visual',
         component : Visual
     },
+    {
+        name: 'overview',
+        component : Overview
+    }
 ]
 
 export default categories
