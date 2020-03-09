@@ -75,5 +75,3 @@ public class DataSet {
 // IF C, CT > D, DT then s ELSE i
 // IF VS, VS_T = 100% then v ELSE r (for reader or verbal)
 // IF ABC, ABC_T, AAC, > ABC,C,AAC then g ELSE s
-
-
