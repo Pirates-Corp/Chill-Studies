@@ -29,6 +29,10 @@ const categories = [
     {
         name: 'overview',
         component : Overview
+    },
+    {
+        name: 'summary',
+        component : Summary
     }
 ]
 

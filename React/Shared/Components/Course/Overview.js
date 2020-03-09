@@ -55,7 +55,7 @@ const handleSubmit = (e,props,startTime,score) => {
     console.log("score"+score)
     console.log("time"+time)
 
-    props.history.push(  '/'+ props.match.params.course +'/activity')
+    props.history.push(  '/'+ props.match.params.course +'/definitons')
 }
 
 export default function Overview (props) {
@@ -64,34 +64,34 @@ export default function Overview (props) {
 
     const startTime = Date.now()
 
-    const [java,setJava] = useState(false)
+    const [intro,setIntro] = useState(false)
 
-    const handleJava = () => {
-        setJava(true)
+    const handleIntro = () => {
+        setIntro(true)
     }
 
-    const [jvm,setJvm] = useState(false)
+    const [basics,setBasics] = useState(false)
 
-    const handleJvm = () => {
-        setJvm(true)
+    const handleBasics = () => {
+        setBasics(true)
     }
 
-    const [jdk,setJdk] = useState(false)
+    const [inter,setInter] = useState(false)
 
-    const handleJdk = () => {
-        setJdk(true)
+    const handleInter = () => {
+        setInter(true)
     }
 
-    const [jre,setJre] = useState(false)
+    const [oops,setOops] = useState(false)
 
-    const handleJre = () => {
-        setJre(true)
+    const handleOops = () => {
+        setOops(true)
     }
 
-    const [jar,setJar] = useState(false)
+    const [adv,setAdv] = useState(false)
 
-    const handleJar = () => {
-        setJar(true)
+    const handleAdv = () => {
+        setAdv(true)
     }
 
 
@@ -101,133 +101,89 @@ export default function Overview (props) {
             <form  autoComplete="off" noValidate>
                 <List >
                     <Paper className={classes.heroButtons}>
-                        <ListItem onClick = { handleJava } >
+                        <ListItem onClick = { handleIntro } >
                             <Typography variant='h5' gutterBottom >
-                                Java
+                                Introduction
                             </Typography>
                         </ListItem> 
-                        { java ? (
+                        {  intro ? (
                             <React.Fragment>
                                 <ListItem>
                                     <Typography variant='body1' gutterBottom>
-                                        Java is a high-level programming language developed by Sun Microsystems.
-                                        It was originally designed for developing programs for set-top boxes and handheld devices,
-                                        but later became a popular choice for creating web applications.
+                                        In this section we learn the basic & fundamental things about Java
                                     </Typography>
                                 </ListItem>
-                                <ListItem>
-                                    <Typography variant='body1' gutterBottom>
-                                        The Java syntax is similar to C++, but is strictly an object-oriented programming language. 
-                                        For example, most Java programs contain classes, which are used to define objects, and methods, 
-                                        which are assigned to individual classes. Java is also known for being more strict than C++, 
-                                        meaning variables and functions must be explicitly defined. This means Java source code may produce 
-                                        errors or "exceptions" more easily than other languages, but it also limits other types of errors 
-                                        that may be caused by undefined variables or unassigned types.
-                                    </Typography>
-                                </ListItem> 
                             </React.Fragment>)
                             : null
                         }
                     </Paper>
                     <Paper className={classes.heroButtons}>
-                        <ListItem onClick = { handleJvm }> 
+                        <ListItem onClick = { handleBasics }> 
                             <Typography variant='h5'>
-                                JVM 
+                                Basics
                             </Typography>
                         </ListItem> 
-                        { jvm ? (
+                        { basics ? (
                             <React.Fragment>
                                 <ListItem>
                                     <Typography variant='body1'>
-                                        JVM(Java Virtual Machine) acts as a run-time engine to run Java applications. 
-                                        JVM is the one that actually calls the main method present in a java code. 
-                                        JVM is a part of JRE(Java Runtime Environment).
-                                    </Typography>
-                                </ListItem>
-                                <ListItem>
-                                    <Typography variant='body1'>
-                                        Java applications are called WORA (Write Once Run Anywhere). 
-                                        This means a programmer can develop Java code on one system and can expect it to run on any other Java enabled system without any adjustment. 
-                                        This is all possible because of JVM.
-                                    </Typography>
-                                </ListItem>
-                                <ListItem>
-                                    <Typography variant='body1'>
-                                        When we compile a .java file, .class files(contains byte-code) with the same class names present in .java file are generated by the Java compiler. 
-                                        This .class file goes into various steps when we run it. These steps together describe the whole JVM.    
+                                       Basic programming concepts like contditional statements and loop statements and variables and thier syntax will be covered here.
                                     </Typography>
                                 </ListItem>
                             </React.Fragment> ) : null }
                     </Paper>
                     <Paper className={classes.heroButtons}>
-                        <ListItem onClick = { handleJre }>
+                        <ListItem onClick = { handleInter }>
                             <Typography variant='h5'>
-                                JRE 
+                                Intermediatory 
                             </Typography>
                         </ListItem> 
-                        { jre ? (
+                        { inter ? (
                             <React.Fragment>
                                 <ListItem>
                                     <Typography variant='body1'>
-                                        JRE stands for “Java Runtime Environment” and may also be written as “Java RTE.” 
-                                        The Java Runtime Environment provides the minimum requirements for executing a Java application; 
-                                        it consists of the Java Virtual Machine (JVM), core classes, and supporting files.
-                                    </Typography>
-                                </ListItem>
-                                <ListItem>
-                                    <Typography variant='body1'>
-                                        Java Runtime Environment (to say JRE) is an installation package which provides environment to only run(not develop) 
-                                        the java program(or application)onto your machine. JRE is only used by them who only wants to run the Java Programs 
-                                        i.e. end users of your system.
+                                       concepts like packages classes functions access modifiers will be covered here.
                                     </Typography>
                                 </ListItem>
                             </React.Fragment> ) : null }
                     </Paper>
                     <Paper className={classes.heroButtons}>
-                        <ListItem onClick = { handleJdk }>
+                        <ListItem onClick = { handleOops }>
                             <Typography variant='h5'>
-                                JDK 
+                                Object Oriented  Programming With Java 
                             </Typography>
                         </ListItem> 
-                        { jdk ? (
+                        { oops ? (
                             <React.Fragment>
                                 <ListItem>
                                     <Typography variant='body1'>
-                                        The Java Development Kit (JDK) is a software development environment used for developing Java applications and applets. 
-                                        It includes the Java Runtime Environment (JRE), an interpreter/loader (Java), a compiler (javac), an archiver (jar), 
-                                        a documentation generator (Javadoc) and other tools needed in Java development.
+                                       Object Oriented concepts like inheritence and abstracting will be covered here.
                                     </Typography>
                                 </ListItem>
                                 <ListItem>
                                     <Typography variant='body1'>
-                                        Java Development Kit (in short JDK) is Kit which provides the environment to develop and execute(run) the Java program. JDK is a kit(or package) which includes two things
-                                        Development Tools(to provide an environment to develop your java programs)
-                                        JRE (to execute your java program). became a popular choice for creating web applications.
+                                        Java Interface concepts also will take importance phase in this chapter
                                     </Typography>
                                 </ListItem>
                             </React.Fragment> )
                             : null }
                     </Paper>
                     <Paper className={classes.heroButtons}>
-                        <ListItem onClick = { handleJar }>
+                        <ListItem onClick = { handleAdv }>
                             <Typography variant='h5'>
-                                JAR 
+                                Advanced Java
                             </Typography>
                         </ListItem> 
-                        { jar ? (
+                        { adv ? (
                             <React.Fragment>
                                 <ListItem>
                                     <Typography variant='body1'>
-                                        Java is a high-level programming language developed by Sun Microsystems.
-                                        It was originally designed for developing programs for set-top boxes and handheld devices,
-                                        but later became a popular choice for creating web applications.
+                                        Advanced java concepts like threads and streams and lamda kinda things will take dominance here. 
                                     </Typography>
                                 </ListItem>
                                 <ListItem>
                                     <Typography variant='body1'>
-                                        Java is a high-level programming language developed by Sun Microsystems.
-                                        It was originally designed for developing programs for set-top boxes and handheld devices,
-                                        but later became a popular choice for creating web applications.
+                                        Networking in java also is an important concept to learn.
                                     </Typography>
                                 </ListItem>
                             </React.Fragment> )
@@ -240,11 +196,11 @@ export default function Overview (props) {
                 <Button variant="contained" color="primary" className={classes.heroButtons} onClick={(e)=>{ 
                     let score = 0;
                     
-                    java ? score++:score
-                    jdk ? score++:score
-                    jre ? score++:score
-                    jar ? score++:score
-                    jvm ? score++:score
+                    intro ? score++:score
+                    inter ? score++:score
+                    oops ? score++:score
+                    adv ? score++:score
+                    basics ? score++:score
 
                     handleSubmit(e,props,startTime,score) 
                     }}>

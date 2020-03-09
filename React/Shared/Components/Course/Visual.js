@@ -56,7 +56,7 @@ const useStyles = makeStyles(theme => ({
 
 const handleSubmit = (e,props,startTime,score) => {
     e.preventDefault()
-    const time = ((Date.now() - startTime)/1000)/60
+    let time = ((Date.now() - startTime)/1000)/60
     if(time > 2.33 && time < 2.40 ) {
         score++;
     } 
@@ -93,10 +93,11 @@ export default function Visual (props) {
                     frameborder="0" allow="accelerometer; autoplay; 
                     encrypted-media; gyroscope; picture-in-picture" 
                     allowfullscreen
-                    onPause = { () => { paused++ }}
+                    onPause = { () => { console.log(paused++) }}
                     onEnded = { () => { completed++ }}
                     onFocus = { () => { focused++ } }
                     onPlay = { () => { played++ } }
+                    onClick = { () => { console.log(paused++) }}
                 />
                 </ListItem> 
                 <Divider variant="middle" />

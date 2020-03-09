@@ -1,20 +1,12 @@
 import React, {useState, useEffect} from 'react'
-import courses from '../../Data/courses'
 import { Typography, 
     Paper, 
     makeStyles, 
-    TextField,
     Button,
-    AppBar, 
-    CardContent, 
-    CardMedia, 
-    Card,
     List,
     ListItem,
-    ListItemIcon,
     Divider,
-    Toolbar,withStyles, Container } from '@material-ui/core'
-import ArrowForwardIosRoundedIcon from '@material-ui/icons/ArrowForwardIosRounded';
+    Container} from '@material-ui/core'
 
 
 const useStyles = makeStyles(theme => ({
@@ -50,45 +42,161 @@ const useStyles = makeStyles(theme => ({
       backgroundColor: theme.palette.background.paper,
       padding: theme.spacing(6),
     },
+    Text : {
+        display : 'block'
+    }
   }));
 
 
-const handleSubmit = (e,props,startTime) => {
+const handleSubmit = (e,props,startTime,score) => {
     e.preventDefault()
-    const sec = (Date.now() - startTime)/1000
-    console.log(Math.round(sec/60))
-    props.history.push(  '/'+ props.match.params.course +'/summary')
-}
+    score*= 2
+    const time = Math.round(((Date.now() - startTime)/1000)/60)
+    console.log("score"+score)
+    console.log("time"+time)
 
-const handleSkip = (e,props,startTime) => {
-    e.preventDefault()
-    props.history.push(  '/'+ props.match.params.course +'/summary')
+    props.history.push(  '/'+ props.match.params.course +'/overview')
 }
 
 export default function Summary (props) {
     const classes = useStyles()
 
+
     const startTime = Date.now()
 
-    const course =  courses.find((course) => props.match.params.course === course.name),
-        category = props.match.params.category
+    const [java,setJava] = useState(false)
+
+    const handleJava = () => {
+        setJava(true)
+    }
+
+    const [basics,setBasics] = useState(false)
+
+    const handleBasics = () => {
+        setBasics(true)
+    }
+
+    const [inter,setInter] = useState(false)
+
+    const handleInter = () => {
+        setInter(true)
+    }
+
+    const [oops,setOops] = useState(false)
+
+    const handleOops = () => {
+        setOops(true)
+    }
+
+    const [adv,setAdv] = useState(false)
+
+    const handleAdv = () => {
+        setAdv(true)
+    }
 
     return(
-        <form  autoComplete="off" noValidate>
-            <List >
-                <ListItem>
-                    <ListItem >
-                        <Typography variant='h5'>
-                            Lets see if you can find the abbreviation for JVM
-                        </Typography>
-                    </ListItem>
-                </ListItem> 
-                <Divider variant="middle" />
-            </List>
-            <br/>
-            <Button variant="contained" color="primary" className={classes.heroButtons} onClick={(e)=>{ handleSubmit(e,props,startTime) }}>
-                Submit
-            </Button>
-        </form>
+        <Container maxWidth='sm'>
+            <form  autoComplete="off" noValidate>
+                <List >
+                    <Paper className={classes.heroButtons}>
+                        <ListItem onClick = { handleJava } >
+                            <Typography variant='h5' gutterBottom >
+                                Java - Summary
+                            </Typography>
+                        </ListItem> 
+                        {  java ? (
+                            <React.Fragment>
+                                <ListItem>
+                                    <Typography variant='body1' gutterBottom>
+                                      Java is a high-level programming language developed by Sun Microsystems.
+                                      It was originally designed for developing programs for set-top boxes and handheld devices,
+                                      but later became a popular choice for creating web applications.
+                                    </Typography>
+                                </ListItem>
+                            </React.Fragment>)
+                            : null
+                        }
+                    </Paper>
+                    <Paper className={classes.heroButtons}>
+                        <ListItem onClick = { handleBasics }> 
+                            <Typography variant='h5'>
+                                Java Basics - Summary
+                            </Typography>
+                        </ListItem> 
+                        { basics ? (
+                            <React.Fragment>
+                                <ListItem>
+                                    <Typography variant='body1'>
+                                       So, the basic concepts of java are, just like any other programming languages, contional statements, loop statements, variables etc.
+                                    </Typography>
+                                </ListItem>
+                            </React.Fragment> ) : null }
+                    </Paper>
+                    <Paper className={classes.heroButtons}>
+                        <ListItem onClick = { handleInter }>
+                            <Typography variant='h5'>
+                                Concepts In Java - Summary
+                            </Typography>
+                        </ListItem> 
+                        { inter ? (
+                            <React.Fragment>
+                                <ListItem>
+                                    <Typography variant='body1'>
+                                      Popular concepts that are used in java are Classes, Interfaces, Packages thess will get u started in Java.
+                                    </Typography>
+                                </ListItem>
+                            </React.Fragment> ) : null }
+                    </Paper>
+                    <Paper className={classes.heroButtons}>
+                        <ListItem onClick = { handleOops }>
+                            <Typography variant='h5'>
+                                Object Oriented  Programming With Java 
+                            </Typography>
+                        </ListItem> 
+                        { oops ? (
+                            <React.Fragment>
+                                <ListItem>
+                                    <Typography variant='body1'>
+                                       Object oriented concepts are mandatory things you should learn if you wanna use java. It will enable you to work with teams that means you will learn making loosely coupled applications using these concepts
+                                    </Typography>
+                                </ListItem>
+                            </React.Fragment> )
+                            : null }
+                    </Paper>
+                    <Paper className={classes.heroButtons}>
+                        <ListItem onClick = { handleAdv }>
+                            <Typography variant='h5'>
+                                Advanced Java - Summary
+                            </Typography>
+                        </ListItem> 
+                        { adv ? (
+                            <React.Fragment>
+                                <ListItem>
+                                    <Typography variant='body1'>
+                                        Concepts like Threads and streams enables you to use Java effectively. With that you could build enterprice applications and applicatoons that runs in network. Also, Networking in java will help you build networking modules such as Gateways.
+                                    </Typography>
+                                </ListItem>
+                            </React.Fragment> )
+                            : null
+                        }
+                    </Paper>
+                    <Divider variant="middle" />
+                </List>
+                <br/>
+                <Button variant="contained" color="primary" className={classes.heroButtons} onClick={(e)=>{ 
+                    let score = 0;
+                    
+                    java ? score++:score
+                    inter ? score++:score
+                    oops ? score++:score
+                    adv ? score++:score
+                    basics ? score++:score
+
+                    handleSubmit(e,props,startTime,score) 
+                    }}>
+                Next
+                </Button>
+            </form>
+        </Container>
     )
 }
