@@ -1,8 +1,10 @@
 import Login from '../Components/Login'
 import Signup from '../Components/Signup'
-import Dashboard from '../Components/Dashboard'
-import Course from '../Components/Courses/Course'
-import CourseHome from '../Components/Courses/CourseHome'
+import Home from '../Components/Course/Home'
+import Category from '../Components/Course/Category'
+import LS from '../Components/Course/LS/LS'
+import LearningStyle from '../Components/Course/LS/LearningStyle'
+
 
 const routes = [
     {
@@ -17,19 +19,30 @@ const routes = [
     },
     {
         path: "/dashboard",
-        component: Dashboard,
+        component: Home,
         exact : true
     },
     {
-        path: "/:course",
-        component: CourseHome,
+        path: "/ls:ls_type",
+        component : LS,
         exact : true
     },
     {
-        path: "/:course/:course_no",
-        component: Course,
+        path: "/ls/:ls_type",
+        component : LearningStyle,
         exact : true
     },
+    {
+        path: "/course/:course",
+        component: Home,
+        exact : true
+    },
+    {
+        path: "/course/:course/:category",
+        component: Category,
+        exact : true
+    },
+  
 ]
 
 export default routes

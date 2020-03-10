@@ -48,6 +48,8 @@ exports.getType = (input) => {
 
     typesArray = [...types]; 
 
+    console.log(typesArray)
+
     data.forEach((row) => {
 
         let rowArray, typeNumber;

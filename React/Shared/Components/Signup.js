@@ -71,12 +71,13 @@ async function handleClick(e,props) {
       const res = await axios.post('http://127.0.0.1:8000/api/v1/student/signup', data )
       if(res.data.status === 'sign up success !!') {
         alert('You Successfully Signed Up !!! \n Now Sign In To Continue');
-        props.history.push('/')
       }
     }
     catch(err) {
+      alert(err)
       console.log(err)
     }
+    props.handleSignup()
   }
 }
 
@@ -150,6 +151,15 @@ export default function SignUp(props) {
               onClick = { (e) => handleClick(e,props)} 
             >
               Sign Up
+          </Button>
+          <Button
+              fullWidth
+              variant="outlined"
+              color="primary"
+              className={classes.submit}
+              onClick = { (e) => { props.handleSignup() }} 
+            >
+              Sign In
           </Button>
           <Grid container>
             <Grid item xs>

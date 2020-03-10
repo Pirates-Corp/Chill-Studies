@@ -4,7 +4,10 @@ const morgan = require("morgan");
 const globalErrorHandler = require('./APIs/Controllers/ErrorController');
 const AppErr = require('./APIs/utils/appError');
 const studentRouter = require('./APIs/Routers/studentRouter');
+const  mlRouter = require('./APIs/Routers/mlRouters')
+
 import Router from './React/Server/index'
+
 
 const app = express();
 app.use(express.json());
@@ -14,6 +17,7 @@ app.use(cors());
 
 //===============Routers=====================
 app.use("/api/v1/student", studentRouter);
+app.use("/api/v1/ml", mlRouter);
 
 app.use("/",Router)
 
