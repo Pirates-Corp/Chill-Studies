@@ -7,7 +7,7 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import Grid from '@material-ui/core/Grid';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles, Button } from '@material-ui/core';
 import Container from '@material-ui/core/Container';
 import { Link as Linkto } from 'react-router-dom'
 import courses from '../Data/courses'
@@ -37,6 +37,10 @@ const useStyles = makeStyles(theme => ({
   heroContent: {
     backgroundColor: theme.palette.background.paper,
     padding: theme.spacing(8, 0, 6),
+  },
+  handleButton :{
+    margin: theme.spacing(4),
+    float:'right'
   },
   heroButtons: {
     marginTop: theme.spacing(4),

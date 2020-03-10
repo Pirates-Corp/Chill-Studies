@@ -68,14 +68,10 @@ const useStyles = makeStyles(theme => ({
 
 
 
-export default function LS (props) {
+export default function Style (props) {
     const classes = useStyles()
 
-    let lsTypeParam = props.match.params.ls_type+''
-
-    lsTypeParam = lsTypeParam.substring(1, lsTypeParam.length)
-
-    const ls =  LearningStyles.find((ls) => lsTypeParam === ls.type)
+    const ls =  LearningStyles.find((ls) => props.match.params.ls_type === ls.type)
 
     return(
         <div>
@@ -91,7 +87,7 @@ export default function LS (props) {
                     <CardContent className={classes.cardContent}>
                         <List>
                             <ListItem>
-                                <Typography gutterBottom variant="body2" color='secondary'>
+                                <Typography gutterBottom variant="body4" color='secondary'>
                                     Hello there, to improve your ease of study, we use FLSM mapping techiques to asses your learning style and will give study materials according to that.
                                 </Typography>
                             </ListItem>

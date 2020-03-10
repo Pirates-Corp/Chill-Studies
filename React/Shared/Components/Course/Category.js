@@ -71,6 +71,9 @@ export default function Category (props) {
                   <Typography variant="h6" color="inherit" noWrap>
                       {course.name+' '+category.name}
                   </Typography>
+                  <Button variant="contained" color="primary" className={classes.handleButton} onClick={(e)=>{ handleSubmit(e,props,startTime) }}>
+                      Next
+                  </Button>
                 </Toolbar>
             </AppBar>
             <Card className={classes.card}>

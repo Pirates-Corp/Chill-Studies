@@ -4,6 +4,7 @@ import Dashboard from '../Components/Dashboard'
 import CourseHome from '../Components/Course/CourseHome'
 import Category from '../Components/Course/Category'
 import LS from '../Components/Course/LS/LS'
+import LearningStyle from '../Components/Course/LS/LearningStyle'
 
 
 const routes = [
@@ -23,8 +24,13 @@ const routes = [
         exact : true
     },
     {
-        path: "/ls/:ls_type",
+        path: "/ls:ls_type",
         component : LS,
+        exact : true
+    },
+    {
+        path: "/ls/:ls_type",
+        component : LearningStyle,
         exact : true
     },
     {
