@@ -79,8 +79,11 @@ const cards = [ 'overview','definitons', 'activity', 'content','visual','summary
 export default function ClassHome(props) {
   const classes = useStyles();
 
-  const course =  courses.find((course) => props.match.params.course === course.name) 
+  // const path = props.history.path
+
+  console.log(props)
   
+  const course =  courses.find((course) => props.match.params.course === course.name) 
 
   return (
     course ?  

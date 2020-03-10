@@ -5,21 +5,6 @@ const courses = [
       desc : 'Java Beginner Pack'
     },
     {
-        name: 'Python',
-        image: 'https://www.nicepng.com/png/detail/148-1484226_image-python-circle-logo.png',
-        desc : 'Python Beginner Pack'
-    },
-    {
-        name: 'C',
-        image: 'https://tricksinfo.net/wp-content/uploads/2019/09/C-Programming-Language0A-750x405.jpg',
-        desc : 'C Beginner Pack'
-    },
-    {
-        name: 'C++',
-        image: 'https://cdn.dribbble.com/users/46200/screenshots/4107676/cpp_dribble_1.png',
-        desc : 'C++ Beginner Pack'
-    },
-    {
         name: 'JavaScript',
         image: 'https://i1.wp.com/www.nishantvaity.com/wp-content/uploads/2019/05/javascript.jpg?fit=650%2C400&ssl=1',
         desc : 'JavaScript Beginner Pack'
