@@ -136,7 +136,7 @@ export default function LS (props) {
                             </ListItem>
                         </List>
                         <Button variant="outlined" color="primary" className={classes.handleButton} onClick={(e)=>{ handleSubmit(e,props,startTime,score) }}>
-                            Proceed !     
+                            Proceed  !     
                         </Button>
                     </CardContent>
                 </Card>
