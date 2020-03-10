@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 
 const studentSchema = mongoose.Schema({
@@ -43,6 +43,74 @@ const studentSchema = mongoose.Schema({
     type: Boolean,
     default: true,
     select: false
+  },
+  mlData: {
+    ABC: {
+      type: Number,
+      min: 0,
+      max: 9,
+      default: 0
+    },
+    D: {
+      type: Number,
+      min: 0,
+      max: 9,
+      default: 0
+    },
+    C: {
+      type: Number,
+      min: 0,
+      max: 9,
+      default: 0
+    },
+    AAC: {
+      type: Number,
+      min: 0,
+      max: 9,
+      default: 0
+    },
+    A: {
+      type: Number,
+      min: 0,
+      max: 9,
+      default: 0
+    },
+    V: {
+      type: Number,
+      min: 0,
+      max: 9,
+      default: 0
+    },
+    ABC_T: {
+      type: Number,
+      min: 0,
+      max: 9,
+      default: 0
+    },
+    D_T: {
+      type: Number,
+      min: 0,
+      max: 9,
+      default: 0
+    },
+    C_T: {
+      type: Number,
+      min: 0,
+      max: 9,
+      default: 0
+    },
+    AAC_T: {
+      type: Number,
+      min: 0,
+      max: 9,
+      default: 0
+    },
+    A_T: {
+      type: Number,
+      min: 0,
+      max: 9,
+      default: 0
+    }
   }
 });
 
