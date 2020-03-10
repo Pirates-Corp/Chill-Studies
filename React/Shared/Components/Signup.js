@@ -145,12 +145,21 @@ export default function SignUp(props) {
           />
           <Button
               fullWidth
-              variant="outlined"
+              variant="contained"
               color="primary"
               className={classes.submit}
               onClick = { (e) => handleClick(e,props)} 
             >
               Sign Up
+          </Button>
+          <Button
+              fullWidth
+              variant="outlined"
+              color="primary"
+              className={classes.submit}
+              onClick = { (e) => { props.handleSignup() }} 
+            >
+              Sign In
           </Button>
           <Grid container>
             <Grid item xs>

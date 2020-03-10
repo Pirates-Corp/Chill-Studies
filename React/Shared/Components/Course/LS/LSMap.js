@@ -20,3 +20,16 @@
  * 'asvg' -> Overview -> Contents ( Overview ) + Activity -> Summary  (Visual)
  * 
 */
+
+
+
+/**
+ * Following learning materials are needed in both verbal and visual formats.
+ * 
+ * Overview 
+ * Definitions
+ * Contents
+ * Activities
+ * Summary
+ * 
+ */
