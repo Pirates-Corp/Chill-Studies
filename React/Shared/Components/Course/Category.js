@@ -13,9 +13,13 @@ import { Typography,
     ListItem,
     ListItemIcon,
     Divider,
-    Toolbar,withStyles, Container } from '@material-ui/core'
+    Toolbar,
+    withStyles,
+    IconButton,
+    Container } from '@material-ui/core'
 
 import categories from '../../Data/categories'
+import AppsIcon from '@material-ui/icons/Apps';
 
 
 const useStyles = makeStyles(theme => ({
@@ -35,6 +39,9 @@ const useStyles = makeStyles(theme => ({
     },
     heroButtons: {
       margin: theme.spacing(4),
+    },
+    title: {
+      flexGrow: 1,
     },
     cardGrid: {
       paddingTop: theme.spacing(8),
@@ -68,12 +75,17 @@ export default function Category (props) {
         <div>
             <AppBar position="relative">
                 <Toolbar>
-                  <Typography variant="h6" color="inherit" noWrap>
-                      {course.name+' '+category.name}
+                  <Typography variant="h6" className={ classes.title }  color="inherit" noWrap>
+                    {course.name+' '+category.name}
                   </Typography>
-                  <Button variant="contained" color="primary" className={classes.handleButton} onClick={(e)=>{ handleSubmit(e,props,startTime) }}>
-                      Next
-                  </Button>
+                  <IconButton edge="start" color="inherit" aria-label="home" onClick={ (e) => {
+                    e.preventDefault()
+                    props.history.push(  '/course/'+course.name)
+                    } }>
+                    <Typography gutterBottom variant="body1" >
+                      Course Home 
+                    </Typography>
+                  </IconButton>
                 </Toolbar>
             </AppBar>
             <Card className={classes.card}>

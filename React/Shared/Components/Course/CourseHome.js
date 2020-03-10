@@ -7,10 +7,11 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import Grid from '@material-ui/core/Grid';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles, IconButton } from '@material-ui/core';
 import Container from '@material-ui/core/Container';
 import { Link as Linkto } from 'react-router-dom'
 import courses from '../../Data/courses'
+import AppsIcon from '@material-ui/icons/Apps';
 
 function Copyright() {
   const classes = useStyles();
@@ -46,9 +47,15 @@ const useStyles = makeStyles(theme => ({
     paddingTop: theme.spacing(8),
     paddingBottom: theme.spacing(8),
   },
+  HomeButton : {
+    float : 'right'
+  },
   handleButton :{
     margin: theme.spacing(4),
     float:'left'
+  },
+  title: {
+    flexGrow: 1,
   },
   card: {
     height: '100%',
@@ -81,9 +88,17 @@ export default function ClassHome(props) {
         <CssBaseline />
         <AppBar position="relative">
           <Toolbar>
-            <Typography variant="h6" color="inherit" noWrap>
+            <Typography variant="h6" color="inherit" noWrap className={classes.title}>
               {course.name}
             </Typography>
+            <IconButton edge="start" className={classes.HomeButton} color="inherit" aria-label="home" onClick={ (e) => {
+              e.preventDefault()
+              props.history.push( '/dashboard')
+              } }>
+                <Typography gutterBottom variant="body1" >
+                  Dashboard
+                </Typography>
+            </IconButton>
           </Toolbar>
         </AppBar>
         <main>
