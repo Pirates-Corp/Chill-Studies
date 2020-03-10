@@ -14,6 +14,7 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import axios from 'axios';
 import {Link as Linkto} from 'react-router-dom'
+import SignUp from './Signup';
 
 function Copyright() {
   const classes = useStyles();
@@ -92,11 +93,19 @@ async function handleClick (e,props) {
 
 export default function Login(props) {
   const classes = useStyles();
+
+  const [signIn,setSingIn] = React.useState(true)
+
+  const handleSignup = () => {
+    signIn ? setSingIn(false) : setSingIn(true)
+  }
+
   return (
     <Grid container component="main" className={classes.root}>
       <CssBaseline />
       <Grid item xs={false} sm={4} md={7} className={classes.image} />
       <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
+        { signIn ? (
         <div className={classes.paper}>
           <Avatar className={classes.avatar}>
             <LockOutlinedIcon />
@@ -141,16 +150,20 @@ export default function Login(props) {
             >
               Sign In
             </Button>
-            <Linkto className={classes.link} to="/signup">
+            {/* <Linkto className={classes.link} to="/signup"> */}
               <Button
                 fullWidth
                 variant="contained"
                 color="primary"
                 className={classes.submit}
+                onClick = { (e) => {
+                  e.preventDefault()
+                  handleSignup()
+                } }
               >
                 Sign Up
               </Button>
-            </Linkto>
+            {/* </Linkto> */}
             <Grid container>
               <Grid item xs>
                 <Link href="#" variant="body2">
@@ -167,7 +180,12 @@ export default function Login(props) {
               <Copyright />
             </Box>
           </form>
-        </div>
+        </div> )
+        : 
+        (
+          <SignUp handleSignup={ handleSignup } />
+        )
+      }
       </Grid>
     </Grid>
   );
