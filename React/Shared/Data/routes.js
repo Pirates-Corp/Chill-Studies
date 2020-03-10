@@ -1,7 +1,6 @@
 import Login from '../Components/Login'
 import Signup from '../Components/Signup'
-import Dashboard from '../Components/Dashboard'
-import CourseHome from '../Components/Course/CourseHome'
+import Home from '../Components/Course/Home'
 import Category from '../Components/Course/Category'
 import LS from '../Components/Course/LS/LS'
 import LearningStyle from '../Components/Course/LS/LearningStyle'
@@ -20,7 +19,7 @@ const routes = [
     },
     {
         path: "/dashboard",
-        component: Dashboard,
+        component: Home,
         exact : true
     },
     {
@@ -35,7 +34,7 @@ const routes = [
     },
     {
         path: "/course/:course",
-        component: CourseHome,
+        component: Home,
         exact : true
     },
     {

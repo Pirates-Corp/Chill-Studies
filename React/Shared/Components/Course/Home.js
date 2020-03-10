@@ -74,23 +74,33 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const cards = [ 'overview','definitons', 'activity', 'content','visual','summary'];
+
 
 export default function ClassHome(props) {
   const classes = useStyles();
 
-  // const path = props.history.path
+  const path = props.history.location.pathname
 
-  console.log(props)
+  const cards = path==='/dashboard' ? courses : [ 'overview','definitons', 'activity', 'content','visual','summary'];
+
+  console.log(path)
+
+  let course = {}
   
-  const course =  courses.find((course) => props.match.params.course === course.name) 
+  course = (path==='/dashboard') ?  (null) : (courses.find((course) => props.match.params.course === course.name) )
+
 
   return (
-    course ?  
       <React.Fragment>
         <CssBaseline />
         <AppBar position="relative">
           <Toolbar>
+          { path==='/dashboard' ?  (
+            <Typography variant="h6" color="inherit" noWrap className={classes.title}>
+                Dashboard
+          </Typography>
+          ):(
+            <React.Fragment>
             <Typography variant="h6" color="inherit" noWrap className={classes.title}>
               {course.name}
             </Typography>
@@ -101,39 +111,44 @@ export default function ClassHome(props) {
                 <Typography gutterBottom variant="body1" >
                   Dashboard
                 </Typography>
-            </IconButton>
+            </IconButton> 
+            </React.Fragment>)
+            }
           </Toolbar>
         </AppBar>
         <main>
-          {/* Hero unit */}
           <div className={classes.heroContent}>
           <Container maxWidth="sm">
               <Typography component="h1" variant="h2" align="center" color="textPrimary" gutterBottom>
-              Welcome to {course.name}!
+              { path==='/dashboard' ?  (`Welcome to your Dashboard !`):( `Welcome to ${course.name}!`)}
               </Typography>
+              { path==='/dashboard' ? (
+                <Typography variant="h5" align="center" color="textSecondary" paragraph>
+                  You can find your subscribed courses below.
+                </Typography>):null
+              }
               <Typography variant="h5" align="center" color="textSecondary" paragraph>
                 Happy Learning
               </Typography>
           </Container>
           </div>
           <Container className={classes.cardGrid} maxWidth="md">
-          {/* End hero unit */}
             <Grid container spacing={2}>
                 {cards.map((card,i) => (
                     <Grid item key={card} xs={12} sm={6} md={4}> 
-                        <Linkto className={classes.link} to={`/course/${course.name}/${card}`}>
+                        <Linkto className={classes.link} to={ path ==='/dashboard' ? `/course/${card.name}`: `/course/${course.name}/${card}` }>
                             <Card className={classes.card}>
                             <CardMedia
                                 className={classes.cardMedia}
-                                image= {course.image}
-                                title={`${course.name} ${card}`}
+                                image= { path ==='/dashboard' ? card.image:course.image}
+                                title={path ==='/dashboard' ? card.name : `${course.name} ${card}`}
                             />
                             <CardContent className={classes.cardContent}>
                                 <Typography gutterBottom variant="h5" component="h2">
-                                  {`${card}`}
+                                  {path ==='/dashboard' ? card.name : card }
                                 </Typography>
                                 <Typography>
-                                  This is a begginer level {course.name} course you can start with ease.
+                                  { path ==='/dashboard' ? card.desc : course.desc}
                                 </Typography>
                             </CardContent>
                             </Card>
@@ -143,7 +158,7 @@ export default function ClassHome(props) {
             </Grid>
           </Container>
         </main>
-        {/* Footer */}
+    
         <footer className={classes.footer}>
           <Typography variant="h6" align="center" gutterBottom>
           “Study hard what interests you the most in the most undisciplined, irreverent and original manner possible.”
@@ -153,11 +168,6 @@ export default function ClassHome(props) {
           </Typography>
           <Copyright />
         </footer>
-        {/* End footer */}
       </React.Fragment> 
-      :
-      <div>
-        <h1>404 ERROR</h1>
-      </div>
   );
 }
