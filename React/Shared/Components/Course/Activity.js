@@ -78,7 +78,7 @@ const useStyles = makeStyles(theme => ({
    time = time >= 9 ? 9 : time
    console.log("score"+score)
     console.log("time"+time)
-   props.history.push('/'+ props.match.params.course +'/content')
+   props.history.push('/course/'+ props.match.params.course +'/content')
  
   }
 

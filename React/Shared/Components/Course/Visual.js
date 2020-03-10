@@ -64,7 +64,7 @@ const handleSubmit = (e,props,startTime,score) => {
     time = Math.round(time)
     console.log("score"+score)
     console.log("time"+time)
-    props.history.push(  '/'+ props.match.params.course +'/summary')
+    props.history.push(  '/course/'+ props.match.params.course +'/summary')
 }
 
 export default function Visual (props) {

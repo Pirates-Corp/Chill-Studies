@@ -71,7 +71,7 @@ const handleSubmit = (e,props,startTime,score) => {
     console.log("score"+score)
     console.log("time"+time)
 
-    props.history.push(  '/'+ props.match.params.course +'/activity')
+    props.history.push(  '/course/'+ props.match.params.course +'/activity')
 }
 
 export default function Definitions (props) {

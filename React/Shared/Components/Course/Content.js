@@ -66,7 +66,7 @@ const handleSubmit = (e, props, startTime) => {
     time = time >= 9 ? 9 : time
     console.log("score"+score)
     console.log("time"+time)
-    props.history.push('/' + props.match.params.course + '/visual')
+    props.history.push('/course/' + props.match.params.course + '/visual')
 }
 
 export default function Content(props) {

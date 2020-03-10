@@ -55,6 +55,18 @@ const useStyles = makeStyles(theme => ({
     },
   }));
 
+  const handleSubmit = (e,props,startTime,score) => {
+    e.preventDefault()
+    score*= 2
+    let time = Math.round(((Date.now() - startTime)/1000)/60)
+    time = time >= 9 ? 9 : time
+    console.log("score"+score)
+    console.log("time"+time)
+
+    props.history.push( '/ls/asvs')
+}
+
+
 
 export default function LS (props) {
     const classes = useStyles()
