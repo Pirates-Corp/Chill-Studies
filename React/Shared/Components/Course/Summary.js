@@ -60,7 +60,7 @@ const handleSubmit = (e,props,startTime,score) => {
     console.log("score"+score)
     console.log("time"+time)
 
-    props.history.push(  '/'+ props.match.params.course +'/overview')
+    props.history.push( '/ls/asvs')
 }
 
 export default function Summary (props) {

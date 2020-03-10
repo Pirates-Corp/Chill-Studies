@@ -3,7 +3,7 @@ import Signup from '../Components/Signup'
 import Dashboard from '../Components/Dashboard'
 import CourseHome from '../Components/Course/CourseHome'
 import Category from '../Components/Course/Category'
-
+import LS from '../Components/Course/LS/LS'
 
 
 const routes = [
@@ -23,40 +23,21 @@ const routes = [
         exact : true
     },
     {
-        path: "/:course",
+        path: "/ls/:ls_type",
+        component : LS,
+        exact : true
+    },
+    {
+        path: "/course/:course",
         component: CourseHome,
         exact : true
     },
     {
-        path: "/:course/:category",
+        path: "/course/:course/:category",
         component: Category,
         exact : true
     },
-    // {
-    //     path: "/:course/activity",
-    //     component: Activity,
-    //     exact : true
-    // },
-    // {
-    //     path: "/:course/content",
-    //     component: Content,
-    //     exact : true
-    // },
-    // {
-    //     path: "/:course/definitions",
-    //     component: Definitions,
-    //     exact : true
-    // },
-    // {
-    //     path: "/:course/summary",
-    //     component: Summary,
-    //     exact : true
-    // },
-    // {
-    //     path: "/:course/visual",
-    //     component: Visual,
-    //     exact : true
-    // }
+  
 ]
 
 export default routes

@@ -103,7 +103,7 @@ export default function ClassHome(props) {
             <Grid container spacing={2}>
                 {cards.map((card,i) => (
                     <Grid item key={card} xs={12} sm={6} md={4}> 
-                        <Linkto className={classes.link} to={`${course.name}/${card}`}>
+                        <Linkto className={classes.link} to={`/course/${course.name}/${card}`}>
                             <Card className={classes.card}>
                             <CardMedia
                                 className={classes.cardMedia}
