@@ -9,6 +9,7 @@ import { Typography,
     CardMedia, 
     Card,
     List,
+    Box,
     ListItem,
     ListItemIcon,
     Divider,
@@ -83,75 +84,38 @@ export default function Style (props) {
                 </Toolbar>
             </AppBar>    
             <Container maxWidth="md">
-                <Card className={classes.card}>
-                    <CardContent className={classes.cardContent}>
-                        <List>
-                            <ListItem>
-                                <Typography gutterBottom variant="body4" color='secondary'>
-                                    Hello there, to improve your ease of study, we use FLSM mapping techiques to asses your learning style and will give study materials according to that.
-                                </Typography>
-                            </ListItem>
-                            <ListItem>
-                                <Typography gutterBottom variant="h4">
-                                    {ls.name}
-                                </Typography>
-                            </ListItem>
-                            <ListItem>
-                                <Typography gutterBottom variant="body1">
-                                    {
-                                        ls.type.charAt(0) === 'a' ? (
-                                                'You like activites rathar than boring theories'
-                                            ):(
-                                                'You learn from what you study'
-                                            )
-                                    }
-                                </Typography>
-                            </ListItem>
-                            <ListItem>
-                                <Typography gutterBottom variant="body1">
-                                    {
-                                        ls.type.charAt(1) === 's' ? (
-                                                'You think before approching a problem'
-                                            ):(
-                                                'You give preference to you intuitions'
-                                            )
-                                    }
-                                </Typography>
-                            </ListItem>
-                            <ListItem>
-                                <Typography gutterBottom variant="body1">
-                                    {
-                                        ls.type.charAt(2) === 'v' ? (
-                                                'You like graphical stuff and illustrations'
-                                            ):(
-                                                'You are good with reading ( verbal )'
-                                            )
-                                    }
-                                </Typography>
-                            </ListItem>
-                            <ListItem>
-                                <Typography gutterBottom variant="body1">
-                                    {
-                                        ls.type.charAt(0) === 's' ? (
-                                                'You study sequencially (step by step)'
-                                            ):(
-                                                'You prefer global view about the things'
-                                            )
-                                    }
-                                </Typography>
-                            </ListItem>
-                            <Divider/>
-                            <ListItem>
-                                <Typography gutterBottom variant="body1">
-                                   In the upcomming chapters you will get the learning materials that matches your interests. Happly Learning !
-                                </Typography>
-                            </ListItem>
-                        </List>
-                        <Button variant="outlined" color="primary" className={classes.handleButton} onClick={(e)=>{ handleSubmit(e,props,startTime,score) }}>
-                            Proceed  !     
-                        </Button>
-                    </CardContent>
-                </Card>
+                <Box justifyContent="center" alignItems="center">
+                    <List >
+                        <ListItem>
+                            <Card>
+                                <CardContent>
+                                    {ls.type.charAt(0)}
+                                </CardContent>
+                            </Card>
+                        </ListItem>
+                        <ListItem>
+                            <Card>
+                                <CardContent>
+                                {ls.type.charAt(1)}
+                                </CardContent>
+                            </Card>
+                        </ListItem>
+                        <ListItem>
+                            <Card>
+                                <CardContent>
+                                {ls.type.charAt(2)}
+                                </CardContent>
+                            </Card>
+                        </ListItem>
+                        <ListItem>
+                            <Card>
+                                <CardContent>
+                                {ls.type.charAt(3)}
+                                </CardContent>
+                            </Card>
+                        </ListItem>
+                    </List>
+                </Box>
             </Container>
         </div>
     )
