@@ -1,25 +1,16 @@
 import React, {useState, useEffect} from 'react'
 import courses from '../../Data/courses'
 import { Typography, 
-    Paper, 
     makeStyles, 
     TextField,
-    Button,
     AppBar, 
     CardContent, 
-    CardMedia, 
     Card,
-    List,
-    ListItem,
-    ListItemIcon,
-    Divider,
     Toolbar,
-    withStyles,
     IconButton,
     Container } from '@material-ui/core'
 
 import categories from '../../Data/categories'
-import AppsIcon from '@material-ui/icons/Apps';
 
 
 const useStyles = makeStyles(theme => ({
@@ -65,11 +56,14 @@ const useStyles = makeStyles(theme => ({
   }));
 
 
-export default function Course (props) {
+export default function Page (props) {
+
     const classes = useStyles()
 
-    const course =  courses.find((course) => props.match.params.course === course.name),
-        category = categories.find((category) => (props.match.params.category) === category.name) 
+    const course =  courses.find((course) => props.match.params.course === course.name)
+    const category = categories.find((category) => (props.match.params.category) === category.name) 
+
+    const lsType = props.match.params.ls_type 
 
     return(
         <div>
@@ -82,7 +76,7 @@ export default function Course (props) {
                     </Typography>
                     <IconButton edge="start" color="inherit" aria-label="home" onClick={ (e) => {
                       e.preventDefault()
-                      props.history.push(  '/course/'+course.name)
+                      props.history.push( ( props.history.location.pathname+''.includes('/ls') ? '/course/'+course.name+'/ls/'+lsType :'/course/'+course.name  ))
                       } }>
                       <Typography gutterBottom variant="body1" >
                         Course Home 

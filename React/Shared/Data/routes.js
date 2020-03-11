@@ -1,9 +1,8 @@
 import Login from '../Components/Login'
 import Signup from '../Components/Signup'
 import Home from '../Components/Course/Home'
-import Course from '../Components/Course/Course'
+import Page from '../Components/Course/Page'
 import LS from '../Components/Course/LS/LS'
-import LearningStyle from '../Components/Course/LS/LearningStyle'
 
 
 const routes = [
@@ -18,18 +17,23 @@ const routes = [
         exact : true
     },
     {
-        path: "/dashboard",
-        component: Home,
-        exact : true
-    },
-    {
-        path: "/ls:ls_type",
+        path: "/course/:course/ls:ls_type",
         component : LS,
         exact : true
     },
     {
-        path: "/ls/:ls_type",
-        component : LearningStyle,
+        path: "/course/:course/ls/:ls_type",
+        component : Home,
+        exact : true
+    },
+    {
+        path: "/course/:course/ls/:ls_type/:category",
+        component : Page,
+        exact : true
+    },
+    {
+        path: "/dashboard",
+        component: Home,
         exact : true
     },
     {
@@ -39,7 +43,7 @@ const routes = [
     },
     {
         path: "/course/:course/:category",
-        component: Course,
+        component: Page,
         exact : true
     }
 ]

@@ -99,7 +99,7 @@ const handleSubmit =async (e,props,startTime) => {
 
   console.log("score"+score)
   console.log("time"+time)
-  props.history.push('/course/'+ props.match.params.course +'/content')
+  props.history.push('/course/'+ props.match.params.course +'/Content')
  
 }
 

@@ -99,7 +99,9 @@ const handleSubmit = async (e,props,startTime,score) => {
         alert(err)
     }
 
-    props.history.push( '/ls:'+learnningStyle)
+    const coursName = props.match.params.course
+
+    props.history.push( '/course/'+coursName+'/ls'+learnningStyle)
 }
 
 export default function Summary (props) {
