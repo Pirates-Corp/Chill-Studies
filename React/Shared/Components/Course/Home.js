@@ -12,7 +12,6 @@ import Container from '@material-ui/core/Container';
 import { Link as Linkto } from 'react-router-dom'
 import courses from '../../Data/courses'
 import AppsIcon from '@material-ui/icons/Apps';
-import ls from 'local-storage'
 
 function Copyright() {
   const classes = useStyles();

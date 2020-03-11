@@ -7,6 +7,9 @@ import { Typography,
     ListItem,
     Divider,
     Container} from '@material-ui/core'
+import axios from 'axios'    
+
+// import knn from '../../../../knn/knn'
 
 
 const useStyles = makeStyles(theme => ({
@@ -52,15 +55,59 @@ const useStyles = makeStyles(theme => ({
   }));
 
 
-const handleSubmit = (e,props,startTime,score) => {
+const handleSubmit = async (e,props,startTime,score) => {
     e.preventDefault()
     score*= 2
     let time = Math.round(((Date.now() - startTime)/1000)/60)
     time = time >= 9 ? 9 : time
+
+    const authToken = sessionStorage.getItem('auth')
+    
     console.log("score"+score)
     console.log("time"+time)
 
-    props.history.push( '/ls:asvs')
+    try {
+        const res = await axios.patch('http://127.0.0.1:8000/api/v1/student/ml/post/'+authToken,
+        {
+          "AAC" : score,
+          "AAC_T" :  time
+        })
+    
+        if(res.status === 200) {
+          console.log('Successfully Pushed Activity Data')
+        }
+        
+        else {
+          alert("Problem While Pushing");
+        }
+      } catch(err ){
+        alert(err)
+
+    }
+
+    let mlInput
+
+    try {
+            const res = await axios.get('http://127.0.0.1:8000/api/v1/student/ml/get/'+authToken)
+        
+            if(res.status === 200) {
+                console.log('Successfully fetched Activity Data')
+                mlInput = res.data
+            }
+            
+            else {
+            alert("Problem While Fetching");
+            }
+        } catch(err ){
+            alert(err)
+        }
+
+    
+
+
+    // console.log(knn.getType([1,9,8,9,2,0,1,2,6,7,8]))
+   
+    props.history.push( '/ls:'+learnningStyle)
 }
 
 export default function Summary (props) {
@@ -199,7 +246,7 @@ export default function Summary (props) {
 
                     handleSubmit(e,props,startTime,score) 
                     }}>
-                Next
+                    Finish
                 </Button>
             </form>
         </Container>

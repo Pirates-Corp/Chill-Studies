@@ -7,6 +7,7 @@ import { Typography,
     ListItem,
     Divider,
     Container} from '@material-ui/core'
+import axios from 'axios'    
 
 
 const useStyles = makeStyles(theme => ({
@@ -57,6 +58,27 @@ const handleSubmit = async (e,props,startTime,score) => {
     score*= 2
     let time = Math.round(((Date.now() - startTime)/1000)/60)
     time = time >= 9 ? 9 : time
+
+
+    const authToken = sessionStorage.getItem('auth')
+
+    try {
+        const res = await axios.patch('http://127.0.0.1:8000/api/v1/student/ml/post/'+authToken,
+        {
+          "ABC" : score,
+          "ABC_T" :  time
+        })
+    
+        if(res.status === 200) {
+          console.log('Successfully Pushed Activity Data')
+        }
+        
+        else {
+          alert("Problem While Pushing");
+        }
+      } catch(err ){
+        alert(err)
+      }
 
     console.log("score"+score)
     console.log("time"+time)

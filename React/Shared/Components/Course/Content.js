@@ -16,7 +16,7 @@ import {
     Divider,
     Toolbar, withStyles, Container
 } from '@material-ui/core'
-import ArrowForwardIosRoundedIcon from '@material-ui/icons/ArrowForwardIosRounded';
+import axios from 'axios'
 
 
 const useStyles = makeStyles(theme => ({
@@ -59,11 +59,32 @@ const useStyles = makeStyles(theme => ({
 }));
 
 
-const handleSubmit = (e, props, startTime) => {
+const handleSubmit = async (e, props, startTime) => {
     e.preventDefault()
     let time = Math.round(((Date.now() - startTime)/1000)/60)
     let score = time
     time = time >= 9 ? 9 : time
+
+    const authToken = sessionStorage.getItem('auth')
+
+    try {
+        const res = await axios.patch('http://127.0.0.1:8000/api/v1/student/ml/post/'+authToken,
+        {
+          "C" : score,
+          "C_T" :  time
+        })
+    
+        if(res.status === 200) {
+          console.log('Successfully Pushed Activity Data')
+        }
+        
+        else {
+          alert("Problem While Pushing");
+        }
+      } catch(err ){
+        alert(err)
+      }
+
     console.log("score"+score)
     console.log("time"+time)
     props.history.push('/course/' + props.match.params.course + '/visual')

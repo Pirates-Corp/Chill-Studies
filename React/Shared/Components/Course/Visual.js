@@ -11,8 +11,8 @@ import { Typography,
     CardActions,
     Divider,
    Container } from '@material-ui/core'
-   import CheckCircleSharpIcon from '@material-ui/icons/CheckCircleSharp';
-
+import CheckCircleSharpIcon from '@material-ui/icons/CheckCircleSharp';
+import axios from 'axios'
 
 const useStyles = makeStyles(theme => ({
     icon: {
@@ -54,7 +54,7 @@ const useStyles = makeStyles(theme => ({
   }));
 
 
-const handleSubmit = (e,props,startTime,score) => {
+const handleSubmit = async (e,props,startTime,score) => {
     e.preventDefault()
     let time = ((Date.now() - startTime)/1000)/60
 
@@ -62,6 +62,27 @@ const handleSubmit = (e,props,startTime,score) => {
     score = score >= 9 ? 9 : score
     time = time >= 9 ? 9 : time
     time = Math.round(time)
+
+    const authToken = sessionStorage.getItem('auth')
+
+    try {
+        const res = await axios.patch('http://127.0.0.1:8000/api/v1/student/ml/post/'+authToken,
+        {
+          "V" : score
+          // "V_T" :  time
+        })
+    
+        if(res.status === 200) {
+          console.log('Successfully Pushed Activity Data')
+        }
+        
+        else {
+          alert("Problem While Pushing");
+        }
+      } catch(err ){
+        alert(err)
+      }
+
     console.log("score"+score)
     console.log("time"+time)
     props.history.push(  '/course/'+ props.match.params.course +'/summary')

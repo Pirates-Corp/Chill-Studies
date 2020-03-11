@@ -69,7 +69,7 @@ async function handleClick(e,props) {
     }
     try{
       const res = await axios.post('http://127.0.0.1:8000/api/v1/student/signup', data )
-      if(res.data.status === 'sign up success !!') {
+      if(res.status === 201) {
         alert('You Successfully Signed Up !!! \n Now Sign In To Continue');
       }
     }
