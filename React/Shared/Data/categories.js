@@ -1,9 +1,9 @@
-import Activity from '../Components/Course/Activity'
-import Content from '../Components/Course/Content'
-import Definitions from '../Components/Course/Definitions'
-import Summary from '../Components/Course/Summary'
-import Visual from '../Components/Course/Visual'
-import Overview from '../Components/Course/Overview'
+import Activity from '../Components/Course/GeneralMaterials/Activity'
+import Content from '../Components/Course/GeneralMaterials/Content'
+import Definitions from '../Components/Course/GeneralMaterials/Definitions'
+import Summary from '../Components/Course/GeneralMaterials/Summary'
+import Visual from '../Components/Course/GeneralMaterials/Visual'
+import Overview from '../Components/Course/GeneralMaterials/Overview'
 
 const categories = [
     {

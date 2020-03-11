@@ -75,6 +75,8 @@ export default function Style (props) {
     const ls =  LearningStyles.find((ls) => props.match.params.ls_type === ls.type)
 
     return(
+      <React.Fragment>
+      { ls ? (
         <div>
             <AppBar position="relative">
                 <Toolbar>
@@ -117,7 +119,9 @@ export default function Style (props) {
                     </List>
                 </Box>
             </Container>
-        </div>
+        </div> ) : (<h1> 404 Error </h1> )
+      }
+      </React.Fragment>
     )
 }
 

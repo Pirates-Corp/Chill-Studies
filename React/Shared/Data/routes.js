@@ -1,7 +1,7 @@
 import Login from '../Components/Login'
 import Signup from '../Components/Signup'
 import Home from '../Components/Course/Home'
-import Category from '../Components/Course/Category'
+import Course from '../Components/Course/Course'
 import LS from '../Components/Course/LS/LS'
 import LearningStyle from '../Components/Course/LS/LearningStyle'
 
@@ -39,10 +39,9 @@ const routes = [
     },
     {
         path: "/course/:course/:category",
-        component: Category,
+        component: Course,
         exact : true
-    },
-  
+    }
 ]
 
 export default routes
