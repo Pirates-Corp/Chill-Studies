@@ -27,11 +27,11 @@ function csvJSON(csv){
     return JSON.parse(JSON.stringify(result)); //JSON
   }
 
-exports.getType = (input) => {
+export default (input) => {
 
     let knn;
     let type;
-    const csvFilePath = __dirname+'/dataset.csv'; // Data
+    const csvFilePath = __dirname+'/DataSet.csv'; // Data
     const names = ['ABC_%','D_%','C_%','AAC_%','A_%','V_%','ABC_T','D_T','C_T','AAC_T','A_T','LS'];
     let data = [], X = [], Y = [];
 

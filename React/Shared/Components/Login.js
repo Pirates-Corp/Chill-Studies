@@ -81,7 +81,8 @@ async function handleClick (e,props) {
       "password":password
     })
 
-    if(res.data.status === 'Login success !!') {
+    if(res.status === 201) {
+      sessionStorage.setItem('auth',res.data.data.student._id)
       props.history.push('/dashboard')
     }
     else {

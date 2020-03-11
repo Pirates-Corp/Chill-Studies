@@ -1,5 +1,6 @@
 const Student = require("../Model/StudentModel");
 const catchAsync = require("../utils/catchErr");
+const knn = require('../../knn/knn')
 
 exports.post = catchAsync(async (req, res) => {
   const student = await Student.findById(req.params.id);
@@ -38,7 +39,9 @@ exports.getData = catchAsync(async (req, res) => {
 
   const mlData = Object.values(student.mlData);
 
-  let arr = mlData.slice(1, 10);
+  // let learningStyle = knn.getType(mlData);
 
-  res.status(200).json(arr);
+  console.log(mlData)
+
+  res.status(200).json(mlData.slice(1));
 });

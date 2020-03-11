@@ -21,8 +21,6 @@
  * 
 */
 
-
-
 /**
  * Following learning materials are needed in both verbal and visual formats.
  * 
