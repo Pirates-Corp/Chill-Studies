@@ -1,6 +1,8 @@
 const Student = require("../Model/StudentModel");
 const catchAsync = require("../utils/catchErr");
 const knn = require('../../knn/knn')
+const fs = require('fs')
+const path = require('path')
 
 exports.post = catchAsync(async (req, res) => {
   const student = await Student.findById(req.params.id);
@@ -37,11 +39,43 @@ exports.post = catchAsync(async (req, res) => {
 exports.getData = catchAsync(async (req, res) => {
   const student = await Student.findById(req.params.id);
 
-  const mlData = Object.values(student.mlData);
-
-  // let learningStyle = knn.getType(mlData);
+  const mlData = Object.values(student.mlData).slice(1);
 
   console.log(mlData)
 
-  res.status(200).json(mlData.slice(1));
+  let learningStyle = knn.getType(mlData);
+
+  res.status(200).json(learningStyle);
 });
+
+// exports.uploadDataset = catchAsync(async (req, res) => {
+
+//   const student = await Student.findById(req.params.id);
+
+//   console.log(req.body);
+
+//   student.mlDataset = req.b
+
+//   await student.save({ validateBeforeSave: false });
+//   res.status(200).json({
+//     message: "Ml Data posted !",
+//     data: {
+//       student
+//     }
+//   });
+// });
+
+
+// exports.downloadDataset = catchAsync(async (req, res) => {
+//   const student = await Student.findById(req.params.id);
+
+//   const mlData = Object.values(student.mlDataset);
+
+//   let learningStyle = knn.getType(mlData,fs.readFileSync(path.resolve(__dirname,'../../knn/dataset.json','utf-8')));
+
+//   console.log(mlData)
+
+//   res.status(200).json(mlData);
+// });
+
+
