@@ -9,17 +9,12 @@ import { Typography,
     Container} from '@material-ui/core'
 import axios from 'axios'    
 
-
 const useStyles = makeStyles(theme => ({
     icon: {
       marginRight: theme.spacing(2),
     },
     link : {
       textDecoration : 'none',
-    },
-    handleButton :{
-        margin: theme.spacing(4),
-        float:'right'
     },
     heroContent: {
       backgroundColor: theme.palette.background.paper,
@@ -31,6 +26,10 @@ const useStyles = makeStyles(theme => ({
     cardGrid: {
       paddingTop: theme.spacing(8),
       paddingBottom: theme.spacing(8),
+    },
+    handleButton :{
+        margin: theme.spacing(4),
+        float:'right'
     },
     card: {
       height: '100%',
@@ -59,14 +58,16 @@ const handleSubmit = async (e,props,startTime,score) => {
     let time = Math.round(((Date.now() - startTime)/1000)/60)
     time = time >= 9 ? 9 : time
 
-
     const authToken = sessionStorage.getItem('auth')
+    
+    console.log("score"+score)
+    console.log("time"+time)
 
     try {
         const res = await axios.patch('http://127.0.0.1:8000/api/v1/student/ml/post/'+authToken,
         {
-          "ABC" : score,
-          "ABC_T" :  time
+          "AAC" : score,
+          "AAC_T" :  time
         })
     
         if(res.status === 200) {
@@ -78,24 +79,40 @@ const handleSubmit = async (e,props,startTime,score) => {
         }
       } catch(err ){
         alert(err)
-      }
 
-    console.log("score"+score)
-    console.log("time"+time)
+    }
 
-    props.history.push( '/course/'+ props.match.params.course +'/definitons')
+    let learnningStyle =''
+
+    try {
+        const res = await axios.get('http://127.0.0.1:8000/api/v1/student/ml/get/'+authToken)
+    
+        if(res.status === 200) {
+            console.log('Successfully fetched Activity Data')
+            learnningStyle = res.data
+        }
+        
+        else {
+        alert("Problem While Fetching");
+        }
+    } catch(err ){
+        alert(err)
+    }
+
+    const coursName = props.match.params.course
+
+    props.history.push( '/course/'+coursName+'/ls/'+learnningStyle)
 }
 
-export default function OverviewVerbal (props) {
+export default function Summary (props) {
     const classes = useStyles()
-
 
     const startTime = Date.now()
 
-    const [intro,setIntro] = useState(false)
+    const [java,setJava] = useState(false)
 
-    const handleIntro = () => {
-        setIntro(true)
+    const handleJava = () => {
+        setJava(true)
     }
 
     const [basics,setBasics] = useState(false)
@@ -122,23 +139,23 @@ export default function OverviewVerbal (props) {
         setAdv(true)
     }
 
-
-
     return(
         <Container maxWidth='sm'>
             <form  autoComplete="off" noValidate>
                 <List >
                     <Paper className={classes.heroButtons}>
-                        <ListItem onClick = { handleIntro } >
+                        <ListItem onClick = { handleJava } >
                             <Typography variant='h5' gutterBottom >
-                                Introduction
+                                Java - Summary
                             </Typography>
                         </ListItem> 
-                        {  intro ? (
+                        {  java ? (
                             <React.Fragment>
                                 <ListItem>
                                     <Typography variant='body1' gutterBottom>
-                                        In this section we learn the basic & fundamental things about Java
+                                      Java is a high-level programming language developed by Sun Microsystems.
+                                      It was originally designed for developing programs for set-top boxes and handheld devices,
+                                      but later became a popular choice for creating web applications.
                                     </Typography>
                                 </ListItem>
                             </React.Fragment>)
@@ -148,14 +165,14 @@ export default function OverviewVerbal (props) {
                     <Paper className={classes.heroButtons}>
                         <ListItem onClick = { handleBasics }> 
                             <Typography variant='h5'>
-                                Basics
+                                Java Basics - Summary
                             </Typography>
                         </ListItem> 
                         { basics ? (
                             <React.Fragment>
                                 <ListItem>
                                     <Typography variant='body1'>
-                                       Basic programming concepts like contditional statements and loop statements and variables and thier syntax will be covered here.
+                                       So, the basic concepts of java are, just like any other programming languages, contional statements, loop statements, variables etc.
                                     </Typography>
                                 </ListItem>
                             </React.Fragment> ) : null }
@@ -163,14 +180,14 @@ export default function OverviewVerbal (props) {
                     <Paper className={classes.heroButtons}>
                         <ListItem onClick = { handleInter }>
                             <Typography variant='h5'>
-                                Intermediatory 
+                                Concepts In Java - Summary
                             </Typography>
                         </ListItem> 
                         { inter ? (
                             <React.Fragment>
                                 <ListItem>
                                     <Typography variant='body1'>
-                                       concepts like packages classes functions access modifiers will be covered here.
+                                      Popular concepts that are used in java are Classes, Interfaces, Packages thess will get u started in Java.
                                     </Typography>
                                 </ListItem>
                             </React.Fragment> ) : null }
@@ -185,12 +202,7 @@ export default function OverviewVerbal (props) {
                             <React.Fragment>
                                 <ListItem>
                                     <Typography variant='body1'>
-                                       Object Oriented concepts like inheritence and abstracting will be covered here.
-                                    </Typography>
-                                </ListItem>
-                                <ListItem>
-                                    <Typography variant='body1'>
-                                        Java Interface concepts also will take importance phase in this chapter
+                                       Object oriented concepts are mandatory things you should learn if you wanna use java. It will enable you to work with teams that means you will learn making loosely coupled applications using these concepts
                                     </Typography>
                                 </ListItem>
                             </React.Fragment> )
@@ -199,19 +211,14 @@ export default function OverviewVerbal (props) {
                     <Paper className={classes.heroButtons}>
                         <ListItem onClick = { handleAdv }>
                             <Typography variant='h5'>
-                                Advanced Java
+                                Advanced Java - Summary
                             </Typography>
                         </ListItem> 
                         { adv ? (
                             <React.Fragment>
                                 <ListItem>
                                     <Typography variant='body1'>
-                                        Advanced java concepts like threads and streams and lamda kinda things will take dominance here. 
-                                    </Typography>
-                                </ListItem>
-                                <ListItem>
-                                    <Typography variant='body1'>
-                                        Networking in java also is an important concept to learn.
+                                        Concepts like Threads and streams enables you to use Java effectively. With that you could build enterprice applications and applicatoons that runs in network. Also, Networking in java will help you build networking modules such as Gateways.
                                     </Typography>
                                 </ListItem>
                             </React.Fragment> )
@@ -224,7 +231,7 @@ export default function OverviewVerbal (props) {
                 <Button variant="contained" color="primary" className={classes.handleButton} onClick={(e)=>{ 
                     let score = 0;
                     
-                    intro ? score++:score
+                    java ? score++:score
                     inter ? score++:score
                     oops ? score++:score
                     adv ? score++:score
@@ -232,7 +239,7 @@ export default function OverviewVerbal (props) {
 
                     handleSubmit(e,props,startTime,score) 
                     }}>
-                Next
+                    Finish
                 </Button>
             </form>
         </Container>

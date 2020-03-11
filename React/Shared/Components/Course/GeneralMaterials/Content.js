@@ -2,20 +2,11 @@ import React, { useState, useEffect } from 'react'
 import courses from '../../../Data/courses'
 import {
     Typography,
-    Paper,
     makeStyles,
-    TextField,
     Button,
-    AppBar,
-    CardContent,
-    CardMedia,
-    Card,
     List,
     ListItem,
-    ListItemIcon,
-    Divider,
-    Toolbar, withStyles, Container
-} from '@material-ui/core'
+    Divider } from '@material-ui/core'
 import axios from 'axios'
 
 
@@ -87,16 +78,13 @@ const handleSubmit = async (e, props, startTime) => {
 
     console.log("score"+score)
     console.log("time"+time)
-    props.history.push('/course/' + props.match.params.course + '/visual')
+    props.history.push('/course/' + props.match.params.course + '/Visual')
 }
 
 export default function Content(props) {
     const classes = useStyles()
 
     const startTime = Date.now()
-
-    const course = courses.find((course) => props.match.params.course === course.name),
-        category = props.match.params.category
 
     return (
         <form autoComplete="off" noValidate>
