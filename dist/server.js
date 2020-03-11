@@ -352,6 +352,10 @@ var catchAsync = __webpack_require__(/*! ../utils/catchErr */ "./APIs/utils/catc
 
 var knn = __webpack_require__(/*! ../../knn/knn */ "./knn/knn.js");
 
+var fs = __webpack_require__(/*! fs */ "fs");
+
+var path = __webpack_require__(/*! path */ "path");
+
 exports.post = catchAsync( /*#__PURE__*/function () {
   var _ref = _asyncToGenerator(function* (req, res) {
     var student = yield Student.findById(req.params.id);
@@ -388,16 +392,34 @@ exports.post = catchAsync( /*#__PURE__*/function () {
 exports.getData = catchAsync( /*#__PURE__*/function () {
   var _ref2 = _asyncToGenerator(function* (req, res) {
     var student = yield Student.findById(req.params.id);
-    var mlData = Object.values(student.mlData); // let learningStyle = knn.getType(mlData);
-
+    var mlData = Object.values(student.mlData).slice(1);
     console.log(mlData);
-    res.status(200).json(mlData.slice(1));
+    var learningStyle = knn.getType(mlData);
+    res.status(200).json(learningStyle);
   });
 
   return function (_x3, _x4) {
     return _ref2.apply(this, arguments);
   };
-}());
+}()); // exports.uploadDataset = catchAsync(async (req, res) => {
+//   const student = await Student.findById(req.params.id);
+//   console.log(req.body);
+//   student.mlDataset = req.b
+//   await student.save({ validateBeforeSave: false });
+//   res.status(200).json({
+//     message: "Ml Data posted !",
+//     data: {
+//       student
+//     }
+//   });
+// });
+// exports.downloadDataset = catchAsync(async (req, res) => {
+//   const student = await Student.findById(req.params.id);
+//   const mlData = Object.values(student.mlDataset);
+//   let learningStyle = knn.getType(mlData,fs.readFileSync(path.resolve(__dirname,'../../knn/dataset.json','utf-8')));
+//   console.log(mlData)
+//   res.status(200).json(mlData);
+// });
 
 /***/ }),
 
@@ -548,6 +570,10 @@ var studentSchema = mongoose.Schema({
       min: 0,
       max: 9
     }
+  },
+  mlDataset: {
+    data: Buffer,
+    contentType: String
   }
 });
 studentSchema.pre("save", /*#__PURE__*/function () {
@@ -622,7 +648,11 @@ router.route("/resetPassword/:token").post(authController.resetPassword);
 router.route("/updatePassword").post(authController.protect, authController.updatePassword);
 router.route("/getAll").get(authController.protect, studentController.getAll);
 router.route("/ml/post/:id").patch(mlController.post);
-router.route("/ml/get/:id").get(mlController.getData);
+router.route("/ml/get/:id").get(mlController.getData); // to upload dataset
+// router.route("/ml/dataset/upload/:id").post(mlController.uploadDataset);
+// to download dataset
+// router.route("/ml/dataset/download/:id").get(mlController.downloadDataset);
+
 module.exports = router;
 
 /***/ }),
@@ -2112,7 +2142,6 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
 
 
- // import knn from '../../../../knn/knn'
 
 var useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["makeStyles"])(theme => ({
   icon: {
@@ -2182,21 +2211,20 @@ var handleSubmit = /*#__PURE__*/function () {
       alert(err);
     }
 
-    var mlInput;
+    var learnningStyle = '';
 
     try {
       var _res = yield axios__WEBPACK_IMPORTED_MODULE_2___default.a.get('http://127.0.0.1:8000/api/v1/student/ml/get/' + authToken);
 
       if (_res.status === 200) {
         console.log('Successfully fetched Activity Data');
-        mlInput = _res.data;
+        learnningStyle = _res.data;
       } else {
         alert("Problem While Fetching");
       }
     } catch (err) {
       alert(err);
-    } // console.log(knn.getType([1,9,8,9,2,0,1,2,6,7,8]))
-
+    }
 
     props.history.push('/ls:' + learnningStyle);
   });
@@ -3335,12 +3363,10 @@ app.use(globalErrorHandler);
 /*!********************!*\
   !*** ./knn/knn.js ***!
   \********************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* WEBPACK VAR INJECTION */(function(__dirname) {var KNN = __webpack_require__(/*! ml-knn */ "ml-knn");
+var KNN = __webpack_require__(/*! ml-knn */ "ml-knn");
 
 var fs = __webpack_require__(/*! fs */ "fs");
 
@@ -3364,15 +3390,16 @@ function csvJSON(csv) {
   return JSON.parse(JSON.stringify(result)); //JSON
 }
 
-/* harmony default export */ __webpack_exports__["default"] = (input => {
+exports.getType = input => {
   var knn;
   var type;
-  var csvFilePath = __dirname + '/DataSet.csv'; // Data
+  var csvFilePath = __dirname + '/../knn/dataset.csv'; // Data
 
   var names = ['ABC_%', 'D_%', 'C_%', 'AAC_%', 'A_%', 'V_%', 'ABC_T', 'D_T', 'C_T', 'AAC_T', 'A_T', 'LS'];
   var data = [],
       X = [],
       Y = [];
+  console.log(csvFilePath);
   var csv = fs.readFileSync(csvFilePath, 'utf-8');
   data = csvJSON(csv);
   var types = new Set();
@@ -3380,8 +3407,8 @@ function csvJSON(csv) {
     if (row.LS === undefined) console.log(row);
     types.add(row.LS);
   });
-  typesArray = [...types];
-  console.log(typesArray);
+  typesArray = [...types]; // console.log(typesArray)
+
   data.forEach(row => {
     var rowArray, typeNumber;
     rowArray = Object.values(row).map(key => parseFloat(key)).slice(0, 11); // typeNumber = typesArray.indexOf(row.LS); 
@@ -3394,9 +3421,9 @@ function csvJSON(csv) {
     k: 1
   });
   type = knn.predict(input);
+  console.log(type);
   return type;
-});
-/* WEBPACK VAR INJECTION */}.call(this, "/"))
+};
 
 /***/ }),
 
@@ -3831,6 +3858,17 @@ module.exports = require("morgan");
 /***/ (function(module, exports) {
 
 module.exports = require("nodemailer");
+
+/***/ }),
+
+/***/ "path":
+/*!***********************!*\
+  !*** external "path" ***!
+  \***********************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = require("path");
 
 /***/ }),
 

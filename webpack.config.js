@@ -4,6 +4,11 @@ var nodeExternals = require('webpack-node-externals')
 
 const common = {
   devtool: 'cheap-module-source-map',
+  node: {
+    fs: 'empty',
+    __dirname: false
+  },
+  target: 'node',
   module: {
     rules: [
       {
@@ -17,7 +22,7 @@ const common = {
   },
   resolve: {
     alias: {
-      '@material-ui/core': '@material-ui/core/es'
+      '@material-ui/core': '@material-ui/core/es',
     }
   },
 }

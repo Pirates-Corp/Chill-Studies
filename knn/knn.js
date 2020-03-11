@@ -27,13 +27,15 @@ function csvJSON(csv){
     return JSON.parse(JSON.stringify(result)); //JSON
   }
 
-export default (input) => {
+exports.getType = (input) => {
 
     let knn;
     let type;
-    const csvFilePath = __dirname+'/DataSet.csv'; // Data
+    const csvFilePath = __dirname+'/../knn/dataset.csv'; // Data
     const names = ['ABC_%','D_%','C_%','AAC_%','A_%','V_%','ABC_T','D_T','C_T','AAC_T','A_T','LS'];
     let data = [], X = [], Y = [];
+
+    console.log(csvFilePath)
 
     const csv = fs.readFileSync(csvFilePath,'utf-8')
 
@@ -48,7 +50,7 @@ export default (input) => {
 
     typesArray = [...types]; 
 
-    console.log(typesArray)
+    // console.log(typesArray)
 
     data.forEach((row) => {
 
@@ -68,6 +70,7 @@ export default (input) => {
 
     type = knn.predict(input);
 
+    console.log(type)
 
     return type
 }

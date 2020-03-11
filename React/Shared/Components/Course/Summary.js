@@ -9,9 +9,6 @@ import { Typography,
     Container} from '@material-ui/core'
 import axios from 'axios'    
 
-// import knn from '../../../../knn/knn'
-
-
 const useStyles = makeStyles(theme => ({
     icon: {
       marginRight: theme.spacing(2),
@@ -85,28 +82,23 @@ const handleSubmit = async (e,props,startTime,score) => {
 
     }
 
-    let mlInput
+    let learnningStyle =''
 
     try {
-            const res = await axios.get('http://127.0.0.1:8000/api/v1/student/ml/get/'+authToken)
-        
-            if(res.status === 200) {
-                console.log('Successfully fetched Activity Data')
-                mlInput = res.data
-            }
-            
-            else {
-            alert("Problem While Fetching");
-            }
-        } catch(err ){
-            alert(err)
-        }
-
+        const res = await axios.get('http://127.0.0.1:8000/api/v1/student/ml/get/'+authToken)
     
+        if(res.status === 200) {
+            console.log('Successfully fetched Activity Data')
+            learnningStyle = res.data
+        }
+        
+        else {
+        alert("Problem While Fetching");
+        }
+    } catch(err ){
+        alert(err)
+    }
 
-
-    // console.log(knn.getType([1,9,8,9,2,0,1,2,6,7,8]))
-   
     props.history.push( '/ls:'+learnningStyle)
 }
 

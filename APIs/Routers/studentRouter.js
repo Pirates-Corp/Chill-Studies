@@ -16,4 +16,9 @@ router.route("/getAll").get(authController.protect, studentController.getAll);
 router.route("/ml/post/:id").patch(mlController.post);
 router.route("/ml/get/:id").get(mlController.getData);
 
+// to upload dataset
+// router.route("/ml/dataset/upload/:id").post(mlController.uploadDataset);
+// to download dataset
+// router.route("/ml/dataset/download/:id").get(mlController.downloadDataset);
+
 module.exports = router;
