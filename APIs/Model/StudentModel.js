@@ -100,11 +100,7 @@ const studentSchema = mongoose.Schema({
       min: 0,
       max: 9
     }
-  },
-  mlDataset: {
-    data: Buffer, 
-    contentType: String
-    }
+  }
 });
 
 studentSchema.pre("save", async function(next) {
