@@ -63,8 +63,6 @@ export default function Page (props) {
     const course =  courses.find((course) => props.match.params.course === course.name)
     const category = categories.find((category) => (props.match.params.category) === category.name) 
 
-    const lsType = props.match.params.ls_type 
-
     return(
         <div>
           { course ? (
@@ -76,7 +74,7 @@ export default function Page (props) {
                     </Typography>
                     <IconButton edge="start" color="inherit" aria-label="home" onClick={ (e) => {
                       e.preventDefault()
-                      props.history.push( ( props.history.location.pathname+''.includes('/ls') ? '/course/'+course.name+'/ls/'+lsType :'/course/'+course.name  ))
+                      props.history.push( '/course/'+course.name+'/home' )
                       } }>
                       <Typography gutterBottom variant="body1" >
                         Course Home 

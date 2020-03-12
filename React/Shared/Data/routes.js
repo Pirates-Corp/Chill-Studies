@@ -22,6 +22,11 @@ const routes = [
         exact : true
     },
     {
+        path: "/course/:course/home",
+        component : Home,
+        exact : true
+    },
+    {
         path: "/course/:course/ls/:ls_type",
         component : Home,
         exact : true

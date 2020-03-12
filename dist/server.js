@@ -2087,7 +2087,7 @@ function Visual(props) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return ClassHome; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Home; });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _material_ui_core_AppBar__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core/AppBar */ "@material-ui/core/AppBar");
@@ -2114,6 +2114,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_11___default = /*#__PURE__*/__webpack_require__.n(react_router_dom__WEBPACK_IMPORTED_MODULE_11__);
 /* harmony import */ var _Data_courses__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../Data/courses */ "./React/Shared/Data/courses.js");
 /* harmony import */ var _Shared_Data_learningStyles__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../../Shared/Data/learningStyles */ "./React/Shared/Data/learningStyles.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! axios */ "axios");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_14___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_14__);
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
+
 
 
 
@@ -2186,12 +2193,31 @@ var useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_9__["makeStyle
     padding: theme.spacing(6)
   }
 }));
-function ClassHome(props) {
+
+var handleRoute = /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator(function* (props, card, course) {
+    var path = props.history.location.pathname + '';
+    var to = '';
+    var lsType = (yield path.includes('/home')) ? (yield axios__WEBPACK_IMPORTED_MODULE_14___default.a.get('http://127.0.0.1:8000/api/v1/student/ml/get/' + sessionStorage.getItem('auth'))).data : null;
+    to = path === '/dashboard' ? "/course/".concat(card.name, "/home") : to = path.includes('/ls') ? "/course/".concat(course.name, "/ls/").concat(lsType, "/").concat(card) : to = path.includes('/home') ? card.includes('1') ? "/course/".concat(course.name) : "/course/".concat(course.name, "/ls/").concat(lsType) : to = "/course/".concat(course.name, "/").concat(card);
+    props.history.push(to);
+  });
+
+  return function handleRoute(_x, _x2, _x3) {
+    return _ref.apply(this, arguments);
+  };
+}();
+
+function Home(props) {
   var classes = useStyles();
   var path = props.history.location.pathname + '';
-  var cards = path.startsWith('/dashboard') ? _Data_courses__WEBPACK_IMPORTED_MODULE_12__["default"] : path.includes('/ls') ? _Shared_Data_learningStyles__WEBPACK_IMPORTED_MODULE_13__["default"].find(style => props.match.params.ls_type === style.type).contents : ['Overview', 'Definitons', 'Activity', 'Content', 'Visual', 'Summary'];
+  var chapters = ['Chapter-1', 'Chapter-2'];
+  var cards = path.startsWith('/dashboard') ? _Data_courses__WEBPACK_IMPORTED_MODULE_12__["default"] : // its dhashboard
+  path.includes('/home') ? chapters : // Its Course Home that includes Chapters
+  path.includes('/ls') ? _Shared_Data_learningStyles__WEBPACK_IMPORTED_MODULE_13__["default"].find(style => props.match.params.ls_type === style.type).contents : // Its the LS Predicted Course Chapter Home  
+  ['Overview', 'Definitons', 'Activity', 'Content', 'Visual', 'Summary']; // Its the default Course Chapter Home
+
   var course = path === '/dashboard' ? 'valid' : _Data_courses__WEBPACK_IMPORTED_MODULE_12__["default"].find(course => props.match.params.course === course.name);
-  var lsType = path.includes('/ls') ? props.match.params.ls_type : null;
   return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, course ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_5___default.a, null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_AppBar__WEBPACK_IMPORTED_MODULE_1___default.a, {
     position: "relative"
   }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Toolbar__WEBPACK_IMPORTED_MODULE_7___default.a, null, path === '/dashboard' ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_8___default.a, {
@@ -2247,10 +2273,11 @@ function ClassHome(props) {
     key: card,
     xs: 12,
     sm: 6,
-    md: path.includes('/ls') ? 6 : 4
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_11__["Link"], {
-    className: classes.link,
-    to: path === '/dashboard' ? "/course/".concat(card.name) : path.includes('/ls') ? "/course/".concat(course.name, "/ls/").concat(lsType, "/").concat(card) : "/course/".concat(course.name, "/").concat(card)
+    md: path.includes('/ls') || path.includes('/home') ? 6 : 4
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+    onClick: e => {
+      handleRoute(props, card, course);
+    }
   }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Card__WEBPACK_IMPORTED_MODULE_2___default.a, {
     className: classes.card
   }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_CardMedia__WEBPACK_IMPORTED_MODULE_4___default.a, {
@@ -2572,39 +2599,6 @@ var handleSubmit = /*#__PURE__*/function () {
     var authToken = sessionStorage.getItem('auth');
     console.log("score" + score);
     console.log("time" + time);
-
-    try {
-      var res = yield axios__WEBPACK_IMPORTED_MODULE_2___default.a.patch('http://127.0.0.1:8000/api/v1/student/ml/post/' + authToken, {
-        "AAC": score,
-        "AAC_T": time
-      });
-
-      if (res.status === 200) {
-        console.log('Successfully Pushed Activity Data');
-      } else {
-        alert("Problem While Pushing");
-      }
-    } catch (err) {
-      alert(err);
-    }
-
-    var learnningStyle = '';
-
-    try {
-      var _res = yield axios__WEBPACK_IMPORTED_MODULE_2___default.a.get('http://127.0.0.1:8000/api/v1/student/ml/get/' + authToken);
-
-      if (_res.status === 200) {
-        console.log('Successfully fetched Activity Data');
-        learnningStyle = _res.data;
-      } else {
-        alert("Problem While Fetching");
-      }
-    } catch (err) {
-      alert(err);
-    }
-
-    var coursName = props.match.params.course;
-    props.history.push('/course/' + coursName + '/ls/' + learnningStyle);
   });
 
   return function handleSubmit(_x, _x2, _x3, _x4) {
@@ -2811,7 +2805,6 @@ function Page(props) {
   var classes = useStyles();
   var course = _Data_courses__WEBPACK_IMPORTED_MODULE_1__["default"].find(course => props.match.params.course === course.name);
   var category = _Data_categories__WEBPACK_IMPORTED_MODULE_3__["default"].find(category => props.match.params.category === category.name);
-  var lsType = props.match.params.ls_type;
   return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, course ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["AppBar"], {
     position: "relative"
   }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Toolbar"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
@@ -2825,7 +2818,7 @@ function Page(props) {
     "aria-label": "home",
     onClick: e => {
       e.preventDefault();
-      props.history.push(props.history.location.pathname + ''.includes('/ls') ? '/course/' + course.name + '/ls/' + lsType : '/course/' + course.name);
+      props.history.push('/course/' + course.name + '/home');
     }
   }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
     gutterBottom: true,
@@ -3640,6 +3633,10 @@ var routes = [{
   component: _Components_Course_LS_LS__WEBPACK_IMPORTED_MODULE_4__["default"],
   exact: true
 }, {
+  path: "/course/:course/home",
+  component: _Components_Course_Home__WEBPACK_IMPORTED_MODULE_2__["default"],
+  exact: true
+}, {
   path: "/course/:course/ls/:ls_type",
   component: _Components_Course_Home__WEBPACK_IMPORTED_MODULE_2__["default"],
   exact: true
@@ -3744,7 +3741,6 @@ exports.getType = input => {
   var data = [],
       X = [],
       Y = [];
-  console.log(csvFilePath);
   var csv = fs.readFileSync(csvFilePath, 'utf-8');
   data = csvJSON(csv);
   var types = new Set();
@@ -3766,7 +3762,6 @@ exports.getType = input => {
     k: 1
   });
   type = knn.predict(input);
-  console.log(type);
   return type;
 };
 

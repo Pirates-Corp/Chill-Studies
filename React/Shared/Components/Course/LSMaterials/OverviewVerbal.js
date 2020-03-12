@@ -62,46 +62,7 @@ const handleSubmit = async (e,props,startTime,score) => {
     
     console.log("score"+score)
     console.log("time"+time)
-
-    try {
-        const res = await axios.patch('http://127.0.0.1:8000/api/v1/student/ml/post/'+authToken,
-        {
-          "AAC" : score,
-          "AAC_T" :  time
-        })
     
-        if(res.status === 200) {
-          console.log('Successfully Pushed Activity Data')
-        }
-        
-        else {
-          alert("Problem While Pushing");
-        }
-      } catch(err ){
-        alert(err)
-
-    }
-
-    let learnningStyle =''
-
-    try {
-        const res = await axios.get('http://127.0.0.1:8000/api/v1/student/ml/get/'+authToken)
-    
-        if(res.status === 200) {
-            console.log('Successfully fetched Activity Data')
-            learnningStyle = res.data
-        }
-        
-        else {
-        alert("Problem While Fetching");
-        }
-    } catch(err ){
-        alert(err)
-    }
-
-    const coursName = props.match.params.course
-
-    props.history.push( '/course/'+coursName+'/ls/'+learnningStyle)
 }
 
 export default function Summary (props) {

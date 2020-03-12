@@ -12,6 +12,7 @@ import Container from '@material-ui/core/Container';
 import { Link as Linkto } from 'react-router-dom'
 import courses from '../../Data/courses'
 import learningStyles from '../../../Shared/Data/learningStyles'
+import axios from 'axios';
 
 function Copyright() {
   const classes = useStyles();
@@ -74,23 +75,35 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
+const handleRoute = async (props,card,course) => {
 
+  const path = props.history.location.pathname+''
 
-export default function ClassHome(props) {
+  let to = ''
+
+  const lsType = await path.includes('/home') ? (await axios.get('http://127.0.0.1:8000/api/v1/student/ml/get/'+sessionStorage.getItem('auth'))).data : null
+
+  to = path ==='/dashboard' ? `/course/${card.name}/home`:
+    to = path.includes('/ls') ? `/course/${course.name}/ls/${lsType}/${card}` :
+      to = path.includes('/home') ? ( card.includes('1') ?  `/course/${course.name}` : `/course/${course.name}/ls/${lsType}`) :
+        to = `/course/${course.name}/${card}`
+
+  props.history.push(to)
+}
+
+export default function Home(props) {
   const classes = useStyles();
 
   const path = props.history.location.pathname+''
 
-  const cards = path.startsWith('/dashboard') ? courses : (
-                  path.includes('/ls') ? 
-                    ((learningStyles.find((style) => props.match.params.ls_type === style.type)).contents ) :
-                      ([ 'Overview','Definitons', 'Activity', 'Content','Visual','Summary']));
+  const chapters = ['Chapter-1','Chapter-2']
 
-
+  const cards = path.startsWith('/dashboard') ? courses :                                                         // its dhashboard
+                  path.includes('/home') ? chapters :                                                              // Its Course Home that includes Chapters
+                    path.includes('/ls') ? learningStyles.find(style => props.match.params.ls_type === style.type).contents  :     // Its the LS Predicted Course Chapter Home  
+                        [ 'Overview','Definitons', 'Activity', 'Content','Visual','Summary'];                   // Its the default Course Chapter Home
 
   let course = (path==='/dashboard') ?  ('valid') : (courses.find((course) => props.match.params.course === course.name) )
-
-  const lsType = path.includes('/ls') ? props.match.params.ls_type:null
 
   return (
     <React.Fragment> 
@@ -139,9 +152,8 @@ export default function ClassHome(props) {
             <Container className={classes.cardGrid} maxWidth="md">
               <Grid container spacing={2}>
                   {cards.map((card,i) => (
-                      <Grid item key={card} xs={12} sm={6} md={ path.includes('/ls') ? 6: 4}> 
-                          <Linkto className={classes.link} 
-                            to={ path ==='/dashboard' ? `/course/${card.name}`: ( path.includes('/ls') ? `/course/${course.name}/ls/${lsType}/${card}` : `/course/${course.name}/${card}`) }>
+                      <Grid item key={card} xs={12} sm={6} md={ (path.includes('/ls')||path.includes('/home')) ? 6: 4}> 
+                          <div onClick={(e) => {handleRoute(props,card,course)}}>
                               <Card className={classes.card}>
                               <CardMedia
                                   className={classes.cardMedia}
@@ -157,7 +169,7 @@ export default function ClassHome(props) {
                                   </Typography>
                               </CardContent>
                               </Card>
-                          </Linkto>
+                            </div>
                       </Grid>
                   ))}
               </Grid>
