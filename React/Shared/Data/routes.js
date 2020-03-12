@@ -27,6 +27,11 @@ const routes = [
         exact : true
     },
     {
+        path: "/course/:course/ls/invalid",
+        component : LS,
+        exact : true
+    },
+    {
         path: "/course/:course/ls/:ls_type",
         component : Home,
         exact : true

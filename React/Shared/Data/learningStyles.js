@@ -79,5 +79,10 @@ export default [
     type: "asvs",
     name: "Active Sensing Visual Sequential",
     contents : ['Overview-Visual','Content-Visual-Detailed','Activity-Visual','Summary-Visual']
+  },
+  {
+    type: "invalid",
+    name: "Complete Chapter 1 First",
+    contents : ['Overview-Visual','Content-Visual-Detailed','Activity-Visual','Summary-Visual']
   }
 ];
