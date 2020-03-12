@@ -15,7 +15,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-    Paper,
+  Paper,
   Container
 } from "@material-ui/core";
 
@@ -61,9 +61,9 @@ const useStyles = makeStyles(theme => ({
   Text: {
     display: "block"
   },
-    root: {
-        width : '100%'
-    }
+  root: {
+    width: "100%"
+  }
 }));
 
 const handleSubmit = async (e, props) => {
@@ -90,104 +90,173 @@ const handleSubmit = async (e, props) => {
 
 export default function DefinitionVisualDetailed(props) {
   const classes = useStyles();
-    return (
-      <Container>
-        <form autoComplete="off" noValidate>
-          <List>
-            <ListItem>
-              <Card className={classes.root}>
-                <CardActionArea>
-                  <CardMedia
-                    component="img"
-                    alt="Contemplative Reptile"
-                    // height="250"
-                    image="https://static.javatpoint.com/images/java-data-types.png"
-                    title="Variables"
-                  />
-                  <CardContent>
-                    <Typography gutterBottom variant="h5" component="h2">
-                      Java Variables
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="textSecondary"
-                      component="p"
-                    >
-                      The Above Diagram Shows the classification of variables in
-                      Java
-                    </Typography>
-                  </CardContent>
-                </CardActionArea>
-              </Card>
-            </ListItem>
-            <ListItem>
-              <TableContainer component={Paper}>
-                <Table className={classes.table} aria-label="simple table">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell align="centre">Data Type</TableCell>
-                      <TableCell align="centre">Default Value</TableCell>
-                      <TableCell align="centre">Default size</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell align="centre">boolean</TableCell>
-                      <TableCell align="centre">false</TableCell>
-                      <TableCell align="centre">1 bit</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell align="centre">char</TableCell>
-                      <TableCell align="centre"> '\u0000'</TableCell>
-                      <TableCell align="centre"> 2 byte</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell align="centre">byte</TableCell>
-                      <TableCell align="centre">0</TableCell>
-                      <TableCell align="centre">1 byte</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell align="centre">short</TableCell>
-                      <TableCell align="centre">0</TableCell>
-                      <TableCell align="centre">2 bit</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell align="centre">int</TableCell>
-                      <TableCell align="centre">0</TableCell>
-                      <TableCell align="centre">4 byte</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell align="centre">long</TableCell>
-                      <TableCell align="centre">0L</TableCell>
-                      <TableCell align="centre">8 byte</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell align="centre">float</TableCell>
-                      <TableCell align="centre">0.0f</TableCell>
-                      <TableCell align="centre">4 byte</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell align="centre">double</TableCell>
-                      <TableCell align="centre">0.0d</TableCell>
-                      <TableCell align="centre">8 byte</TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </ListItem>
-          </List>
+  return (
+    <Container>
+      <form autoComplete="off" noValidate>
+        <List>
+          <ListItem>
+            <Card className={classes.root}>
+              <CardActionArea>
+                <CardMedia
+                  component="img"
+                  alt="Contemplative Reptile"
+                  // height="250"
+                  image="https://1.bp.blogspot.com/-E_tUghZLenM/XW_qJ7IEg4I/AAAAAAAAC7I/NInngU0p89gCgpn1hdlaETa1zC4QvE6_ACLcBGAs/s1600/java-data-types.png"
+                  title="Variables"
+                />
+                <CardContent>
+                  <Typography gutterBottom variant="h5" component="h2">
+                    Java Variables
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="textSecondary"
+                    component="p"
+                  >
+                    The Above Diagram Shows the classification of variables in
+                    Java
+                  </Typography>
+                </CardContent>
+              </CardActionArea>
+            </Card>
+          </ListItem>
+          <ListItem>
+            <Card className={classes.root}>
+              <CardActionArea>
+                <CardMedia
+                  component="img"
+                  alt="Contemplative Reptile"
+                  // height="250"
+                  image="https://1.bp.blogspot.com/-Lx36U7N4DP0/XXCP8TOCkaI/AAAAAAAAC7U/R2MJbpwF6Ao6mek4simcY4e04f0aWSYPQCLcBGAs/s1600/integer-data-types.png"
+                  title="Variables"
+                />
+                <CardContent>
+                  <Typography gutterBottom variant="h5" component="h2">
+                    Java Variables
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="textSecondary"
+                    component="p"
+                  >
+                    The Above Diagram Shows the classification of Integer datatypes in
+                    Java
+                  </Typography>
+                </CardContent>
+              </CardActionArea>
+            </Card>
+          </ListItem>
+          <ListItem>
+            <TableContainer component={Paper}>
+              <Table className={classes.table} aria-label="simple table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell align="centre">Type</TableCell>
+                    <TableCell align="centre">Size</TableCell>
+                    <TableCell align="centre">Minimum value</TableCell>
+                    <TableCell align="centre">Maximum value</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  <TableRow>
+                    <TableCell align="centre">byte</TableCell>
+                    <TableCell align="centre">One byte</TableCell>
+                    <TableCell align="centre">-128</TableCell>
+                    <TableCell align="centre">127</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell align="centre">short</TableCell>
+                    <TableCell align="centre"> Two bytes</TableCell>
+                    <TableCell align="centre"> -32, 768</TableCell>
+                    <TableCell align="centre">32, 767</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell align="centre">int</TableCell>
+                    <TableCell align="centre">Four bytes</TableCell>
+                    <TableCell align="centre">-2, 147, 483, 648</TableCell>
+                    <TableCell align="centre">2, 147, 483, 647</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell align="centre">long</TableCell>
+                    <TableCell align="centre">Eight bytes</TableCell>
+                    <TableCell align="centre">
+                      -9, 223, 372, 036, 854, 775, 808
+                    </TableCell>
+                    <TableCell align="centre">
+                      9, 223, 372, 036, 854, 775, 807
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </ListItem>
+          <ListItem>
+            <Card className={classes.root}>
+              <CardActionArea>
+                <CardMedia
+                  component="img"
+                  alt="Contemplative Reptile"
+                  // height="250"
+                  image="https://1.bp.blogspot.com/-7yTep7sMX-k/XXI_z9QZnpI/AAAAAAAAC7g/F-usnpO8rpk99e7cWEGj92gZjBy69hoywCLcBGAs/s1600/floating-point-data-types.png"
+                  title="Variables"
+                />
+                <CardContent>
+                  <Typography gutterBottom variant="h5" component="h2">
+                    Java Variables
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="textSecondary"
+                    component="p"
+                  >
+                    The Above Diagram Shows the classification of floatingpoint datatypes in
+                    Java
+                  </Typography>
+                </CardContent>
+              </CardActionArea>
+            </Card>
+          </ListItem>
+          <ListItem>
+            <TableContainer component={Paper}>
+              <Table className={classes.table} aria-label="simple table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell align="centre">Type</TableCell>
+                    <TableCell align="centre">Size</TableCell>
+                    <TableCell align="centre">Minimum value</TableCell>
+                    <TableCell align="centre">Maximum value</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  <TableRow>
+                    <TableCell align="centre">float</TableCell>
+                    <TableCell align="centre">Four byte</TableCell>
+                    <TableCell align="centre">3.4e-038</TableCell>
+                    <TableCell align="centre">3.4e+038</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell align="centre">double</TableCell>
+                    <TableCell align="centre"> Eight bytes</TableCell>
+                    <TableCell align="centre"> 1.7e-308</TableCell>
+                    <TableCell align="centre">1.7e+308</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </ListItem>
+        </List>
 
-          <Button
-            variant="contained"
-            color="primary"
-            className={classes.handleButton}
-            onClick={e => {
-              handleSubmit(e, props);
-            }}
-          >
-            Next
-          </Button>
-        </form>
-      </Container>
-    );
+        <Button
+          variant="contained"
+          color="primary"
+          className={classes.handleButton}
+          onClick={e => {
+            handleSubmit(e, props);
+          }}
+        >
+          Next
+        </Button>
+      </form>
+    </Container>
+  );
 }
