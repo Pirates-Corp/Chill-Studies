@@ -95,14 +95,14 @@ export default function SummaryVisual(props) {
                 />
                 <CardContent>
                   <Typography gutterBottom variant="h5" component="h2">
-                    Java Variables
+                    Java Data Types
                   </Typography>
                   <Typography
                     variant="body2"
                     color="textSecondary"
                     component="p"
                   >
-                    The Above Diagram Shows the summary of Java variables 
+                    The Above Diagram Shows the summary of Java Data Types 
                   </Typography>
                 </CardContent>
               </CardActionArea>

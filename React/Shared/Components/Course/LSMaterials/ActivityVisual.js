@@ -96,7 +96,7 @@ export default function SummaryVisual(props) {
                       allowfullscreen
                     ></iframe>
                     <Typography gutterBottom variant="h5" component="h2">
-                      Java Variables
+                      Java Data Types
                     </Typography>
                     <Typography
                       variant="body2"
