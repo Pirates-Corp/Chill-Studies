@@ -80,7 +80,7 @@ const handleSubmit = async (e, props) => {
   props.history.push(path);
 };
 
-export default function OverviewVerbal(props) {
+export default function DefinitionVerbalDetailed(props) {
   const classes = useStyles();
   return (
     <form autoComplete="off" noValidate>

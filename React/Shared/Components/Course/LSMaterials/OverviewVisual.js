@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   Typography,
-  Paper,
   makeStyles,
   Card,
   CardActionArea,
@@ -10,7 +9,6 @@ import {
   Button,
   List,
   ListItem,
-  Divider,
   Container
 } from "@material-ui/core";
 import learningStyles from "../../../Data/learningStyles";

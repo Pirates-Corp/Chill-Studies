@@ -93,14 +93,7 @@
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = (err, req, res, next) => {
-  err.statusCode = err.statusCode || 500;
-  err.status = err.status || "fail";
-  res.status(err.statusCode).json({
-    status: err.status,
-    message: err.message
-  });
-};
+eval("module.exports = (err, req, res, next) => {\n  err.statusCode = err.statusCode || 500;\n  err.status = err.status || \"fail\";\n  res.status(err.statusCode).json({\n    status: err.status,\n    message: err.message\n  });\n};//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9BUElzL0NvbnRyb2xsZXJzL0Vycm9yQ29udHJvbGxlci5qcy5qcyIsInNvdXJjZXMiOlsid2VicGFjazovLy8uL0FQSXMvQ29udHJvbGxlcnMvRXJyb3JDb250cm9sbGVyLmpzPzZlMjgiXSwic291cmNlc0NvbnRlbnQiOlsibW9kdWxlLmV4cG9ydHMgPSAoZXJyLCByZXEsIHJlcywgbmV4dCkgPT4ge1xyXG4gIGVyci5zdGF0dXNDb2RlID0gZXJyLnN0YXR1c0NvZGUgfHwgNTAwO1xyXG4gIGVyci5zdGF0dXMgPSBlcnIuc3RhdHVzIHx8IFwiZmFpbFwiO1xyXG5cclxuICByZXMuc3RhdHVzKGVyci5zdGF0dXNDb2RlKS5qc29uKHtcclxuICAgIHN0YXR1czogZXJyLnN0YXR1cyxcclxuICAgIG1lc3NhZ2U6IGVyci5tZXNzYWdlXHJcbiAgfSk7XHJcbn07XHJcbiJdLCJtYXBwaW5ncyI6IkFBQUE7QUFDQTtBQUNBO0FBRUE7QUFDQTtBQUNBO0FBRkE7QUFJQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///./APIs/Controllers/ErrorController.js\n");
 
 /***/ }),
 
@@ -111,221 +104,7 @@ module.exports = (err, req, res, next) => {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
-
-var Student = __webpack_require__(/*! ../Model/StudentModel */ "./APIs/Model/StudentModel.js");
-
-var jwt = __webpack_require__(/*! jsonwebtoken */ "jsonwebtoken");
-
-var {
-  promisify
-} = __webpack_require__(/*! util */ "util");
-
-var AppErr = __webpack_require__(/*! ../utils/appError */ "./APIs/utils/appError.js");
-
-var catchAsync = __webpack_require__(/*! ../utils/catchErr */ "./APIs/utils/catchErr.js");
-
-var sendEmail = __webpack_require__(/*! ../utils/email */ "./APIs/utils/email.js");
-
-var crypto = __webpack_require__(/*! crypto */ "crypto");
-
-var singleToken = id => {
-  return jwt.sign({
-    id
-  }, process.env.SEC_STR, {
-    expiresIn: process.env.TIME_DUR
-  });
-};
-
-var createSendToken = (student, statusCode, res, str) => {
-  var token = singleToken(student._id);
-  var cookieOption = {
-    expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
-    httpOnly: true
-  };
-  if (false) {}
-  res.cookie("jwt", token, cookieOption); //remove the password from the output
-
-  student.password = undefined;
-  res.status(statusCode).json({
-    status: str,
-    token,
-    data: {
-      student
-    }
-  });
-};
-
-exports.signup = catchAsync( /*#__PURE__*/function () {
-  var _ref = _asyncToGenerator(function* (req, res) {
-    var newStudent = yield Student.create(req.body);
-    createSendToken(newStudent, 201, res, "sign up success !!");
-  });
-
-  return function (_x, _x2) {
-    return _ref.apply(this, arguments);
-  };
-}());
-exports.login = catchAsync( /*#__PURE__*/function () {
-  var _ref2 = _asyncToGenerator(function* (req, res, next) {
-    var {
-      studentId,
-      password
-    } = req.body; //1) checking the user and pass is provied or not
-
-    if (!studentId || !password) return next(new AppErr("Enter the Email/password", 400)); //2) checking the pass from DB
-
-    var student = yield Student.findOne({
-      studentId
-    }).select("+password");
-
-    if (!student || !(yield student.checkPassword(password, student.password))) {
-      return next(new AppErr("Incorrect the Email/password", 400));
-    } //3)Issue the Token
-
-
-    createSendToken(student, 201, res, "Login success !!");
-  });
-
-  return function (_x3, _x4, _x5) {
-    return _ref2.apply(this, arguments);
-  };
-}());
-exports.protect = catchAsync( /*#__PURE__*/function () {
-  var _ref3 = _asyncToGenerator(function* (req, res, next) {
-    var token;
-
-    if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
-      //console.log(req.headers.authorization, "protect");
-      token = req.headers.authorization.split(" ")[1];
-    } //1) check the token
-
-
-    if (!token) {
-      return next(new AppErr("You must login first ..", 403));
-    } //2)verification token
-
-
-    var decoded = yield promisify(jwt.verify)(token, process.env.SEC_STR); //3)check if the user still exist
-
-    var curStudent = yield Student.findById(decoded.id);
-
-    if (!curStudent) {
-      return next(new AppErr("Student have been deleted", 404));
-    } //4)Check if the user change password after the token was issused
-
-
-    if (curStudent.changePasswordAfter(decoded.iat)) {
-      return next(new AppErr("Student recently changed  the password ", 400));
-    } //grant access
-
-
-    req.student = curStudent;
-    console.log(req.student);
-    next();
-  });
-
-  return function (_x6, _x7, _x8) {
-    return _ref3.apply(this, arguments);
-  };
-}());
-exports.passwordForget = catchAsync( /*#__PURE__*/function () {
-  var _ref4 = _asyncToGenerator(function* (req, res, next) {
-    //1)Get student based on student ID
-    var student = yield Student.findOne({
-      studentId: req.body.studentId
-    });
-    if (!student) return next(new AppErr("No such student found by this ID", 404));
-    var resetToken = student.generateResetToken();
-    console.log(resetToken); //Logs the restToken
-    //2) saveing the reset Token to DB
-
-    yield student.save({
-      validateBeforeSave: false
-    });
-    var reset = "".concat(req.protocol, "://").concat(req.get("host"), "/api/v1/student/resetPassword/").concat(resetToken);
-    var message = "Forget Your password ? just click the following link  to  change it ".concat(reset, ".\nif you remember ignore it"); //3)Mail Sending function
-
-    try {
-      yield sendEmail({
-        studentId: student.studentId,
-        subject: "your password reset link vaild for 10 min",
-        message
-      });
-      res.status(200).json({
-        status: "success",
-        message: "token sent to email"
-      });
-    } catch (err) {
-      student.passwordResetToken = undefined;
-      student.passwordResetExpires = undefined;
-      yield student.save({
-        validateBeforeSave: false
-      });
-      return next(new AppErr("there was a error in mail", 500));
-    }
-  });
-
-  return function (_x9, _x10, _x11) {
-    return _ref4.apply(this, arguments);
-  };
-}());
-exports.resetPassword = catchAsync( /*#__PURE__*/function () {
-  var _ref5 = _asyncToGenerator(function* (req, res, next) {
-    //1) encrypting the token
-    var hashedToken = crypto.createHash("sha256").update(req.params.token).digest("hex"); //2)finding the user relavent to the token
-
-    var student = yield Student.findOne({
-      passwordResetToken: hashedToken,
-      passwordResetExpires: {
-        $gt: Date.now()
-      }
-    }); //3) if token expired or user not found.
-
-    if (!student) {
-      return next(new AppErr("Token is invalid or expired", 400));
-    } //4)update change at property for the user
-
-
-    console.log(req.body.password, req.body.passwordConfirm);
-    student.password = req.body.password;
-    student.passwordConfirm = req.body.passwordConfirm;
-    student.passwordResetExpires = undefined;
-    student.passwordResetToken = undefined;
-    student.passwordChangeAt = Date.now() - 1000;
-    yield student.save(); //5) log the student in ..
-
-    createSendToken(student, 200, res, "Login success !!");
-  });
-
-  return function (_x12, _x13, _x14) {
-    return _ref5.apply(this, arguments);
-  };
-}());
-exports.updatePassword = catchAsync( /*#__PURE__*/function () {
-  var _ref6 = _asyncToGenerator(function* (req, res, next) {
-    //1) Get the user from the collection
-    var student = yield Student.findById(req.student._id).select("+password");
-    console.log(req.body.password, student.password); //2)Check if posted current password is correct
-
-    if (!(yield student.checkPassword(req.body.passwordCurrent, student.password))) {
-      return next(new AppErr("Your Current password is wrong", 401));
-    } //3)if so, update password
-
-
-    student.password = req.body.password;
-    student.passwordConfrim = req.body.passwordConfrim;
-    console.log("sas");
-    yield student.save();
-    createSendToken(student, 200, res, "Password updated !!");
-  });
-
-  return function (_x15, _x16, _x17) {
-    return _ref6.apply(this, arguments);
-  };
-}());
+eval("function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }\n\nfunction _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"next\", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"throw\", err); } _next(undefined); }); }; }\n\nvar Student = __webpack_require__(/*! ../Model/StudentModel */ \"./APIs/Model/StudentModel.js\");\n\nvar jwt = __webpack_require__(/*! jsonwebtoken */ \"jsonwebtoken\");\n\nvar {\n  promisify\n} = __webpack_require__(/*! util */ \"util\");\n\nvar AppErr = __webpack_require__(/*! ../utils/appError */ \"./APIs/utils/appError.js\");\n\nvar catchAsync = __webpack_require__(/*! ../utils/catchErr */ \"./APIs/utils/catchErr.js\");\n\nvar sendEmail = __webpack_require__(/*! ../utils/email */ \"./APIs/utils/email.js\");\n\nvar crypto = __webpack_require__(/*! crypto */ \"crypto\");\n\nvar singleToken = id => {\n  return jwt.sign({\n    id\n  }, process.env.SEC_STR, {\n    expiresIn: process.env.TIME_DUR\n  });\n};\n\nvar createSendToken = (student, statusCode, res, str) => {\n  var token = singleToken(student._id);\n  var cookieOption = {\n    expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),\n    httpOnly: true\n  };\n  if (false) {}\n  res.cookie(\"jwt\", token, cookieOption); //remove the password from the output\n\n  student.password = undefined;\n  res.status(statusCode).json({\n    status: str,\n    token,\n    data: {\n      student\n    }\n  });\n};\n\nexports.signup = catchAsync( /*#__PURE__*/function () {\n  var _ref = _asyncToGenerator(function* (req, res) {\n    var newStudent = yield Student.create(req.body);\n    createSendToken(newStudent, 201, res, \"sign up success !!\");\n  });\n\n  return function (_x, _x2) {\n    return _ref.apply(this, arguments);\n  };\n}());\nexports.login = catchAsync( /*#__PURE__*/function () {\n  var _ref2 = _asyncToGenerator(function* (req, res, next) {\n    var {\n      studentId,\n      password\n    } = req.body; //1) checking the user and pass is provied or not\n\n    if (!studentId || !password) return next(new AppErr(\"Enter the Email/password\", 400)); //2) checking the pass from DB\n\n    var student = yield Student.findOne({\n      studentId\n    }).select(\"+password\");\n\n    if (!student || !(yield student.checkPassword(password, student.password))) {\n      return next(new AppErr(\"Incorrect the Email/password\", 400));\n    } //3)Issue the Token\n\n\n    createSendToken(student, 201, res, \"Login success !!\");\n  });\n\n  return function (_x3, _x4, _x5) {\n    return _ref2.apply(this, arguments);\n  };\n}());\nexports.protect = catchAsync( /*#__PURE__*/function () {\n  var _ref3 = _asyncToGenerator(function* (req, res, next) {\n    var token;\n\n    if (req.headers.authorization && req.headers.authorization.startsWith(\"Bearer\")) {\n      //console.log(req.headers.authorization, \"protect\");\n      token = req.headers.authorization.split(\" \")[1];\n    } //1) check the token\n\n\n    if (!token) {\n      return next(new AppErr(\"You must login first ..\", 403));\n    } //2)verification token\n\n\n    var decoded = yield promisify(jwt.verify)(token, process.env.SEC_STR); //3)check if the user still exist\n\n    var curStudent = yield Student.findById(decoded.id);\n\n    if (!curStudent) {\n      return next(new AppErr(\"Student have been deleted\", 404));\n    } //4)Check if the user change password after the token was issused\n\n\n    if (curStudent.changePasswordAfter(decoded.iat)) {\n      return next(new AppErr(\"Student recently changed  the password \", 400));\n    } //grant access\n\n\n    req.student = curStudent;\n    console.log(req.student);\n    next();\n  });\n\n  return function (_x6, _x7, _x8) {\n    return _ref3.apply(this, arguments);\n  };\n}());\nexports.passwordForget = catchAsync( /*#__PURE__*/function () {\n  var _ref4 = _asyncToGenerator(function* (req, res, next) {\n    //1)Get student based on student ID\n    var student = yield Student.findOne({\n      studentId: req.body.studentId\n    });\n    if (!student) return next(new AppErr(\"No such student found by this ID\", 404));\n    var resetToken = student.generateResetToken();\n    console.log(resetToken); //Logs the restToken\n    //2) saveing the reset Token to DB\n\n    yield student.save({\n      validateBeforeSave: false\n    });\n    var reset = \"\".concat(req.protocol, \"://\").concat(req.get(\"host\"), \"/api/v1/student/resetPassword/\").concat(resetToken);\n    var message = \"Forget Your password ? just click the following link  to  change it \".concat(reset, \".\\nif you remember ignore it\"); //3)Mail Sending function\n\n    try {\n      yield sendEmail({\n        studentId: student.studentId,\n        subject: \"your password reset link vaild for 10 min\",\n        message\n      });\n      res.status(200).json({\n        status: \"success\",\n        message: \"token sent to email\"\n      });\n    } catch (err) {\n      student.passwordResetToken = undefined;\n      student.passwordResetExpires = undefined;\n      yield student.save({\n        validateBeforeSave: false\n      });\n      return next(new AppErr(\"there was a error in mail\", 500));\n    }\n  });\n\n  return function (_x9, _x10, _x11) {\n    return _ref4.apply(this, arguments);\n  };\n}());\nexports.resetPassword = catchAsync( /*#__PURE__*/function () {\n  var _ref5 = _asyncToGenerator(function* (req, res, next) {\n    //1) encrypting the token\n    var hashedToken = crypto.createHash(\"sha256\").update(req.params.token).digest(\"hex\"); //2)finding the user relavent to the token\n\n    var student = yield Student.findOne({\n      passwordResetToken: hashedToken,\n      passwordResetExpires: {\n        $gt: Date.now()\n      }\n    }); //3) if token expired or user not found.\n\n    if (!student) {\n      return next(new AppErr(\"Token is invalid or expired\", 400));\n    } //4)update change at property for the user\n\n\n    console.log(req.body.password, req.body.passwordConfirm);\n    student.password = req.body.password;\n    student.passwordConfirm = req.body.passwordConfirm;\n    student.passwordResetExpires = undefined;\n    student.passwordResetToken = undefined;\n    student.passwordChangeAt = Date.now() - 1000;\n    yield student.save(); //5) log the student in ..\n\n    createSendToken(student, 200, res, \"Login success !!\");\n  });\n\n  return function (_x12, _x13, _x14) {\n    return _ref5.apply(this, arguments);\n  };\n}());\nexports.updatePassword = catchAsync( /*#__PURE__*/function () {\n  var _ref6 = _asyncToGenerator(function* (req, res, next) {\n    //1) Get the user from the collection\n    var student = yield Student.findById(req.student._id).select(\"+password\");\n    console.log(req.body.password, student.password); //2)Check if posted current password is correct\n\n    if (!(yield student.checkPassword(req.body.passwordCurrent, student.password))) {\n      return next(new AppErr(\"Your Current password is wrong\", 401));\n    } //3)if so, update password\n\n\n    student.password = req.body.password;\n    student.passwordConfrim = req.body.passwordConfrim;\n    console.log(\"sas\");\n    yield student.save();\n    createSendToken(student, 200, res, \"Password updated !!\");\n  });\n\n  return function (_x15, _x16, _x17) {\n    return _ref6.apply(this, arguments);\n  };\n}());//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9BUElzL0NvbnRyb2xsZXJzL2F1dGhDb250cm9sbGVyLmpzLmpzIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vLy4vQVBJcy9Db250cm9sbGVycy9hdXRoQ29udHJvbGxlci5qcz9iOGM4Il0sInNvdXJjZXNDb250ZW50IjpbImNvbnN0IFN0dWRlbnQgPSByZXF1aXJlKFwiLi4vTW9kZWwvU3R1ZGVudE1vZGVsXCIpO1xyXG5jb25zdCBqd3QgPSByZXF1aXJlKFwianNvbndlYnRva2VuXCIpO1xyXG5jb25zdCB7IHByb21pc2lmeSB9ID0gcmVxdWlyZShcInV0aWxcIik7XHJcbmNvbnN0IEFwcEVyciA9IHJlcXVpcmUoXCIuLi91dGlscy9hcHBFcnJvclwiKTtcclxuY29uc3QgY2F0Y2hBc3luYyA9IHJlcXVpcmUoXCIuLi91dGlscy9jYXRjaEVyclwiKTtcclxuY29uc3Qgc2VuZEVtYWlsID0gcmVxdWlyZShcIi4uL3V0aWxzL2VtYWlsXCIpO1xyXG5jb25zdCBjcnlwdG8gPSByZXF1aXJlKFwiY3J5cHRvXCIpO1xyXG5cclxuY29uc3Qgc2luZ2xlVG9rZW4gPSBpZCA9PiB7XHJcbiAgcmV0dXJuIGp3dC5zaWduKHsgaWQgfSwgcHJvY2Vzcy5lbnYuU0VDX1NUUiwge1xyXG4gICAgZXhwaXJlc0luOiBwcm9jZXNzLmVudi5USU1FX0RVUlxyXG4gIH0pO1xyXG59O1xyXG5cclxuY29uc3QgY3JlYXRlU2VuZFRva2VuID0gKHN0dWRlbnQsIHN0YXR1c0NvZGUsIHJlcywgc3RyKSA9PiB7XHJcbiAgY29uc3QgdG9rZW4gPSBzaW5nbGVUb2tlbihzdHVkZW50Ll9pZCk7XHJcbiAgY29uc3QgY29va2llT3B0aW9uID0ge1xyXG4gICAgZXhwaXJlczogbmV3IERhdGUoXHJcbiAgICAgIERhdGUubm93KCkgKyBwcm9jZXNzLmVudi5KV1RfQ09PS0lFX0VYUElSRVNfSU4gKiAyNCAqIDYwICogNjAgKiAxMDAwXHJcbiAgICApLFxyXG5cclxuICAgIGh0dHBPbmx5OiB0cnVlXHJcbiAgfTtcclxuXHJcbiAgaWYgKHByb2Nlc3MuZW52Lk5PREVfRU5WID09PSBcInByb2R1Y3Rpb25cIikgY29va2llT3B0aW9uLnNlY3VyZSA9IHRydWU7XHJcblxyXG4gIHJlcy5jb29raWUoXCJqd3RcIiwgdG9rZW4sIGNvb2tpZU9wdGlvbik7XHJcblxyXG4gIC8vcmVtb3ZlIHRoZSBwYXNzd29yZCBmcm9tIHRoZSBvdXRwdXRcclxuICBzdHVkZW50LnBhc3N3b3JkID0gdW5kZWZpbmVkO1xyXG5cclxuICByZXMuc3RhdHVzKHN0YXR1c0NvZGUpLmpzb24oe1xyXG4gICAgc3RhdHVzOiBzdHIsXHJcbiAgICB0b2tlbixcclxuICAgIGRhdGE6IHtcclxuICAgICAgc3R1ZGVudFxyXG4gICAgfVxyXG4gIH0pO1xyXG59O1xyXG5cclxuZXhwb3J0cy5zaWdudXAgPSBjYXRjaEFzeW5jKGFzeW5jIChyZXEsIHJlcykgPT4ge1xyXG4gIGNvbnN0IG5ld1N0dWRlbnQgPSBhd2FpdCBTdHVkZW50LmNyZWF0ZShyZXEuYm9keSk7XHJcblxyXG4gIGNyZWF0ZVNlbmRUb2tlbihuZXdTdHVkZW50LCAyMDEsIHJlcywgXCJzaWduIHVwIHN1Y2Nlc3MgISFcIik7XHJcbn0pO1xyXG5cclxuZXhwb3J0cy5sb2dpbiA9IGNhdGNoQXN5bmMoYXN5bmMgKHJlcSwgcmVzLCBuZXh0KSA9PiB7XHJcbiAgY29uc3QgeyBzdHVkZW50SWQsIHBhc3N3b3JkIH0gPSByZXEuYm9keTtcclxuXHJcbiAgLy8xKSBjaGVja2luZyB0aGUgdXNlciBhbmQgcGFzcyBpcyBwcm92aWVkIG9yIG5vdFxyXG4gIGlmICghc3R1ZGVudElkIHx8ICFwYXNzd29yZClcclxuICAgIHJldHVybiBuZXh0KG5ldyBBcHBFcnIoXCJFbnRlciB0aGUgRW1haWwvcGFzc3dvcmRcIiwgNDAwKSk7XHJcbiAgLy8yKSBjaGVja2luZyB0aGUgcGFzcyBmcm9tIERCXHJcbiAgY29uc3Qgc3R1ZGVudCA9IGF3YWl0IFN0dWRlbnQuZmluZE9uZSh7IHN0dWRlbnRJZCB9KS5zZWxlY3QoXCIrcGFzc3dvcmRcIik7XHJcblxyXG4gIGlmICghc3R1ZGVudCB8fCAhKGF3YWl0IHN0dWRlbnQuY2hlY2tQYXNzd29yZChwYXNzd29yZCwgc3R1ZGVudC5wYXNzd29yZCkpKSB7XHJcbiAgICByZXR1cm4gbmV4dChuZXcgQXBwRXJyKFwiSW5jb3JyZWN0IHRoZSBFbWFpbC9wYXNzd29yZFwiLCA0MDApKTtcclxuICB9XHJcblxyXG4gIC8vMylJc3N1ZSB0aGUgVG9rZW5cclxuICBjcmVhdGVTZW5kVG9rZW4oc3R1ZGVudCwgMjAxLCByZXMsIFwiTG9naW4gc3VjY2VzcyAhIVwiKTtcclxufSk7XHJcblxyXG5leHBvcnRzLnByb3RlY3QgPSBjYXRjaEFzeW5jKGFzeW5jIChyZXEsIHJlcywgbmV4dCkgPT4ge1xyXG4gIGxldCB0b2tlbjtcclxuXHJcbiAgaWYgKFxyXG4gICAgcmVxLmhlYWRlcnMuYXV0aG9yaXphdGlvbiAmJlxyXG4gICAgcmVxLmhlYWRlcnMuYXV0aG9yaXphdGlvbi5zdGFydHNXaXRoKFwiQmVhcmVyXCIpXHJcbiAgKSB7XHJcbiAgICAvL2NvbnNvbGUubG9nKHJlcS5oZWFkZXJzLmF1dGhvcml6YXRpb24sIFwicHJvdGVjdFwiKTtcclxuICAgIHRva2VuID0gcmVxLmhlYWRlcnMuYXV0aG9yaXphdGlvbi5zcGxpdChcIiBcIilbMV07XHJcbiAgfVxyXG5cclxuICAvLzEpIGNoZWNrIHRoZSB0b2tlblxyXG4gIGlmICghdG9rZW4pIHtcclxuICAgIHJldHVybiBuZXh0KG5ldyBBcHBFcnIoXCJZb3UgbXVzdCBsb2dpbiBmaXJzdCAuLlwiLCA0MDMpKTtcclxuICB9XHJcblxyXG4gIC8vMil2ZXJpZmljYXRpb24gdG9rZW5cclxuICBjb25zdCBkZWNvZGVkID0gYXdhaXQgcHJvbWlzaWZ5KGp3dC52ZXJpZnkpKHRva2VuLCBwcm9jZXNzLmVudi5TRUNfU1RSKTtcclxuXHJcbiAgLy8zKWNoZWNrIGlmIHRoZSB1c2VyIHN0aWxsIGV4aXN0XHJcbiAgY29uc3QgY3VyU3R1ZGVudCA9IGF3YWl0IFN0dWRlbnQuZmluZEJ5SWQoZGVjb2RlZC5pZCk7XHJcblxyXG4gIGlmICghY3VyU3R1ZGVudCkge1xyXG4gICAgcmV0dXJuIG5leHQobmV3IEFwcEVycihcIlN0dWRlbnQgaGF2ZSBiZWVuIGRlbGV0ZWRcIiwgNDA0KSk7XHJcbiAgfVxyXG5cclxuICAvLzQpQ2hlY2sgaWYgdGhlIHVzZXIgY2hhbmdlIHBhc3N3b3JkIGFmdGVyIHRoZSB0b2tlbiB3YXMgaXNzdXNlZFxyXG4gIGlmIChjdXJTdHVkZW50LmNoYW5nZVBhc3N3b3JkQWZ0ZXIoZGVjb2RlZC5pYXQpKSB7XHJcbiAgICByZXR1cm4gbmV4dChuZXcgQXBwRXJyKFwiU3R1ZGVudCByZWNlbnRseSBjaGFuZ2VkICB0aGUgcGFzc3dvcmQgXCIsIDQwMCkpO1xyXG4gIH1cclxuXHJcbiAgLy9ncmFudCBhY2Nlc3NcclxuICByZXEuc3R1ZGVudCA9IGN1clN0dWRlbnQ7XHJcbiAgY29uc29sZS5sb2cocmVxLnN0dWRlbnQpO1xyXG4gIG5leHQoKTtcclxufSk7XHJcblxyXG5leHBvcnRzLnBhc3N3b3JkRm9yZ2V0ID0gY2F0Y2hBc3luYyhhc3luYyAocmVxLCByZXMsIG5leHQpID0+IHtcclxuICAvLzEpR2V0IHN0dWRlbnQgYmFzZWQgb24gc3R1ZGVudCBJRFxyXG4gIGNvbnN0IHN0dWRlbnQgPSBhd2FpdCBTdHVkZW50LmZpbmRPbmUoeyBzdHVkZW50SWQ6IHJlcS5ib2R5LnN0dWRlbnRJZCB9KTtcclxuXHJcbiAgaWYgKCFzdHVkZW50KVxyXG4gICAgcmV0dXJuIG5leHQobmV3IEFwcEVycihcIk5vIHN1Y2ggc3R1ZGVudCBmb3VuZCBieSB0aGlzIElEXCIsIDQwNCkpO1xyXG5cclxuICBjb25zdCByZXNldFRva2VuID0gc3R1ZGVudC5nZW5lcmF0ZVJlc2V0VG9rZW4oKTtcclxuICBjb25zb2xlLmxvZyhyZXNldFRva2VuKTsgLy9Mb2dzIHRoZSByZXN0VG9rZW5cclxuICAvLzIpIHNhdmVpbmcgdGhlIHJlc2V0IFRva2VuIHRvIERCXHJcbiAgYXdhaXQgc3R1ZGVudC5zYXZlKHsgdmFsaWRhdGVCZWZvcmVTYXZlOiBmYWxzZSB9KTtcclxuXHJcbiAgY29uc3QgcmVzZXQgPSBgJHtyZXEucHJvdG9jb2x9Oi8vJHtyZXEuZ2V0KFxyXG4gICAgXCJob3N0XCJcclxuICApfS9hcGkvdjEvc3R1ZGVudC9yZXNldFBhc3N3b3JkLyR7cmVzZXRUb2tlbn1gO1xyXG5cclxuICBjb25zdCBtZXNzYWdlID0gYEZvcmdldCBZb3VyIHBhc3N3b3JkID8ganVzdCBjbGljayB0aGUgZm9sbG93aW5nIGxpbmsgIHRvICBjaGFuZ2UgaXQgJHtyZXNldH0uXFxuaWYgeW91IHJlbWVtYmVyIGlnbm9yZSBpdGA7XHJcblxyXG4gIC8vMylNYWlsIFNlbmRpbmcgZnVuY3Rpb25cclxuICB0cnkge1xyXG4gICAgYXdhaXQgc2VuZEVtYWlsKHtcclxuICAgICAgc3R1ZGVudElkOiBzdHVkZW50LnN0dWRlbnRJZCxcclxuICAgICAgc3ViamVjdDogXCJ5b3VyIHBhc3N3b3JkIHJlc2V0IGxpbmsgdmFpbGQgZm9yIDEwIG1pblwiLFxyXG4gICAgICBtZXNzYWdlXHJcbiAgICB9KTtcclxuXHJcbiAgICByZXMuc3RhdHVzKDIwMCkuanNvbih7XHJcbiAgICAgIHN0YXR1czogXCJzdWNjZXNzXCIsXHJcbiAgICAgIG1lc3NhZ2U6IFwidG9rZW4gc2VudCB0byBlbWFpbFwiXHJcbiAgICB9KTtcclxuICB9IGNhdGNoIChlcnIpIHtcclxuICAgIHN0dWRlbnQucGFzc3dvcmRSZXNldFRva2VuID0gdW5kZWZpbmVkO1xyXG4gICAgc3R1ZGVudC5wYXNzd29yZFJlc2V0RXhwaXJlcyA9IHVuZGVmaW5lZDtcclxuXHJcbiAgICBhd2FpdCBzdHVkZW50LnNhdmUoeyB2YWxpZGF0ZUJlZm9yZVNhdmU6IGZhbHNlIH0pO1xyXG5cclxuICAgIHJldHVybiBuZXh0KG5ldyBBcHBFcnIoXCJ0aGVyZSB3YXMgYSBlcnJvciBpbiBtYWlsXCIsIDUwMCkpO1xyXG4gIH1cclxufSk7XHJcblxyXG5leHBvcnRzLnJlc2V0UGFzc3dvcmQgPSBjYXRjaEFzeW5jKGFzeW5jIChyZXEsIHJlcywgbmV4dCkgPT4ge1xyXG4gIC8vMSkgZW5jcnlwdGluZyB0aGUgdG9rZW5cclxuICBjb25zdCBoYXNoZWRUb2tlbiA9IGNyeXB0b1xyXG4gICAgLmNyZWF0ZUhhc2goXCJzaGEyNTZcIilcclxuICAgIC51cGRhdGUocmVxLnBhcmFtcy50b2tlbilcclxuICAgIC5kaWdlc3QoXCJoZXhcIik7XHJcblxyXG4gIC8vMilmaW5kaW5nIHRoZSB1c2VyIHJlbGF2ZW50IHRvIHRoZSB0b2tlblxyXG4gIGNvbnN0IHN0dWRlbnQgPSBhd2FpdCBTdHVkZW50LmZpbmRPbmUoe1xyXG4gICAgcGFzc3dvcmRSZXNldFRva2VuOiBoYXNoZWRUb2tlbixcclxuICAgIHBhc3N3b3JkUmVzZXRFeHBpcmVzOiB7ICRndDogRGF0ZS5ub3coKSB9XHJcbiAgfSk7XHJcbiAgLy8zKSBpZiB0b2tlbiBleHBpcmVkIG9yIHVzZXIgbm90IGZvdW5kLlxyXG4gIGlmICghc3R1ZGVudCkge1xyXG4gICAgcmV0dXJuIG5leHQobmV3IEFwcEVycihcIlRva2VuIGlzIGludmFsaWQgb3IgZXhwaXJlZFwiLCA0MDApKTtcclxuICB9XHJcblxyXG4gIC8vNCl1cGRhdGUgY2hhbmdlIGF0IHByb3BlcnR5IGZvciB0aGUgdXNlclxyXG4gIGNvbnNvbGUubG9nKHJlcS5ib2R5LnBhc3N3b3JkLCByZXEuYm9keS5wYXNzd29yZENvbmZpcm0pO1xyXG4gIHN0dWRlbnQucGFzc3dvcmQgPSByZXEuYm9keS5wYXNzd29yZDtcclxuICBzdHVkZW50LnBhc3N3b3JkQ29uZmlybSA9IHJlcS5ib2R5LnBhc3N3b3JkQ29uZmlybTtcclxuICBzdHVkZW50LnBhc3N3b3JkUmVzZXRFeHBpcmVzID0gdW5kZWZpbmVkO1xyXG4gIHN0dWRlbnQucGFzc3dvcmRSZXNldFRva2VuID0gdW5kZWZpbmVkO1xyXG4gIHN0dWRlbnQucGFzc3dvcmRDaGFuZ2VBdCA9IERhdGUubm93KCkgLSAxMDAwO1xyXG4gIGF3YWl0IHN0dWRlbnQuc2F2ZSgpO1xyXG5cclxuICAvLzUpIGxvZyB0aGUgc3R1ZGVudCBpbiAuLlxyXG4gIGNyZWF0ZVNlbmRUb2tlbihzdHVkZW50LCAyMDAsIHJlcywgXCJMb2dpbiBzdWNjZXNzICEhXCIpO1xyXG59KTtcclxuXHJcbmV4cG9ydHMudXBkYXRlUGFzc3dvcmQgPSBjYXRjaEFzeW5jKGFzeW5jIChyZXEsIHJlcywgbmV4dCkgPT4ge1xyXG4gIC8vMSkgR2V0IHRoZSB1c2VyIGZyb20gdGhlIGNvbGxlY3Rpb25cclxuXHJcbiAgY29uc3Qgc3R1ZGVudCA9IGF3YWl0IFN0dWRlbnQuZmluZEJ5SWQocmVxLnN0dWRlbnQuX2lkKS5zZWxlY3QoXCIrcGFzc3dvcmRcIik7XHJcblxyXG4gIGNvbnNvbGUubG9nKHJlcS5ib2R5LnBhc3N3b3JkLCBzdHVkZW50LnBhc3N3b3JkKTtcclxuICAvLzIpQ2hlY2sgaWYgcG9zdGVkIGN1cnJlbnQgcGFzc3dvcmQgaXMgY29ycmVjdFxyXG4gIGlmIChcclxuICAgICEoYXdhaXQgc3R1ZGVudC5jaGVja1Bhc3N3b3JkKHJlcS5ib2R5LnBhc3N3b3JkQ3VycmVudCwgc3R1ZGVudC5wYXNzd29yZCkpXHJcbiAgKSB7XHJcbiAgICByZXR1cm4gbmV4dChuZXcgQXBwRXJyKFwiWW91ciBDdXJyZW50IHBhc3N3b3JkIGlzIHdyb25nXCIsIDQwMSkpO1xyXG4gIH1cclxuXHJcbiAgLy8zKWlmIHNvLCB1cGRhdGUgcGFzc3dvcmRcclxuICBzdHVkZW50LnBhc3N3b3JkID0gcmVxLmJvZHkucGFzc3dvcmQ7XHJcbiAgc3R1ZGVudC5wYXNzd29yZENvbmZyaW0gPSByZXEuYm9keS5wYXNzd29yZENvbmZyaW07XHJcbiAgY29uc29sZS5sb2coXCJzYXNcIik7XHJcbiAgYXdhaXQgc3R1ZGVudC5zYXZlKCk7XHJcblxyXG4gIGNyZWF0ZVNlbmRUb2tlbihzdHVkZW50LCAyMDAsIHJlcywgXCJQYXNzd29yZCB1cGRhdGVkICEhXCIpO1xyXG59KTtcclxuIl0sIm1hcHBpbmdzIjoiOzs7O0FBQUE7QUFDQTtBQUFBO0FBQ0E7QUFBQTtBQUFBO0FBQUE7QUFDQTtBQUFBO0FBQ0E7QUFBQTtBQUNBO0FBQUE7QUFDQTtBQUFBO0FBQ0E7QUFDQTtBQUNBO0FBQUE7QUFBQTtBQUNBO0FBREE7QUFHQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFJQTtBQUxBO0FBUUE7QUFFQTtBQUNBO0FBRUE7QUFFQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBREE7QUFIQTtBQU9BO0FBQ0E7QUFDQTtBQUFBO0FBQ0E7QUFFQTtBQUNBO0FBQ0E7QUFMQTtBQUFBO0FBQUE7QUFBQTtBQU1BO0FBQUE7QUFDQTtBQUFBO0FBQUE7QUFBQTtBQUNBO0FBRUE7QUFDQTtBQUVBO0FBQUE7QUFBQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQWhCQTtBQUFBO0FBQUE7QUFBQTtBQWlCQTtBQUFBO0FBQ0E7QUFDQTtBQUNBO0FBSUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBRUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQXBDQTtBQUFBO0FBQUE7QUFBQTtBQXFDQTtBQUFBO0FBQ0E7QUFDQTtBQUFBO0FBQUE7QUFFQTtBQUdBO0FBQ0E7QUFDQTtBQUNBO0FBQUE7QUFBQTtBQUFBO0FBRUE7QUFJQTtBQUNBO0FBRUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUhBO0FBTUE7QUFDQTtBQUNBO0FBRkE7QUFJQTtBQUNBO0FBQ0E7QUFFQTtBQUFBO0FBQUE7QUFFQTtBQUNBO0FBQ0E7QUFDQTtBQXZDQTtBQUFBO0FBQUE7QUFBQTtBQXdDQTtBQUFBO0FBQ0E7QUFDQTtBQUNBO0FBS0E7QUFDQTtBQUNBO0FBQUE7QUFBQTtBQUZBO0FBQ0E7QUFJQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUVBO0FBQ0E7QUFDQTtBQTdCQTtBQUFBO0FBQUE7QUFBQTtBQThCQTtBQUFBO0FBQ0E7QUFFQTtBQUVBO0FBQ0E7QUFDQTtBQUdBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFFQTtBQUNBO0FBQ0E7QUFyQkE7QUFBQTtBQUFBO0FBQUEiLCJzb3VyY2VSb290IjoiIn0=\n//# sourceURL=webpack-internal:///./APIs/Controllers/authController.js\n");
 
 /***/ }),
 
@@ -336,72 +115,7 @@ exports.updatePassword = catchAsync( /*#__PURE__*/function () {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
-
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
-
-var Student = __webpack_require__(/*! ../Model/StudentModel */ "./APIs/Model/StudentModel.js");
-
-var catchAsync = __webpack_require__(/*! ../utils/catchErr */ "./APIs/utils/catchErr.js");
-
-var knn = __webpack_require__(/*! ../../knn/knn */ "./knn/knn.js");
-
-var fs = __webpack_require__(/*! fs */ "fs");
-
-var path = __webpack_require__(/*! path */ "path");
-
-exports.post = catchAsync( /*#__PURE__*/function () {
-  var _ref = _asyncToGenerator(function* (req, res) {
-    var student = yield Student.findById(req.params.id);
-    console.log(req.body); // const body = {
-    //   ABC: "4",
-    //   D: "3",
-    //   C: "5",
-    //   AAC: "6",
-    //   A: "1",
-    //   V: "1",
-    //   ABC_T: "5",
-    //   D_T: "1",
-    //   C_T: "1",
-    //   AAC_T: "5",
-    //   A_T: "1"
-    // };
-
-    student.mlData = _objectSpread({}, student.mlData, {}, req.body);
-    yield student.save({
-      validateBeforeSave: false
-    });
-    res.status(200).json({
-      message: "Ml Data posted !",
-      data: {
-        student
-      }
-    });
-  });
-
-  return function (_x, _x2) {
-    return _ref.apply(this, arguments);
-  };
-}());
-exports.getData = catchAsync( /*#__PURE__*/function () {
-  var _ref2 = _asyncToGenerator(function* (req, res) {
-    var student = yield Student.findById(req.params.id);
-    var mlData = Object.values(student.mlData).slice(1);
-    console.log(mlData);
-    var learningStyle = knn.getType(mlData);
-    res.status(200).json(learningStyle);
-  });
-
-  return function (_x3, _x4) {
-    return _ref2.apply(this, arguments);
-  };
-}());
+eval("function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }\n\nfunction _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }\n\nfunction _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }\n\nfunction asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }\n\nfunction _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"next\", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"throw\", err); } _next(undefined); }); }; }\n\nvar Student = __webpack_require__(/*! ../Model/StudentModel */ \"./APIs/Model/StudentModel.js\");\n\nvar catchAsync = __webpack_require__(/*! ../utils/catchErr */ \"./APIs/utils/catchErr.js\");\n\nvar knn = __webpack_require__(/*! ../../knn/knn */ \"./knn/knn.js\");\n\nvar fs = __webpack_require__(/*! fs */ \"fs\");\n\nvar path = __webpack_require__(/*! path */ \"path\");\n\nexports.post = catchAsync( /*#__PURE__*/function () {\n  var _ref = _asyncToGenerator(function* (req, res) {\n    var student = yield Student.findById(req.params.id);\n    console.log(req.body); // const body = {\n    //   ABC: \"4\",\n    //   D: \"3\",\n    //   C: \"5\",\n    //   AAC: \"6\",\n    //   A: \"1\",\n    //   V: \"1\",\n    //   ABC_T: \"5\",\n    //   D_T: \"1\",\n    //   C_T: \"1\",\n    //   AAC_T: \"5\",\n    //   A_T: \"1\"\n    // };\n\n    student.mlData = _objectSpread({}, student.mlData, {}, req.body);\n    yield student.save({\n      validateBeforeSave: false\n    });\n    res.status(200).json({\n      message: \"Ml Data posted !\",\n      data: {\n        student\n      }\n    });\n  });\n\n  return function (_x, _x2) {\n    return _ref.apply(this, arguments);\n  };\n}());\nexports.getData = catchAsync( /*#__PURE__*/function () {\n  var _ref2 = _asyncToGenerator(function* (req, res) {\n    var student = yield Student.findById(req.params.id);\n    var mlData = Object.values(student.mlData).slice(1);\n    console.log(mlData);\n    var learningStyle = knn.getType(mlData);\n    res.status(200).json(learningStyle);\n  });\n\n  return function (_x3, _x4) {\n    return _ref2.apply(this, arguments);\n  };\n}());//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9BUElzL0NvbnRyb2xsZXJzL21sQ29udHJvbGxlcnMuanMuanMiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vLi9BUElzL0NvbnRyb2xsZXJzL21sQ29udHJvbGxlcnMuanM/YmVhMCJdLCJzb3VyY2VzQ29udGVudCI6WyJjb25zdCBTdHVkZW50ID0gcmVxdWlyZShcIi4uL01vZGVsL1N0dWRlbnRNb2RlbFwiKTtcclxuY29uc3QgY2F0Y2hBc3luYyA9IHJlcXVpcmUoXCIuLi91dGlscy9jYXRjaEVyclwiKTtcclxuY29uc3Qga25uID0gcmVxdWlyZShcIi4uLy4uL2tubi9rbm5cIik7XHJcbmNvbnN0IGZzID0gcmVxdWlyZShcImZzXCIpO1xyXG5jb25zdCBwYXRoID0gcmVxdWlyZShcInBhdGhcIik7XHJcblxyXG5leHBvcnRzLnBvc3QgPSBjYXRjaEFzeW5jKGFzeW5jIChyZXEsIHJlcykgPT4ge1xyXG4gIGNvbnN0IHN0dWRlbnQgPSBhd2FpdCBTdHVkZW50LmZpbmRCeUlkKHJlcS5wYXJhbXMuaWQpO1xyXG4gIGNvbnNvbGUubG9nKHJlcS5ib2R5KTtcclxuXHJcbiAgLy8gY29uc3QgYm9keSA9IHtcclxuICAvLyAgIEFCQzogXCI0XCIsXHJcbiAgLy8gICBEOiBcIjNcIixcclxuICAvLyAgIEM6IFwiNVwiLFxyXG4gIC8vICAgQUFDOiBcIjZcIixcclxuICAvLyAgIEE6IFwiMVwiLFxyXG4gIC8vICAgVjogXCIxXCIsXHJcbiAgLy8gICBBQkNfVDogXCI1XCIsXHJcbiAgLy8gICBEX1Q6IFwiMVwiLFxyXG4gIC8vICAgQ19UOiBcIjFcIixcclxuICAvLyAgIEFBQ19UOiBcIjVcIixcclxuICAvLyAgIEFfVDogXCIxXCJcclxuICAvLyB9O1xyXG5cclxuICBzdHVkZW50Lm1sRGF0YSA9IHtcclxuICAgIC4uLnN0dWRlbnQubWxEYXRhLFxyXG4gICAgLi4ucmVxLmJvZHlcclxuICB9O1xyXG5cclxuICBhd2FpdCBzdHVkZW50LnNhdmUoeyB2YWxpZGF0ZUJlZm9yZVNhdmU6IGZhbHNlIH0pO1xyXG4gIHJlcy5zdGF0dXMoMjAwKS5qc29uKHtcclxuICAgIG1lc3NhZ2U6IFwiTWwgRGF0YSBwb3N0ZWQgIVwiLFxyXG4gICAgZGF0YToge1xyXG4gICAgICBzdHVkZW50XHJcbiAgICB9XHJcbiAgfSk7XHJcbn0pO1xyXG5cclxuZXhwb3J0cy5nZXREYXRhID0gY2F0Y2hBc3luYyhhc3luYyAocmVxLCByZXMpID0+IHtcclxuICBjb25zdCBzdHVkZW50ID0gYXdhaXQgU3R1ZGVudC5maW5kQnlJZChyZXEucGFyYW1zLmlkKTtcclxuXHJcbiAgY29uc3QgbWxEYXRhID0gT2JqZWN0LnZhbHVlcyhzdHVkZW50Lm1sRGF0YSkuc2xpY2UoMSk7XHJcblxyXG4gIGNvbnNvbGUubG9nKG1sRGF0YSk7XHJcblxyXG4gIGxldCBsZWFybmluZ1N0eWxlID0ga25uLmdldFR5cGUobWxEYXRhKTtcclxuXHJcbiAgcmVzLnN0YXR1cygyMDApLmpzb24obGVhcm5pbmdTdHlsZSk7XHJcbn0pO1xyXG4iXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7QUFBQTtBQUNBO0FBQUE7QUFDQTtBQUFBO0FBQ0E7QUFBQTtBQUNBO0FBQUE7QUFDQTtBQUNBO0FBQUE7QUFDQTtBQUNBO0FBR0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUtBO0FBQUE7QUFBQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBREE7QUFGQTtBQU1BO0FBQ0E7QUEvQkE7QUFBQTtBQUFBO0FBQUE7QUFnQ0E7QUFBQTtBQUNBO0FBRUE7QUFFQTtBQUVBO0FBRUE7QUFDQTtBQUNBO0FBWEE7QUFBQTtBQUFBO0FBQUEiLCJzb3VyY2VSb290IjoiIn0=\n//# sourceURL=webpack-internal:///./APIs/Controllers/mlControllers.js\n");
 
 /***/ }),
 
@@ -412,27 +126,7 @@ exports.getData = catchAsync( /*#__PURE__*/function () {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
-
-var Student = __webpack_require__(/*! ../Model/StudentModel */ "./APIs/Model/StudentModel.js");
-
-exports.getAll = /*#__PURE__*/function () {
-  var _ref = _asyncToGenerator(function* (req, res) {
-    var allStudents = yield Student.find();
-    res.status(200).json({
-      message: "Success!",
-      data: {
-        allStudents
-      }
-    });
-  });
-
-  return function (_x, _x2) {
-    return _ref.apply(this, arguments);
-  };
-}();
+eval("function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }\n\nfunction _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"next\", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"throw\", err); } _next(undefined); }); }; }\n\nvar Student = __webpack_require__(/*! ../Model/StudentModel */ \"./APIs/Model/StudentModel.js\");\n\nexports.getAll = /*#__PURE__*/function () {\n  var _ref = _asyncToGenerator(function* (req, res) {\n    var allStudents = yield Student.find();\n    res.status(200).json({\n      message: \"Success!\",\n      data: {\n        allStudents\n      }\n    });\n  });\n\n  return function (_x, _x2) {\n    return _ref.apply(this, arguments);\n  };\n}();//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9BUElzL0NvbnRyb2xsZXJzL3N0dWRlbnRDb250cm9sbGVyLmpzLmpzIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vLy4vQVBJcy9Db250cm9sbGVycy9zdHVkZW50Q29udHJvbGxlci5qcz9kZjcwIl0sInNvdXJjZXNDb250ZW50IjpbImNvbnN0IFN0dWRlbnQgPSByZXF1aXJlKFwiLi4vTW9kZWwvU3R1ZGVudE1vZGVsXCIpO1xyXG5cclxuZXhwb3J0cy5nZXRBbGwgPSBhc3luYyAocmVxLCByZXMpID0+IHtcclxuICBjb25zdCBhbGxTdHVkZW50cyA9IGF3YWl0IFN0dWRlbnQuZmluZCgpO1xyXG5cclxuICByZXMuc3RhdHVzKDIwMCkuanNvbih7XHJcbiAgICBtZXNzYWdlOiBcIlN1Y2Nlc3MhXCIsXHJcbiAgICBkYXRhOiB7IGFsbFN0dWRlbnRzIH1cclxuICB9KTtcclxufTtcclxuIl0sIm1hcHBpbmdzIjoiOzs7O0FBQUE7QUFDQTtBQUNBO0FBQUE7QUFDQTtBQUVBO0FBQ0E7QUFDQTtBQUFBO0FBQUE7QUFGQTtBQUlBO0FBQ0E7QUFSQTtBQUFBO0FBQUE7QUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///./APIs/Controllers/studentController.js\n");
 
 /***/ }),
 
@@ -443,162 +137,7 @@ exports.getAll = /*#__PURE__*/function () {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
-
-var mongoose = __webpack_require__(/*! mongoose */ "mongoose");
-
-var validator = __webpack_require__(/*! validator */ "validator");
-
-var bcrypt = __webpack_require__(/*! bcrypt */ "bcrypt");
-
-var crypto = __webpack_require__(/*! crypto */ "crypto");
-
-var studentSchema = mongoose.Schema({
-  name: {
-    type: String
-  },
-  class: {
-    type: Number,
-    min: 5,
-    max: 9
-  },
-  studentId: {
-    type: String,
-    validate: [validator.isEmail, "Enter valid ID"],
-    lowercase: true,
-    unique: true,
-    required: [true, "say your student ID"]
-  },
-  photo: String,
-  password: {
-    type: String,
-    minlength: 6,
-    required: [true, "password"],
-    select: false
-  },
-  passwordConfrim: {
-    type: String,
-    required: [true, "Enter Confrim Password "],
-    validate: {
-      validator: function validator(el) {
-        return el === this.password;
-      },
-      message: "password not match !"
-    }
-  },
-  passwordChangeAt: Date,
-  passwordResetToken: String,
-  passwordResetExpires: Date,
-  active: {
-    type: Boolean,
-    default: true,
-    select: false
-  },
-  mlData: {
-    ABC: {
-      type: Number,
-      min: 0,
-      max: 9
-    },
-    D: {
-      type: Number,
-      min: 0,
-      max: 9
-    },
-    C: {
-      type: Number,
-      min: 0,
-      max: 9
-    },
-    AAC: {
-      type: Number,
-      min: 0,
-      max: 9
-    },
-    A: {
-      type: Number,
-      min: 0,
-      max: 9
-    },
-    V: {
-      type: Number,
-      min: 0,
-      max: 9
-    },
-    ABC_T: {
-      type: Number,
-      min: 0,
-      max: 9
-    },
-    D_T: {
-      type: Number,
-      min: 0,
-      max: 9
-    },
-    C_T: {
-      type: Number,
-      min: 0,
-      max: 9
-    },
-    AAC_T: {
-      type: Number,
-      min: 0,
-      max: 9
-    },
-    A_T: {
-      type: Number,
-      min: 0,
-      max: 9
-    }
-  }
-});
-studentSchema.pre("save", /*#__PURE__*/function () {
-  var _ref = _asyncToGenerator(function* (next) {
-    if (!this.isModified("password")) return next();
-    this.password = yield bcrypt.hash(this.password, 12);
-    this.passwordConfirm = undefined;
-    next();
-  });
-
-  return function (_x) {
-    return _ref.apply(this, arguments);
-  };
-}()); //method to check the password from the datebase
-
-studentSchema.methods.checkPassword = /*#__PURE__*/function () {
-  var _ref2 = _asyncToGenerator(function* (Enteredpassword, DBpassword) {
-    return yield bcrypt.compare(Enteredpassword, DBpassword);
-  });
-
-  return function (_x2, _x3) {
-    return _ref2.apply(this, arguments);
-  };
-}(); //method for protect middleware
-
-
-studentSchema.methods.changePasswordAfter = function (JWTtimestamp) {
-  if (this.passwordChangeAt) {
-    var changedTimeStamp = parseInt(this.passwordChangeAt.getTime() / 1000, 10);
-    return changedTimeStamp > JWTtimestamp;
-  }
-};
-
-studentSchema.methods.generateResetToken = function () {
-  //1)generate Random String
-  var resetToken = crypto.randomBytes(32).toString("hex"); //2)Encrypting the random String and saveing to DB
-
-  this.passwordResetToken = crypto.createHash("sha256").update(resetToken).digest("hex"); //3)Setting password resetToken expire time
-
-  this.passwordResetExpires = Date.now() + 600000; // 10 Mins
-  //4)Sending non encrpted token  to user
-
-  return resetToken;
-};
-
-var Student = mongoose.model("Student", studentSchema);
-module.exports = Student;
+eval("function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }\n\nfunction _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"next\", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"throw\", err); } _next(undefined); }); }; }\n\nvar mongoose = __webpack_require__(/*! mongoose */ \"mongoose\");\n\nvar validator = __webpack_require__(/*! validator */ \"validator\");\n\nvar bcrypt = __webpack_require__(/*! bcrypt */ \"bcrypt\");\n\nvar crypto = __webpack_require__(/*! crypto */ \"crypto\");\n\nvar studentSchema = mongoose.Schema({\n  name: {\n    type: String\n  },\n  class: {\n    type: Number,\n    min: 5,\n    max: 9\n  },\n  studentId: {\n    type: String,\n    validate: [validator.isEmail, \"Enter valid ID\"],\n    lowercase: true,\n    unique: true,\n    required: [true, \"say your student ID\"]\n  },\n  photo: String,\n  password: {\n    type: String,\n    minlength: 6,\n    required: [true, \"password\"],\n    select: false\n  },\n  passwordConfrim: {\n    type: String,\n    required: [true, \"Enter Confrim Password \"],\n    validate: {\n      validator: function validator(el) {\n        return el === this.password;\n      },\n      message: \"password not match !\"\n    }\n  },\n  passwordChangeAt: Date,\n  passwordResetToken: String,\n  passwordResetExpires: Date,\n  active: {\n    type: Boolean,\n    default: true,\n    select: false\n  },\n  mlData: {\n    ABC: {\n      type: Number,\n      min: 0,\n      max: 9\n    },\n    D: {\n      type: Number,\n      min: 0,\n      max: 9\n    },\n    C: {\n      type: Number,\n      min: 0,\n      max: 9\n    },\n    AAC: {\n      type: Number,\n      min: 0,\n      max: 9\n    },\n    A: {\n      type: Number,\n      min: 0,\n      max: 9\n    },\n    V: {\n      type: Number,\n      min: 0,\n      max: 9\n    },\n    ABC_T: {\n      type: Number,\n      min: 0,\n      max: 9\n    },\n    D_T: {\n      type: Number,\n      min: 0,\n      max: 9\n    },\n    C_T: {\n      type: Number,\n      min: 0,\n      max: 9\n    },\n    AAC_T: {\n      type: Number,\n      min: 0,\n      max: 9\n    },\n    A_T: {\n      type: Number,\n      min: 0,\n      max: 9\n    }\n  }\n});\nstudentSchema.pre(\"save\", /*#__PURE__*/function () {\n  var _ref = _asyncToGenerator(function* (next) {\n    if (!this.isModified(\"password\")) return next();\n    this.password = yield bcrypt.hash(this.password, 12);\n    this.passwordConfirm = undefined;\n    next();\n  });\n\n  return function (_x) {\n    return _ref.apply(this, arguments);\n  };\n}()); //method to check the password from the datebase\n\nstudentSchema.methods.checkPassword = /*#__PURE__*/function () {\n  var _ref2 = _asyncToGenerator(function* (Enteredpassword, DBpassword) {\n    return yield bcrypt.compare(Enteredpassword, DBpassword);\n  });\n\n  return function (_x2, _x3) {\n    return _ref2.apply(this, arguments);\n  };\n}(); //method for protect middleware\n\n\nstudentSchema.methods.changePasswordAfter = function (JWTtimestamp) {\n  if (this.passwordChangeAt) {\n    var changedTimeStamp = parseInt(this.passwordChangeAt.getTime() / 1000, 10);\n    return changedTimeStamp > JWTtimestamp;\n  }\n};\n\nstudentSchema.methods.generateResetToken = function () {\n  //1)generate Random String\n  var resetToken = crypto.randomBytes(32).toString(\"hex\"); //2)Encrypting the random String and saveing to DB\n\n  this.passwordResetToken = crypto.createHash(\"sha256\").update(resetToken).digest(\"hex\"); //3)Setting password resetToken expire time\n\n  this.passwordResetExpires = Date.now() + 600000; // 10 Mins\n  //4)Sending non encrpted token  to user\n\n  return resetToken;\n};\n\nvar Student = mongoose.model(\"Student\", studentSchema);\nmodule.exports = Student;//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9BUElzL01vZGVsL1N0dWRlbnRNb2RlbC5qcy5qcyIsInNvdXJjZXMiOlsid2VicGFjazovLy8uL0FQSXMvTW9kZWwvU3R1ZGVudE1vZGVsLmpzP2NkZjQiXSwic291cmNlc0NvbnRlbnQiOlsiY29uc3QgbW9uZ29vc2UgPSByZXF1aXJlKFwibW9uZ29vc2VcIik7XHJcbmNvbnN0IHZhbGlkYXRvciA9IHJlcXVpcmUoXCJ2YWxpZGF0b3JcIik7XHJcbmNvbnN0IGJjcnlwdCA9IHJlcXVpcmUoXCJiY3J5cHRcIik7XHJcbmNvbnN0IGNyeXB0byA9IHJlcXVpcmUoXCJjcnlwdG9cIik7XHJcblxyXG5jb25zdCBzdHVkZW50U2NoZW1hID0gbW9uZ29vc2UuU2NoZW1hKHtcclxuICBuYW1lOiB7XHJcbiAgICB0eXBlOiBTdHJpbmdcclxuICB9LFxyXG4gIGNsYXNzOiB7XHJcbiAgICB0eXBlOiBOdW1iZXIsXHJcbiAgICBtaW46IDUsXHJcbiAgICBtYXg6IDlcclxuICB9LFxyXG4gIHN0dWRlbnRJZDoge1xyXG4gICAgdHlwZTogU3RyaW5nLFxyXG4gICAgdmFsaWRhdGU6IFt2YWxpZGF0b3IuaXNFbWFpbCwgXCJFbnRlciB2YWxpZCBJRFwiXSxcclxuICAgIGxvd2VyY2FzZTogdHJ1ZSxcclxuICAgIHVuaXF1ZTogdHJ1ZSxcclxuICAgIHJlcXVpcmVkOiBbdHJ1ZSwgXCJzYXkgeW91ciBzdHVkZW50IElEXCJdXHJcbiAgfSxcclxuICBwaG90bzogU3RyaW5nLFxyXG4gIHBhc3N3b3JkOiB7XHJcbiAgICB0eXBlOiBTdHJpbmcsXHJcbiAgICBtaW5sZW5ndGg6IDYsXHJcbiAgICByZXF1aXJlZDogW3RydWUsIFwicGFzc3dvcmRcIl0sXHJcbiAgICBzZWxlY3Q6IGZhbHNlXHJcbiAgfSxcclxuICBwYXNzd29yZENvbmZyaW06IHtcclxuICAgIHR5cGU6IFN0cmluZyxcclxuICAgIHJlcXVpcmVkOiBbdHJ1ZSwgXCJFbnRlciBDb25mcmltIFBhc3N3b3JkIFwiXSxcclxuICAgIHZhbGlkYXRlOiB7XHJcbiAgICAgIHZhbGlkYXRvcjogZnVuY3Rpb24oZWwpIHtcclxuICAgICAgICByZXR1cm4gZWwgPT09IHRoaXMucGFzc3dvcmQ7XHJcbiAgICAgIH0sXHJcbiAgICAgIG1lc3NhZ2U6IFwicGFzc3dvcmQgbm90IG1hdGNoICFcIlxyXG4gICAgfVxyXG4gIH0sXHJcbiAgcGFzc3dvcmRDaGFuZ2VBdDogRGF0ZSxcclxuICBwYXNzd29yZFJlc2V0VG9rZW46IFN0cmluZyxcclxuICBwYXNzd29yZFJlc2V0RXhwaXJlczogRGF0ZSxcclxuICBhY3RpdmU6IHtcclxuICAgIHR5cGU6IEJvb2xlYW4sXHJcbiAgICBkZWZhdWx0OiB0cnVlLFxyXG4gICAgc2VsZWN0OiBmYWxzZVxyXG4gIH0sXHJcbiAgbWxEYXRhOiB7XHJcbiAgICBBQkM6IHtcclxuICAgICAgdHlwZTogTnVtYmVyLFxyXG4gICAgICBtaW46IDAsXHJcbiAgICAgIG1heDogOVxyXG4gICAgfSxcclxuICAgIEQ6IHtcclxuICAgICAgdHlwZTogTnVtYmVyLFxyXG4gICAgICBtaW46IDAsXHJcbiAgICAgIG1heDogOVxyXG4gICAgfSxcclxuICAgIEM6IHtcclxuICAgICAgdHlwZTogTnVtYmVyLFxyXG4gICAgICBtaW46IDAsXHJcbiAgICAgIG1heDogOVxyXG4gICAgfSxcclxuICAgIEFBQzoge1xyXG4gICAgICB0eXBlOiBOdW1iZXIsXHJcbiAgICAgIG1pbjogMCxcclxuICAgICAgbWF4OiA5XHJcbiAgICB9LFxyXG4gICAgQToge1xyXG4gICAgICB0eXBlOiBOdW1iZXIsXHJcbiAgICAgIG1pbjogMCxcclxuICAgICAgbWF4OiA5XHJcbiAgICB9LFxyXG4gICAgVjoge1xyXG4gICAgICB0eXBlOiBOdW1iZXIsXHJcbiAgICAgIG1pbjogMCxcclxuICAgICAgbWF4OiA5XHJcbiAgICB9LFxyXG4gICAgQUJDX1Q6IHtcclxuICAgICAgdHlwZTogTnVtYmVyLFxyXG4gICAgICBtaW46IDAsXHJcbiAgICAgIG1heDogOVxyXG4gICAgfSxcclxuICAgIERfVDoge1xyXG4gICAgICB0eXBlOiBOdW1iZXIsXHJcbiAgICAgIG1pbjogMCxcclxuICAgICAgbWF4OiA5XHJcbiAgICB9LFxyXG4gICAgQ19UOiB7XHJcbiAgICAgIHR5cGU6IE51bWJlcixcclxuICAgICAgbWluOiAwLFxyXG4gICAgICBtYXg6IDlcclxuICAgIH0sXHJcbiAgICBBQUNfVDoge1xyXG4gICAgICB0eXBlOiBOdW1iZXIsXHJcbiAgICAgIG1pbjogMCxcclxuICAgICAgbWF4OiA5XHJcbiAgICB9LFxyXG4gICAgQV9UOiB7XHJcbiAgICAgIHR5cGU6IE51bWJlcixcclxuICAgICAgbWluOiAwLFxyXG4gICAgICBtYXg6IDlcclxuICAgIH1cclxuICB9XHJcbn0pO1xyXG5cclxuc3R1ZGVudFNjaGVtYS5wcmUoXCJzYXZlXCIsIGFzeW5jIGZ1bmN0aW9uKG5leHQpIHtcclxuICBpZiAoIXRoaXMuaXNNb2RpZmllZChcInBhc3N3b3JkXCIpKSByZXR1cm4gbmV4dCgpO1xyXG4gIHRoaXMucGFzc3dvcmQgPSBhd2FpdCBiY3J5cHQuaGFzaCh0aGlzLnBhc3N3b3JkLCAxMik7XHJcbiAgdGhpcy5wYXNzd29yZENvbmZpcm0gPSB1bmRlZmluZWQ7XHJcbiAgbmV4dCgpO1xyXG59KTtcclxuXHJcbi8vbWV0aG9kIHRvIGNoZWNrIHRoZSBwYXNzd29yZCBmcm9tIHRoZSBkYXRlYmFzZVxyXG5zdHVkZW50U2NoZW1hLm1ldGhvZHMuY2hlY2tQYXNzd29yZCA9IGFzeW5jIGZ1bmN0aW9uKFxyXG4gIEVudGVyZWRwYXNzd29yZCxcclxuICBEQnBhc3N3b3JkXHJcbikge1xyXG4gIHJldHVybiBhd2FpdCBiY3J5cHQuY29tcGFyZShFbnRlcmVkcGFzc3dvcmQsIERCcGFzc3dvcmQpO1xyXG59O1xyXG5cclxuLy9tZXRob2QgZm9yIHByb3RlY3QgbWlkZGxld2FyZVxyXG5zdHVkZW50U2NoZW1hLm1ldGhvZHMuY2hhbmdlUGFzc3dvcmRBZnRlciA9IGZ1bmN0aW9uKEpXVHRpbWVzdGFtcCkge1xyXG4gIGlmICh0aGlzLnBhc3N3b3JkQ2hhbmdlQXQpIHtcclxuICAgIGNvbnN0IGNoYW5nZWRUaW1lU3RhbXAgPSBwYXJzZUludChcclxuICAgICAgdGhpcy5wYXNzd29yZENoYW5nZUF0LmdldFRpbWUoKSAvIDEwMDAsXHJcbiAgICAgIDEwXHJcbiAgICApO1xyXG4gICAgcmV0dXJuIGNoYW5nZWRUaW1lU3RhbXAgPiBKV1R0aW1lc3RhbXA7XHJcbiAgfVxyXG59O1xyXG5cclxuc3R1ZGVudFNjaGVtYS5tZXRob2RzLmdlbmVyYXRlUmVzZXRUb2tlbiA9IGZ1bmN0aW9uKCkge1xyXG4gIC8vMSlnZW5lcmF0ZSBSYW5kb20gU3RyaW5nXHJcbiAgY29uc3QgcmVzZXRUb2tlbiA9IGNyeXB0by5yYW5kb21CeXRlcygzMikudG9TdHJpbmcoXCJoZXhcIik7XHJcbiAgLy8yKUVuY3J5cHRpbmcgdGhlIHJhbmRvbSBTdHJpbmcgYW5kIHNhdmVpbmcgdG8gREJcclxuICB0aGlzLnBhc3N3b3JkUmVzZXRUb2tlbiA9IGNyeXB0b1xyXG4gICAgLmNyZWF0ZUhhc2goXCJzaGEyNTZcIilcclxuICAgIC51cGRhdGUocmVzZXRUb2tlbilcclxuICAgIC5kaWdlc3QoXCJoZXhcIik7XHJcbiAgLy8zKVNldHRpbmcgcGFzc3dvcmQgcmVzZXRUb2tlbiBleHBpcmUgdGltZVxyXG4gIHRoaXMucGFzc3dvcmRSZXNldEV4cGlyZXMgPSBEYXRlLm5vdygpICsgNjAwMDAwOyAvLyAxMCBNaW5zXHJcbiAgLy80KVNlbmRpbmcgbm9uIGVuY3JwdGVkIHRva2VuICB0byB1c2VyXHJcbiAgcmV0dXJuIHJlc2V0VG9rZW47XHJcbn07XHJcblxyXG5jb25zdCBTdHVkZW50ID0gbW9uZ29vc2UubW9kZWwoXCJTdHVkZW50XCIsIHN0dWRlbnRTY2hlbWEpO1xyXG5cclxubW9kdWxlLmV4cG9ydHMgPSBTdHVkZW50O1xyXG4iXSwibWFwcGluZ3MiOiI7Ozs7QUFBQTtBQUNBO0FBQUE7QUFDQTtBQUFBO0FBQ0E7QUFBQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBREE7QUFHQTtBQUNBO0FBQ0E7QUFDQTtBQUhBO0FBS0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBTEE7QUFPQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFKQTtBQU1BO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFKQTtBQUhBO0FBVUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFIQTtBQUtBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFIQTtBQUtBO0FBQ0E7QUFDQTtBQUNBO0FBSEE7QUFLQTtBQUNBO0FBQ0E7QUFDQTtBQUhBO0FBS0E7QUFDQTtBQUNBO0FBQ0E7QUFIQTtBQUtBO0FBQ0E7QUFDQTtBQUNBO0FBSEE7QUFLQTtBQUNBO0FBQ0E7QUFDQTtBQUhBO0FBS0E7QUFDQTtBQUNBO0FBQ0E7QUFIQTtBQUtBO0FBQ0E7QUFDQTtBQUNBO0FBSEE7QUFLQTtBQUNBO0FBQ0E7QUFDQTtBQUhBO0FBS0E7QUFDQTtBQUNBO0FBQ0E7QUFIQTtBQUtBO0FBQ0E7QUFDQTtBQUNBO0FBSEE7QUFuREE7QUF6Q0E7QUFvR0E7QUFBQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQU5BO0FBQUE7QUFBQTtBQUFBO0FBQ0E7QUFPQTtBQUFBO0FBSUE7QUFDQTtBQUNBO0FBTkE7QUFBQTtBQUFBO0FBQUE7QUFDQTtBQUNBO0FBTUE7QUFDQTtBQUNBO0FBSUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFJQTtBQUNBO0FBQ0E7QUFBQTtBQUNBO0FBQ0E7QUFDQTtBQUVBIiwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///./APIs/Model/StudentModel.js\n");
 
 /***/ }),
 
@@ -609,25 +148,7 @@ module.exports = Student;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var express = __webpack_require__(/*! express */ "express");
-
-var router = express.Router();
-
-var authController = __webpack_require__(/*! ../Controllers/authController */ "./APIs/Controllers/authController.js");
-
-var studentController = __webpack_require__(/*! ../Controllers/studentController */ "./APIs/Controllers/studentController.js");
-
-var mlController = __webpack_require__(/*! ../Controllers/mlControllers */ "./APIs/Controllers/mlControllers.js");
-
-router.route("/signup").post(authController.signup);
-router.route("/login").post(authController.login);
-router.route("/forgetPassword").post(authController.passwordForget);
-router.route("/resetPassword/:token").post(authController.resetPassword);
-router.route("/updatePassword").post(authController.protect, authController.updatePassword);
-router.route("/getAll").get(authController.protect, studentController.getAll);
-router.route("/ml/post/:id").patch(mlController.post);
-router.route("/ml/get/:id").get(mlController.getData);
-module.exports = router;
+eval("var express = __webpack_require__(/*! express */ \"express\");\n\nvar router = express.Router();\n\nvar authController = __webpack_require__(/*! ../Controllers/authController */ \"./APIs/Controllers/authController.js\");\n\nvar studentController = __webpack_require__(/*! ../Controllers/studentController */ \"./APIs/Controllers/studentController.js\");\n\nvar mlController = __webpack_require__(/*! ../Controllers/mlControllers */ \"./APIs/Controllers/mlControllers.js\");\n\nrouter.route(\"/signup\").post(authController.signup);\nrouter.route(\"/login\").post(authController.login);\nrouter.route(\"/forgetPassword\").post(authController.passwordForget);\nrouter.route(\"/resetPassword/:token\").post(authController.resetPassword);\nrouter.route(\"/updatePassword\").post(authController.protect, authController.updatePassword);\nrouter.route(\"/getAll\").get(authController.protect, studentController.getAll);\nrouter.route(\"/ml/post/:id\").patch(mlController.post);\nrouter.route(\"/ml/get/:id\").get(mlController.getData);\nmodule.exports = router;//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9BUElzL1JvdXRlcnMvc3R1ZGVudFJvdXRlci5qcy5qcyIsInNvdXJjZXMiOlsid2VicGFjazovLy8uL0FQSXMvUm91dGVycy9zdHVkZW50Um91dGVyLmpzP2ZhMjUiXSwic291cmNlc0NvbnRlbnQiOlsiY29uc3QgZXhwcmVzcyA9IHJlcXVpcmUoXCJleHByZXNzXCIpO1xyXG5jb25zdCByb3V0ZXIgPSBleHByZXNzLlJvdXRlcigpO1xyXG5jb25zdCBhdXRoQ29udHJvbGxlciA9IHJlcXVpcmUoXCIuLi9Db250cm9sbGVycy9hdXRoQ29udHJvbGxlclwiKTtcclxuY29uc3Qgc3R1ZGVudENvbnRyb2xsZXIgPSByZXF1aXJlKFwiLi4vQ29udHJvbGxlcnMvc3R1ZGVudENvbnRyb2xsZXJcIik7XHJcbmNvbnN0IG1sQ29udHJvbGxlciA9IHJlcXVpcmUoXCIuLi9Db250cm9sbGVycy9tbENvbnRyb2xsZXJzXCIpO1xyXG5cclxucm91dGVyLnJvdXRlKFwiL3NpZ251cFwiKS5wb3N0KGF1dGhDb250cm9sbGVyLnNpZ251cCk7XHJcbnJvdXRlci5yb3V0ZShcIi9sb2dpblwiKS5wb3N0KGF1dGhDb250cm9sbGVyLmxvZ2luKTtcclxucm91dGVyLnJvdXRlKFwiL2ZvcmdldFBhc3N3b3JkXCIpLnBvc3QoYXV0aENvbnRyb2xsZXIucGFzc3dvcmRGb3JnZXQpO1xyXG5yb3V0ZXIucm91dGUoXCIvcmVzZXRQYXNzd29yZC86dG9rZW5cIikucG9zdChhdXRoQ29udHJvbGxlci5yZXNldFBhc3N3b3JkKTtcclxucm91dGVyXHJcbiAgLnJvdXRlKFwiL3VwZGF0ZVBhc3N3b3JkXCIpXHJcbiAgLnBvc3QoYXV0aENvbnRyb2xsZXIucHJvdGVjdCwgYXV0aENvbnRyb2xsZXIudXBkYXRlUGFzc3dvcmQpO1xyXG5yb3V0ZXIucm91dGUoXCIvZ2V0QWxsXCIpLmdldChhdXRoQ29udHJvbGxlci5wcm90ZWN0LCBzdHVkZW50Q29udHJvbGxlci5nZXRBbGwpO1xyXG5cclxucm91dGVyLnJvdXRlKFwiL21sL3Bvc3QvOmlkXCIpLnBhdGNoKG1sQ29udHJvbGxlci5wb3N0KTtcclxucm91dGVyLnJvdXRlKFwiL21sL2dldC86aWRcIikuZ2V0KG1sQ29udHJvbGxlci5nZXREYXRhKTtcclxuXHJcbm1vZHVsZS5leHBvcnRzID0gcm91dGVyO1xyXG4iXSwibWFwcGluZ3MiOiJBQUFBO0FBQ0E7QUFBQTtBQUNBO0FBQUE7QUFDQTtBQUFBO0FBQ0E7QUFBQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUdBO0FBRUE7QUFDQTtBQUVBIiwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///./APIs/Routers/studentRouter.js\n");
 
 /***/ }),
 
@@ -638,18 +159,7 @@ module.exports = router;
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-class AppError extends Error {
-  constructor(message, statusCode) {
-    super(message);
-    this.statusCode = statusCode;
-    this.status = "".concat(statusCode).startsWith("4") ? "fail" : "error";
-    this.isOperational = true;
-    Error.captureStackTrace(this, this.constructor);
-  }
-
-}
-
-module.exports = AppError;
+eval("class AppError extends Error {\n  constructor(message, statusCode) {\n    super(message);\n    this.statusCode = statusCode;\n    this.status = \"\".concat(statusCode).startsWith(\"4\") ? \"fail\" : \"error\";\n    this.isOperational = true;\n    Error.captureStackTrace(this, this.constructor);\n  }\n\n}\n\nmodule.exports = AppError;//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9BUElzL3V0aWxzL2FwcEVycm9yLmpzLmpzIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vLy4vQVBJcy91dGlscy9hcHBFcnJvci5qcz9lZGQ3Il0sInNvdXJjZXNDb250ZW50IjpbImNsYXNzIEFwcEVycm9yIGV4dGVuZHMgRXJyb3Ige1xyXG4gIGNvbnN0cnVjdG9yKG1lc3NhZ2UsIHN0YXR1c0NvZGUpIHtcclxuICAgIHN1cGVyKG1lc3NhZ2UpO1xyXG5cclxuICAgIHRoaXMuc3RhdHVzQ29kZSA9IHN0YXR1c0NvZGU7XHJcbiAgICB0aGlzLnN0YXR1cyA9IGAke3N0YXR1c0NvZGV9YC5zdGFydHNXaXRoKFwiNFwiKSA/IFwiZmFpbFwiIDogXCJlcnJvclwiO1xyXG4gICAgdGhpcy5pc09wZXJhdGlvbmFsID0gdHJ1ZTtcclxuXHJcbiAgICBFcnJvci5jYXB0dXJlU3RhY2tUcmFjZSh0aGlzLCB0aGlzLmNvbnN0cnVjdG9yKTtcclxuICB9XHJcbn1cclxuXHJcbm1vZHVsZS5leHBvcnRzID0gQXBwRXJyb3I7XHJcbiJdLCJtYXBwaW5ncyI6IkFBQUE7QUFDQTtBQUNBO0FBRUE7QUFDQTtBQUNBO0FBRUE7QUFDQTtBQUNBO0FBVkE7QUFDQTtBQVdBIiwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///./APIs/utils/appError.js\n");
 
 /***/ }),
 
@@ -660,11 +170,7 @@ module.exports = AppError;
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = fn => {
-  return (req, res, next) => {
-    fn(req, res, next).catch(next);
-  };
-};
+eval("module.exports = fn => {\n  return (req, res, next) => {\n    fn(req, res, next).catch(next);\n  };\n};//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9BUElzL3V0aWxzL2NhdGNoRXJyLmpzLmpzIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vLy4vQVBJcy91dGlscy9jYXRjaEVyci5qcz85NDI0Il0sInNvdXJjZXNDb250ZW50IjpbIm1vZHVsZS5leHBvcnRzID0gZm4gPT4ge1xyXG4gIHJldHVybiAocmVxLCByZXMsIG5leHQpID0+IHtcclxuICAgIGZuKHJlcSwgcmVzLCBuZXh0KS5jYXRjaChuZXh0KTtcclxuICB9O1xyXG59O1xyXG4iXSwibWFwcGluZ3MiOiJBQUFBO0FBQ0E7QUFDQTtBQUNBO0FBQ0EiLCJzb3VyY2VSb290IjoiIn0=\n//# sourceURL=webpack-internal:///./APIs/utils/catchErr.js\n");
 
 /***/ }),
 
@@ -675,42 +181,7 @@ module.exports = fn => {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
-
-var nodemailer = __webpack_require__(/*! nodemailer */ "nodemailer");
-
-var sendEmail = /*#__PURE__*/function () {
-  var _ref = _asyncToGenerator(function* (option) {
-    console.log(option); //1) create a transfer
-
-    var transporter = nodemailer.createTransport({
-      host: process.env.MAIL_HOST,
-      port: process.env.MAIL_PORT,
-      auth: {
-        user: process.env.MAIL_USER,
-        pass: process.env.MAIL_PASS
-      } //Active in gmail
-
-    }); //2) Define the email option
-
-    var mailOption = {
-      from: "Siva prakash  <admin@chillstudies.com>",
-      to: option.studentId,
-      subject: option.subject,
-      text: option.message
-    }; //3)Actually send the email
-
-    yield transporter.sendMail(mailOption);
-  });
-
-  return function sendEmail(_x) {
-    return _ref.apply(this, arguments);
-  };
-}();
-
-module.exports = sendEmail;
+eval("function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }\n\nfunction _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"next\", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"throw\", err); } _next(undefined); }); }; }\n\nvar nodemailer = __webpack_require__(/*! nodemailer */ \"nodemailer\");\n\nvar sendEmail = /*#__PURE__*/function () {\n  var _ref = _asyncToGenerator(function* (option) {\n    console.log(option); //1) create a transfer\n\n    var transporter = nodemailer.createTransport({\n      host: process.env.MAIL_HOST,\n      port: process.env.MAIL_PORT,\n      auth: {\n        user: process.env.MAIL_USER,\n        pass: process.env.MAIL_PASS\n      } //Active in gmail\n\n    }); //2) Define the email option\n\n    var mailOption = {\n      from: \"Siva prakash  <admin@chillstudies.com>\",\n      to: option.studentId,\n      subject: option.subject,\n      text: option.message\n    }; //3)Actually send the email\n\n    yield transporter.sendMail(mailOption);\n  });\n\n  return function sendEmail(_x) {\n    return _ref.apply(this, arguments);\n  };\n}();\n\nmodule.exports = sendEmail;//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9BUElzL3V0aWxzL2VtYWlsLmpzLmpzIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vLy4vQVBJcy91dGlscy9lbWFpbC5qcz8wNzk0Il0sInNvdXJjZXNDb250ZW50IjpbImNvbnN0IG5vZGVtYWlsZXIgPSByZXF1aXJlKFwibm9kZW1haWxlclwiKTtcclxuXHJcbmNvbnN0IHNlbmRFbWFpbCA9IGFzeW5jIG9wdGlvbiA9PiB7XHJcbiAgY29uc29sZS5sb2cob3B0aW9uKTtcclxuICAvLzEpIGNyZWF0ZSBhIHRyYW5zZmVyXHJcbiAgY29uc3QgdHJhbnNwb3J0ZXIgPSBub2RlbWFpbGVyLmNyZWF0ZVRyYW5zcG9ydCh7XHJcbiAgICBob3N0OiBwcm9jZXNzLmVudi5NQUlMX0hPU1QsXHJcbiAgICBwb3J0OiBwcm9jZXNzLmVudi5NQUlMX1BPUlQsXHJcbiAgICBhdXRoOiB7XHJcbiAgICAgIHVzZXI6IHByb2Nlc3MuZW52Lk1BSUxfVVNFUixcclxuICAgICAgcGFzczogcHJvY2Vzcy5lbnYuTUFJTF9QQVNTXHJcbiAgICB9XHJcbiAgICAvL0FjdGl2ZSBpbiBnbWFpbFxyXG4gIH0pO1xyXG5cclxuICAvLzIpIERlZmluZSB0aGUgZW1haWwgb3B0aW9uXHJcbiAgY29uc3QgbWFpbE9wdGlvbiA9IHtcclxuICAgIGZyb206IFwiU2l2YSBwcmFrYXNoICA8YWRtaW5AY2hpbGxzdHVkaWVzLmNvbT5cIixcclxuICAgIHRvOiBvcHRpb24uc3R1ZGVudElkLFxyXG4gICAgc3ViamVjdDogb3B0aW9uLnN1YmplY3QsXHJcbiAgICB0ZXh0OiBvcHRpb24ubWVzc2FnZVxyXG4gIH07XHJcblxyXG4gIC8vMylBY3R1YWxseSBzZW5kIHRoZSBlbWFpbFxyXG5cclxuICBhd2FpdCB0cmFuc3BvcnRlci5zZW5kTWFpbChtYWlsT3B0aW9uKTtcclxufTtcclxuXHJcbm1vZHVsZS5leHBvcnRzID0gc2VuZEVtYWlsO1xyXG4iXSwibWFwcGluZ3MiOiI7Ozs7QUFBQTtBQUNBO0FBQ0E7QUFBQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFGQTtBQUNBO0FBSkE7QUFDQTtBQVVBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFKQTtBQUNBO0FBUUE7QUFDQTtBQUNBO0FBekJBO0FBQUE7QUFBQTtBQUFBO0FBQ0E7QUF5QkEiLCJzb3VyY2VSb290IjoiIn0=\n//# sourceURL=webpack-internal:///./APIs/utils/email.js\n");
 
 /***/ }),
 
@@ -722,61 +193,7 @@ module.exports = sendEmail;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var express__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! express */ "express");
-/* harmony import */ var express__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(express__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _material_ui_core_styles__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core/styles */ "@material-ui/core/styles");
-/* harmony import */ var _material_ui_core_styles__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_styles__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var react_dom_server__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react-dom/server */ "react-dom/server");
-/* harmony import */ var react_dom_server__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(react_dom_server__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _Shared_Components_App__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../Shared/Components/App */ "./React/Shared/Components/App.js");
-/* harmony import */ var _material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @material-ui/core/CssBaseline */ "@material-ui/core/CssBaseline");
-/* harmony import */ var _material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_5__);
-/* harmony import */ var _Shared_Components_theme__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../Shared/Components/theme */ "./React/Shared/Components/theme.js");
-/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! react-router-dom */ "react-router-dom");
-/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(react_router_dom__WEBPACK_IMPORTED_MODULE_7__);
-/* harmony import */ var serialize_javascript__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! serialize-javascript */ "serialize-javascript");
-/* harmony import */ var serialize_javascript__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(serialize_javascript__WEBPACK_IMPORTED_MODULE_8__);
-/* harmony import */ var _Shared_Data_routes__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../Shared/Data/routes */ "./React/Shared/Data/routes.js");
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
-
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-
-
-
-
-
-
-
-
-
-
-var router = express__WEBPACK_IMPORTED_MODULE_0___default.a.Router();
-router.use(express__WEBPACK_IMPORTED_MODULE_0___default.a.static('dist'));
-router.route('*').get((req, res, next) => {
-  var sheets = new _material_ui_core_styles__WEBPACK_IMPORTED_MODULE_1__["ServerStyleSheets"]();
-  var activeRoute = _Shared_Data_routes__WEBPACK_IMPORTED_MODULE_9__["default"].find(route => Object(react_router_dom__WEBPACK_IMPORTED_MODULE_7__["matchPath"])(req.url, route));
-
-  var context = _objectSpread({}, activeRoute);
-
-  var markup = Object(react_dom_server__WEBPACK_IMPORTED_MODULE_3__["renderToString"])(sheets.collect(react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_7__["StaticRouter"], {
-    context: context,
-    location: req.url
-  }, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_material_ui_core_styles__WEBPACK_IMPORTED_MODULE_1__["ThemeProvider"], {
-    theme: _Shared_Components_theme__WEBPACK_IMPORTED_MODULE_6__["default"]
-  }, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_5___default.a, null), react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_Shared_Components_App__WEBPACK_IMPORTED_MODULE_4__["default"], null)))));
-  var css = sheets.toString();
-  res.writeHead(200, {
-    'Content-Type': 'text/html'
-  });
-  res.end("<!DOCTYPE html>\n      <html lang='en'>\n        <head>\n          <title>ChillStudies</title>\n          <style id='jss-server-side'>".concat(css, "</style>\n          <meta name='viewport' content='minimum-scale=1, initial-scale=1, width=device-width' />\n          <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap' />\n          <script>window.__initialData__ = ").concat(serialize_javascript__WEBPACK_IMPORTED_MODULE_8___default()(JSON.stringify(activeRoute)), "</script>\n        </head>\n        <body>\n          <div id='root'>").concat(markup, "</div>\n          <script src=\"/client.js\" async></script>\n        </body>\n      </html>\n    ")).catch(next);
-});
-/* harmony default export */ __webpack_exports__["default"] = (router);
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var express__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! express */ \"express\");\n/* harmony import */ var express__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(express__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var _material_ui_core_styles__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core/styles */ \"@material-ui/core/styles\");\n/* harmony import */ var _material_ui_core_styles__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_styles__WEBPACK_IMPORTED_MODULE_1__);\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ \"react\");\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);\n/* harmony import */ var react_dom_server__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react-dom/server */ \"react-dom/server\");\n/* harmony import */ var react_dom_server__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(react_dom_server__WEBPACK_IMPORTED_MODULE_3__);\n/* harmony import */ var _Shared_Components_App__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../Shared/Components/App */ \"./React/Shared/Components/App.js\");\n/* harmony import */ var _material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @material-ui/core/CssBaseline */ \"@material-ui/core/CssBaseline\");\n/* harmony import */ var _material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_5__);\n/* harmony import */ var _Shared_Components_theme__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../Shared/Components/theme */ \"./React/Shared/Components/theme.js\");\n/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! react-router-dom */ \"react-router-dom\");\n/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(react_router_dom__WEBPACK_IMPORTED_MODULE_7__);\n/* harmony import */ var serialize_javascript__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! serialize-javascript */ \"serialize-javascript\");\n/* harmony import */ var serialize_javascript__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(serialize_javascript__WEBPACK_IMPORTED_MODULE_8__);\n/* harmony import */ var _Shared_Data_routes__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../Shared/Data/routes */ \"./React/Shared/Data/routes.js\");\nfunction ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }\n\nfunction _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }\n\nfunction _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }\n\n\n\n\n\n\n\n\n\n\n\nvar router = express__WEBPACK_IMPORTED_MODULE_0___default.a.Router();\nrouter.use(express__WEBPACK_IMPORTED_MODULE_0___default.a.static('dist'));\nrouter.route('*').get((req, res, next) => {\n  var sheets = new _material_ui_core_styles__WEBPACK_IMPORTED_MODULE_1__[\"ServerStyleSheets\"]();\n  var activeRoute = _Shared_Data_routes__WEBPACK_IMPORTED_MODULE_9__[\"default\"].find(route => Object(react_router_dom__WEBPACK_IMPORTED_MODULE_7__[\"matchPath\"])(req.url, route));\n\n  var context = _objectSpread({}, activeRoute);\n\n  var markup = Object(react_dom_server__WEBPACK_IMPORTED_MODULE_3__[\"renderToString\"])(sheets.collect(react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_7__[\"StaticRouter\"], {\n    context: context,\n    location: req.url\n  }, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_material_ui_core_styles__WEBPACK_IMPORTED_MODULE_1__[\"ThemeProvider\"], {\n    theme: _Shared_Components_theme__WEBPACK_IMPORTED_MODULE_6__[\"default\"]\n  }, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_5___default.a, null), react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_Shared_Components_App__WEBPACK_IMPORTED_MODULE_4__[\"default\"], null)))));\n  var css = sheets.toString();\n  res.writeHead(200, {\n    'Content-Type': 'text/html'\n  });\n  res.end(\"<!DOCTYPE html>\\n      <html lang='en'>\\n        <head>\\n          <title>ChillStudies</title>\\n          <style id='jss-server-side'>\".concat(css, \"</style>\\n          <meta name='viewport' content='minimum-scale=1, initial-scale=1, width=device-width' />\\n          <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap' />\\n          <script>window.__initialData__ = \").concat(serialize_javascript__WEBPACK_IMPORTED_MODULE_8___default()(JSON.stringify(activeRoute)), \"</script>\\n        </head>\\n        <body>\\n          <div id='root'>\").concat(markup, \"</div>\\n          <script src=\\\"/client.js\\\" async></script>\\n        </body>\\n      </html>\\n    \")).catch(next);\n});\n/* harmony default export */ __webpack_exports__[\"default\"] = (router);//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TZXJ2ZXIvaW5kZXguanMuanMiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vLi9SZWFjdC9TZXJ2ZXIvaW5kZXguanM/Njc4MCJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgZXhwcmVzcyBmcm9tICdleHByZXNzJ1xyXG5pbXBvcnQgeyBTZXJ2ZXJTdHlsZVNoZWV0cywgVGhlbWVQcm92aWRlciB9IGZyb20gJ0BtYXRlcmlhbC11aS9jb3JlL3N0eWxlcydcclxuaW1wb3J0IFJlYWN0IGZyb20gJ3JlYWN0J1xyXG5pbXBvcnQge3JlbmRlclRvU3RyaW5nIH0gZnJvbSAncmVhY3QtZG9tL3NlcnZlcidcclxuaW1wb3J0IEFwcCBmcm9tICcuLi9TaGFyZWQvQ29tcG9uZW50cy9BcHAnXHJcbmltcG9ydCBDc3NCYXNlbGluZSBmcm9tICdAbWF0ZXJpYWwtdWkvY29yZS9Dc3NCYXNlbGluZSc7XHJcbmltcG9ydCB0aGVtZSBmcm9tICcuLi9TaGFyZWQvQ29tcG9uZW50cy90aGVtZSdcclxuaW1wb3J0IHsgU3RhdGljUm91dGVyLCBtYXRjaFBhdGggfSBmcm9tICdyZWFjdC1yb3V0ZXItZG9tJztcclxuaW1wb3J0IHNlcmlhbGl6ZSBmcm9tIFwic2VyaWFsaXplLWphdmFzY3JpcHRcIjtcclxuaW1wb3J0IHJvdXRlcyBmcm9tICcuLi9TaGFyZWQvRGF0YS9yb3V0ZXMnXHJcblxyXG5jb25zdCByb3V0ZXIgPWV4cHJlc3MuUm91dGVyKClcclxuXHJcbnJvdXRlci51c2UoZXhwcmVzcy5zdGF0aWMoJ2Rpc3QnKSlcclxuXHJcbnJvdXRlci5yb3V0ZSgnKicpLmdldCgocmVxLCByZXMsIG5leHQpID0+IHtcclxuXHJcbiAgICBjb25zdCBzaGVldHMgPSBuZXcgU2VydmVyU3R5bGVTaGVldHMoKVxyXG5cclxuICAgIGNvbnN0IGFjdGl2ZVJvdXRlID0gcm91dGVzLmZpbmQocm91dGUgPT4gbWF0Y2hQYXRoKHJlcS51cmwsIHJvdXRlKSk7XHJcbiAgXHJcbiAgICBjb25zdCBjb250ZXh0ID0geyAuLi5hY3RpdmVSb3V0ZSB9O1xyXG4gIFxyXG4gICAgY29uc3QgbWFya3VwID0gcmVuZGVyVG9TdHJpbmcoICBcclxuICAgICAgc2hlZXRzLmNvbGxlY3QoXHJcbiAgICAgICAgICA8U3RhdGljUm91dGVyIGNvbnRleHQ9eyBjb250ZXh0IH0gbG9jYXRpb249eyByZXEudXJsIH0+XHJcbiAgICAgICAgICAgIDxUaGVtZVByb3ZpZGVyIHRoZW1lPXt0aGVtZX0+XHJcbiAgICAgICAgICAgICAgPENzc0Jhc2VsaW5lIC8+XHJcbiAgICAgICAgICAgICAgICA8QXBwLz5cclxuICAgICAgICAgICAgPC9UaGVtZVByb3ZpZGVyPlxyXG4gICAgICAgICAgPC9TdGF0aWNSb3V0ZXI+IFxyXG4gICAgICApXHJcbiAgICApXHJcbiAgXHJcbiAgICBjb25zdCBjc3MgID0gc2hlZXRzLnRvU3RyaW5nKClcclxuICBcclxuICAgIHJlcy53cml0ZUhlYWQoIDIwMCwgeyAnQ29udGVudC1UeXBlJzogJ3RleHQvaHRtbCcgfSApO1xyXG4gICAgcmVzLmVuZChcclxuICAgICAgYDwhRE9DVFlQRSBodG1sPlxyXG4gICAgICA8aHRtbCBsYW5nPSdlbic+XHJcbiAgICAgICAgPGhlYWQ+XHJcbiAgICAgICAgICA8dGl0bGU+Q2hpbGxTdHVkaWVzPC90aXRsZT5cclxuICAgICAgICAgIDxzdHlsZSBpZD0nanNzLXNlcnZlci1zaWRlJz4ke2Nzc308L3N0eWxlPlxyXG4gICAgICAgICAgPG1ldGEgbmFtZT0ndmlld3BvcnQnIGNvbnRlbnQ9J21pbmltdW0tc2NhbGU9MSwgaW5pdGlhbC1zY2FsZT0xLCB3aWR0aD1kZXZpY2Utd2lkdGgnIC8+XHJcbiAgICAgICAgICA8bGluayByZWw9J3N0eWxlc2hlZXQnIGhyZWY9J2h0dHBzOi8vZm9udHMuZ29vZ2xlYXBpcy5jb20vY3NzP2ZhbWlseT1Sb2JvdG86MzAwLDQwMCw1MDAsNzAwJmRpc3BsYXk9c3dhcCcgLz5cclxuICAgICAgICAgIDxzY3JpcHQ+d2luZG93Ll9faW5pdGlhbERhdGFfXyA9ICR7c2VyaWFsaXplKEpTT04uc3RyaW5naWZ5KGFjdGl2ZVJvdXRlKSl9PC9zY3JpcHQ+XHJcbiAgICAgICAgPC9oZWFkPlxyXG4gICAgICAgIDxib2R5PlxyXG4gICAgICAgICAgPGRpdiBpZD0ncm9vdCc+JHttYXJrdXB9PC9kaXY+XHJcbiAgICAgICAgICA8c2NyaXB0IHNyYz1cIi9jbGllbnQuanNcIiBhc3luYz48L3NjcmlwdD5cclxuICAgICAgICA8L2JvZHk+XHJcbiAgICAgIDwvaHRtbD5cclxuICAgIGApLmNhdGNoKG5leHQpXHJcbiAgfSlcclxuXHJcbmV4cG9ydCBkZWZhdWx0IHJvdXRlciJdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0FBQUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFFQTtBQUVBO0FBRUE7QUFFQTtBQUVBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFFQTtBQUFBO0FBQUE7QUFDQTtBQUFBO0FBUUE7QUFFQTtBQUFBO0FBQUE7QUFDQTtBQWdCQTtBQUVBIiwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///./React/Server/index.js\n");
 
 /***/ }),
 
@@ -788,28 +205,7 @@ router.route('*').get((req, res, next) => {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-router-dom */ "react-router-dom");
-/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react_router_dom__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _Data_routes__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../Data/routes */ "./React/Shared/Data/routes.js");
-function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
-
-
-
-
-
-class App extends react__WEBPACK_IMPORTED_MODULE_0___default.a.Component {
-  render() {
-    return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Switch"], null, _Data_routes__WEBPACK_IMPORTED_MODULE_2__["default"].map((route, i) => react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Route"], _extends({
-      key: i + 1
-    }, route)))));
-  }
-
-}
-
-/* harmony default export */ __webpack_exports__["default"] = (App);
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ \"react\");\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-router-dom */ \"react-router-dom\");\n/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react_router_dom__WEBPACK_IMPORTED_MODULE_1__);\n/* harmony import */ var _Data_routes__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../Data/routes */ \"./React/Shared/Data/routes.js\");\nfunction _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }\n\n\n\n\n\nclass App extends react__WEBPACK_IMPORTED_MODULE_0___default.a.Component {\n  render() {\n    return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(\"div\", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__[\"Switch\"], null, _Data_routes__WEBPACK_IMPORTED_MODULE_2__[\"default\"].map((route, i) => react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__[\"Route\"], _extends({\n      key: i + 1\n    }, route)))));\n  }\n\n}\n\n/* harmony default export */ __webpack_exports__[\"default\"] = (App);//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9BcHAuanMuanMiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9BcHAuanM/OTQzOCJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgUmVhY3QgZnJvbSAncmVhY3QnXHJcbmltcG9ydCB7IFN3aXRjaCwgUm91dGUgfSBmcm9tICdyZWFjdC1yb3V0ZXItZG9tJ1xyXG5pbXBvcnQgcm91dGVzIGZyb20gJy4uL0RhdGEvcm91dGVzJ1xyXG5cclxuY2xhc3MgQXBwIGV4dGVuZHMgUmVhY3QuQ29tcG9uZW50IHtcclxuICAgIHJlbmRlciAoKSB7XHJcbiAgICAgICAgcmV0dXJuKFxyXG4gICAgICAgICAgICA8ZGl2PlxyXG4gICAgICAgICAgICAgICAgPFN3aXRjaD5cclxuICAgICAgICAgICAgICAgICAgICB7cm91dGVzLm1hcCgocm91dGUsIGkpID0+IDxSb3V0ZSBrZXk9e2krMX0gey4uLnJvdXRlfSAvPil9XHJcbiAgICAgICAgICAgICAgICA8L1N3aXRjaD4gICAgICAgICAgICAgICAgXHJcbiAgICAgICAgICAgIDwvZGl2PlxyXG4gICAgICAgIClcclxuICAgIH1cclxufVxyXG5cclxuZXhwb3J0IGRlZmF1bHQgQXBwIl0sIm1hcHBpbmdzIjoiOzs7Ozs7OztBQUFBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBR0E7QUFBQTtBQUlBO0FBQ0E7QUFWQTtBQUNBO0FBV0EiLCJzb3VyY2VSb290IjoiIn0=\n//# sourceURL=webpack-internal:///./React/Shared/Components/App.js\n");
 
 /***/ }),
 
@@ -821,152 +217,7 @@ class App extends react__WEBPACK_IMPORTED_MODULE_0___default.a.Component {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Activity; });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _Data_courses__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../Data/courses */ "./React/Shared/Data/courses.js");
-/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @material-ui/core */ "@material-ui/core");
-/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @material-ui/icons/ArrowForwardIosRounded */ "@material-ui/icons/ArrowForwardIosRounded");
-/* harmony import */ var _material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! axios */ "axios");
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_4__);
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
-
-
-
-
-
-
-var useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["makeStyles"])(theme => ({
-  icon: {
-    marginRight: theme.spacing(2)
-  },
-  handleButton: {
-    margin: theme.spacing(4),
-    float: 'right'
-  },
-  link: {
-    textDecoration: 'none'
-  },
-  heroContent: {
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(8, 0, 6)
-  },
-  heroButtons: {
-    margin: theme.spacing(4)
-  },
-  cardGrid: {
-    paddingTop: theme.spacing(8),
-    paddingBottom: theme.spacing(8)
-  },
-  card: {
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column'
-  },
-  cardMedia: {
-    paddingTop: '56.25%' // 16:9
-
-  },
-  cardContent: {
-    flexGrow: 1
-  },
-  footer: {
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(6)
-  }
-}));
-
-var handleSubmit = /*#__PURE__*/function () {
-  var _ref = _asyncToGenerator(function* (e, props, startTime) {
-    e.preventDefault();
-    var q1 = document.getElementById('q1').value.toLowerCase(),
-        q2 = document.getElementById('q2').value.toLowerCase(),
-        q3 = document.getElementById('q3').value.toLowerCase(),
-        q4 = document.getElementById('q4').value.toLowerCase(),
-        q5 = document.getElementById('q5').value.toLowerCase();
-    var score = 0;
-    if (q1.includes('java virtual machine')) score++;
-    if (q2.includes('import')) score++;
-    if (q3.includes('3')) score++;
-    if (q4.includes('java runtime environment')) score++;
-    if (q5.includes('java development kit')) score++;
-    score *= 2;
-    var time = Math.round((Date.now() - startTime) / 1000 / 60);
-    time = time >= 9 ? 9 : time;
-    var authToken = sessionStorage.getItem('auth');
-
-    try {
-      var res = yield axios__WEBPACK_IMPORTED_MODULE_4___default.a.patch('http://127.0.0.1:8000/api/v1/student/ml/post/' + authToken, {
-        "A": score,
-        "A_T": time
-      });
-
-      if (res.status === 200) {
-        console.log('Successfully Pushed Activity Data');
-      } else {
-        alert("Problem While Pushing");
-      }
-    } catch (err) {
-      alert(err);
-    }
-
-    console.log("score" + score);
-    console.log("time" + time);
-    props.history.push('/course/' + props.match.params.course + '/Content');
-  });
-
-  return function handleSubmit(_x, _x2, _x3) {
-    return _ref.apply(this, arguments);
-  };
-}();
-
-function Activity(props) {
-  var classes = useStyles();
-  var startTime = Date.now();
-  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("form", {
-    autoComplete: "off",
-    noValidate: true
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["List"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "subtitle1"
-  }, "Lets see if you can find the abbreviation for JVM")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, "  ", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["TextField"], {
-    id: "q1",
-    label: "Answer"
-  }), " ")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "subtitle1"
-  }, "Can you find the keyword used to include java packages ?")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["TextField"], {
-    id: "q2",
-    label: "Answer"
-  }))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "subtitle1"
-  }, "what could be the value of 'a++' if 'a=2' ?")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["TextField"], {
-    id: "q3",
-    label: "Answer"
-  }))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "subtitle1"
-  }, "Lets see if you can find the abbreviation for JRE")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["TextField"], {
-    id: "q4",
-    label: "Answer"
-  }))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "subtitle1"
-  }, "Lets see if you can find the abbreviation for JDK")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["TextField"], {
-    id: "q5",
-    label: "Answer"
-  }))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Divider"], {
-    variant: "middle"
-  })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Button"], {
-    variant: "contained",
-    color: "primary",
-    className: classes.handleButton,
-    onClick: e => {
-      handleSubmit(e, props, startTime);
-    }
-  }, "Next"));
-}
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"default\", function() { return Activity; });\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ \"react\");\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var _Data_courses__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../Data/courses */ \"./React/Shared/Data/courses.js\");\n/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @material-ui/core */ \"@material-ui/core\");\n/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__);\n/* harmony import */ var _material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @material-ui/icons/ArrowForwardIosRounded */ \"@material-ui/icons/ArrowForwardIosRounded\");\n/* harmony import */ var _material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3__);\n/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! axios */ \"axios\");\n/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_4__);\nfunction asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }\n\nfunction _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"next\", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"throw\", err); } _next(undefined); }); }; }\n\n\n\n\n\n\nvar useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"makeStyles\"])(theme => ({\n  icon: {\n    marginRight: theme.spacing(2)\n  },\n  handleButton: {\n    margin: theme.spacing(4),\n    float: 'right'\n  },\n  link: {\n    textDecoration: 'none'\n  },\n  heroContent: {\n    backgroundColor: theme.palette.background.paper,\n    padding: theme.spacing(8, 0, 6)\n  },\n  heroButtons: {\n    margin: theme.spacing(4)\n  },\n  cardGrid: {\n    paddingTop: theme.spacing(8),\n    paddingBottom: theme.spacing(8)\n  },\n  card: {\n    height: '100%',\n    display: 'flex',\n    flexDirection: 'column'\n  },\n  cardMedia: {\n    paddingTop: '56.25%' // 16:9\n\n  },\n  cardContent: {\n    flexGrow: 1\n  },\n  footer: {\n    backgroundColor: theme.palette.background.paper,\n    padding: theme.spacing(6)\n  }\n}));\n\nvar handleSubmit = /*#__PURE__*/function () {\n  var _ref = _asyncToGenerator(function* (e, props, startTime) {\n    e.preventDefault();\n    var q1 = document.getElementById('q1').value.toLowerCase(),\n        q2 = document.getElementById('q2').value.toLowerCase(),\n        q3 = document.getElementById('q3').value.toLowerCase(),\n        q4 = document.getElementById('q4').value.toLowerCase(),\n        q5 = document.getElementById('q5').value.toLowerCase();\n    var score = 0;\n    if (q1.includes('java virtual machine')) score++;\n    if (q2.includes('import')) score++;\n    if (q3.includes('3')) score++;\n    if (q4.includes('java runtime environment')) score++;\n    if (q5.includes('java development kit')) score++;\n    score *= 2;\n    var time = Math.round((Date.now() - startTime) / 1000 / 60);\n    time = time >= 9 ? 9 : time;\n    var authToken = sessionStorage.getItem('auth');\n\n    try {\n      var res = yield axios__WEBPACK_IMPORTED_MODULE_4___default.a.patch('http://127.0.0.1:8000/api/v1/student/ml/post/' + authToken, {\n        \"A\": score,\n        \"A_T\": time\n      });\n\n      if (res.status === 200) {\n        console.log('Successfully Pushed Activity Data');\n      } else {\n        alert(\"Problem While Pushing\");\n      }\n    } catch (err) {\n      alert(err);\n    }\n\n    console.log(\"score\" + score);\n    console.log(\"time\" + time);\n    props.history.push('/course/' + props.match.params.course + '/Content');\n  });\n\n  return function handleSubmit(_x, _x2, _x3) {\n    return _ref.apply(this, arguments);\n  };\n}();\n\nfunction Activity(props) {\n  var classes = useStyles();\n  var startTime = Date.now();\n  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(\"form\", {\n    autoComplete: \"off\",\n    noValidate: true\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"List\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"subtitle1\"\n  }, \"Lets see if you can find the abbreviation for JVM\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, \"  \", react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"TextField\"], {\n    id: \"q1\",\n    label: \"Answer\"\n  }), \" \")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"subtitle1\"\n  }, \"Can you find the keyword used to include java packages ?\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"TextField\"], {\n    id: \"q2\",\n    label: \"Answer\"\n  }))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"subtitle1\"\n  }, \"what could be the value of 'a++' if 'a=2' ?\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"TextField\"], {\n    id: \"q3\",\n    label: \"Answer\"\n  }))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"subtitle1\"\n  }, \"Lets see if you can find the abbreviation for JRE\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"TextField\"], {\n    id: \"q4\",\n    label: \"Answer\"\n  }))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"subtitle1\"\n  }, \"Lets see if you can find the abbreviation for JDK\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"TextField\"], {\n    id: \"q5\",\n    label: \"Answer\"\n  }))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Divider\"], {\n    variant: \"middle\"\n  })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(\"br\", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Button\"], {\n    variant: \"contained\",\n    color: \"primary\",\n    className: classes.handleButton,\n    onClick: e => {\n      handleSubmit(e, props, startTime);\n    }\n  }, \"Next\"));\n}//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9Db3Vyc2UvR2VuZXJhbE1hdGVyaWFscy9BY3Rpdml0eS5qcy5qcyIsInNvdXJjZXMiOlsid2VicGFjazovLy8uL1JlYWN0L1NoYXJlZC9Db21wb25lbnRzL0NvdXJzZS9HZW5lcmFsTWF0ZXJpYWxzL0FjdGl2aXR5LmpzPzUxYjciXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IFJlYWN0LCB7dXNlU3RhdGUsIHVzZUVmZmVjdH0gZnJvbSAncmVhY3QnXHJcbmltcG9ydCBjb3Vyc2VzIGZyb20gJy4uLy4uLy4uL0RhdGEvY291cnNlcydcclxuaW1wb3J0IHsgVHlwb2dyYXBoeSwgXHJcbiAgICBQYXBlciwgXHJcbiAgICBtYWtlU3R5bGVzLCBcclxuICAgIFRleHRGaWVsZCxcclxuICAgIEJ1dHRvbixcclxuICAgIEFwcEJhciwgXHJcbiAgICBDYXJkQ29udGVudCwgXHJcbiAgICBDYXJkTWVkaWEsIFxyXG4gICAgQ2FyZCxcclxuICAgIExpc3QsXHJcbiAgICBMaXN0SXRlbSxcclxuICAgIExpc3RJdGVtSWNvbixcclxuICAgIERpdmlkZXIsXHJcbiAgICBUb29sYmFyLHdpdGhTdHlsZXMsIENvbnRhaW5lciB9IGZyb20gJ0BtYXRlcmlhbC11aS9jb3JlJ1xyXG5pbXBvcnQgQXJyb3dGb3J3YXJkSW9zUm91bmRlZEljb24gZnJvbSAnQG1hdGVyaWFsLXVpL2ljb25zL0Fycm93Rm9yd2FyZElvc1JvdW5kZWQnO1xyXG5pbXBvcnQgYXhpb3MgZnJvbSAnYXhpb3MnXHJcblxyXG5cclxuY29uc3QgdXNlU3R5bGVzID0gbWFrZVN0eWxlcyh0aGVtZSA9PiAoe1xyXG4gICAgaWNvbjoge1xyXG4gICAgICBtYXJnaW5SaWdodDogdGhlbWUuc3BhY2luZygyKSxcclxuICAgIH0sXHJcbiAgICBoYW5kbGVCdXR0b24gOntcclxuICAgICAgbWFyZ2luOiB0aGVtZS5zcGFjaW5nKDQpLFxyXG4gICAgICBmbG9hdDoncmlnaHQnXHJcbiAgICB9LFxyXG4gICAgbGluayA6IHtcclxuICAgICAgdGV4dERlY29yYXRpb24gOiAnbm9uZScsXHJcbiAgICB9LFxyXG4gICAgaGVyb0NvbnRlbnQ6IHtcclxuICAgICAgYmFja2dyb3VuZENvbG9yOiB0aGVtZS5wYWxldHRlLmJhY2tncm91bmQucGFwZXIsXHJcbiAgICAgIHBhZGRpbmc6IHRoZW1lLnNwYWNpbmcoOCwgMCwgNiksXHJcbiAgICB9LFxyXG4gICAgaGVyb0J1dHRvbnM6IHtcclxuICAgICAgbWFyZ2luOiB0aGVtZS5zcGFjaW5nKDQpLFxyXG4gICAgfSxcclxuICAgIGNhcmRHcmlkOiB7XHJcbiAgICAgIHBhZGRpbmdUb3A6IHRoZW1lLnNwYWNpbmcoOCksXHJcbiAgICAgIHBhZGRpbmdCb3R0b206IHRoZW1lLnNwYWNpbmcoOCksXHJcbiAgICB9LFxyXG4gICAgY2FyZDoge1xyXG4gICAgICBoZWlnaHQ6ICcxMDAlJyxcclxuICAgICAgZGlzcGxheTogJ2ZsZXgnLFxyXG4gICAgICBmbGV4RGlyZWN0aW9uOiAnY29sdW1uJyxcclxuICAgIH0sXHJcbiAgICBjYXJkTWVkaWE6IHtcclxuICAgICAgcGFkZGluZ1RvcDogJzU2LjI1JScsIC8vIDE2OjlcclxuICAgIH0sXHJcbiAgICBjYXJkQ29udGVudDoge1xyXG4gICAgICBmbGV4R3JvdzogMSxcclxuICAgIH0sXHJcbiAgICBmb290ZXI6IHtcclxuICAgICAgYmFja2dyb3VuZENvbG9yOiB0aGVtZS5wYWxldHRlLmJhY2tncm91bmQucGFwZXIsXHJcbiAgICAgIHBhZGRpbmc6IHRoZW1lLnNwYWNpbmcoNiksXHJcbiAgICB9LFxyXG4gIH0pKTtcclxuXHJcbmNvbnN0IGhhbmRsZVN1Ym1pdCA9YXN5bmMgKGUscHJvcHMsc3RhcnRUaW1lKSA9PiB7XHJcbiAgZS5wcmV2ZW50RGVmYXVsdCgpXHJcbiAgY29uc3QgcTEgPSAoZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3ExJykudmFsdWUpLnRvTG93ZXJDYXNlKCksXHJcbiAgcTIgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncTInKS52YWx1ZS50b0xvd2VyQ2FzZSgpLFxyXG4gIHEzID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3EzJykudmFsdWUudG9Mb3dlckNhc2UoKSxcclxuICBxNCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdxNCcpLnZhbHVlLnRvTG93ZXJDYXNlKCksXHJcbiAgcTUgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncTUnKS52YWx1ZS50b0xvd2VyQ2FzZSgpXHJcblxyXG4gIGxldCBzY29yZSA9IDBcclxuXHJcbiAgaWYocTEuaW5jbHVkZXMoJ2phdmEgdmlydHVhbCBtYWNoaW5lJykpIHNjb3JlKytcclxuICBpZihxMi5pbmNsdWRlcygnaW1wb3J0JykpIHNjb3JlKytcclxuICBpZihxMy5pbmNsdWRlcygnMycpKSBzY29yZSsrXHJcbiAgaWYocTQuaW5jbHVkZXMoJ2phdmEgcnVudGltZSBlbnZpcm9ubWVudCcpKSBzY29yZSsrXHJcbiAgaWYocTUuaW5jbHVkZXMoJ2phdmEgZGV2ZWxvcG1lbnQga2l0JykpIHNjb3JlKytcclxuXHJcbiAgc2NvcmUqPTJcclxuICBsZXQgdGltZSA9IE1hdGgucm91bmQoKChEYXRlLm5vdygpIC0gc3RhcnRUaW1lKS8xMDAwKS82MClcclxuICB0aW1lID0gdGltZSA+PSA5ID8gOSA6IHRpbWVcclxuXHJcbiAgY29uc3QgYXV0aFRva2VuID0gc2Vzc2lvblN0b3JhZ2UuZ2V0SXRlbSgnYXV0aCcpXHJcblxyXG4gIHRyeSB7XHJcbiAgICBjb25zdCByZXMgPSBhd2FpdCBheGlvcy5wYXRjaCgnaHR0cDovLzEyNy4wLjAuMTo4MDAwL2FwaS92MS9zdHVkZW50L21sL3Bvc3QvJythdXRoVG9rZW4sXHJcbiAgICB7XHJcbiAgICAgIFwiQVwiIDogc2NvcmUsXHJcbiAgICAgIFwiQV9UXCIgOiAgdGltZVxyXG4gICAgfSlcclxuXHJcbiAgICBpZihyZXMuc3RhdHVzID09PSAyMDApIHtcclxuICAgICAgY29uc29sZS5sb2coJ1N1Y2Nlc3NmdWxseSBQdXNoZWQgQWN0aXZpdHkgRGF0YScpXHJcbiAgICB9XHJcbiAgICBcclxuICAgIGVsc2Uge1xyXG4gICAgICBhbGVydChcIlByb2JsZW0gV2hpbGUgUHVzaGluZ1wiKTtcclxuICAgIH1cclxuICB9IGNhdGNoKGVyciApe1xyXG4gICAgYWxlcnQoZXJyKVxyXG4gIH1cclxuXHJcbiAgY29uc29sZS5sb2coXCJzY29yZVwiK3Njb3JlKVxyXG4gIGNvbnNvbGUubG9nKFwidGltZVwiK3RpbWUpXHJcbiAgcHJvcHMuaGlzdG9yeS5wdXNoKCcvY291cnNlLycrIHByb3BzLm1hdGNoLnBhcmFtcy5jb3Vyc2UgKycvQ29udGVudCcpXHJcbiBcclxufVxyXG5cclxuZXhwb3J0IGRlZmF1bHQgZnVuY3Rpb24gQWN0aXZpdHkgKHByb3BzKSB7XHJcbiAgICBjb25zdCBjbGFzc2VzID0gdXNlU3R5bGVzKClcclxuXHJcbiAgICBjb25zdCBzdGFydFRpbWUgPSBEYXRlLm5vdygpXHJcblxyXG4gICAgcmV0dXJuKFxyXG5cclxuICAgICAgICA8Zm9ybSAgYXV0b0NvbXBsZXRlPVwib2ZmXCIgbm9WYWxpZGF0ZT5cclxuICAgICAgICAgICAgPExpc3QgPlxyXG4gICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgPExpc3RJdGVtSWNvbj5cclxuICAgICAgICAgICAgICAgICAgICA8QXJyb3dGb3J3YXJkSW9zUm91bmRlZEljb24gLz5cclxuICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgICAgICAgPExpc3RJdGVtID5cclxuICAgICAgICAgICAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PSdzdWJ0aXRsZTEnPlxyXG4gICAgICAgICAgICAgICAgICAgIExldHMgc2VlIGlmIHlvdSBjYW4gZmluZCB0aGUgYWJicmV2aWF0aW9uIGZvciBKVk1cclxuICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgPExpc3RJdGVtPiAgPFRleHRGaWVsZCBpZD1cInExXCIgbGFiZWw9XCJBbnN3ZXJcIi8+IDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPiBcclxuICAgICAgICAgICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgIDxMaXN0SXRlbUljb24+XHJcbiAgICAgICAgICAgICAgICAgICAgPEFycm93Rm9yd2FyZElvc1JvdW5kZWRJY29uIC8+XHJcbiAgICAgICAgICAgICAgICA8L0xpc3RJdGVtSWNvbj5cclxuICAgICAgICAgICAgICAgIDxMaXN0SXRlbSA+XHJcbiAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD0nc3VidGl0bGUxJz5cclxuICAgICAgICAgICAgICAgICAgICBDYW4geW91IGZpbmQgdGhlIGtleXdvcmQgdXNlZCB0byBpbmNsdWRlIGphdmEgcGFja2FnZXMgP1xyXG4gICAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICA8TGlzdEl0ZW0+PFRleHRGaWVsZCBpZD1cInEyXCIgbGFiZWw9XCJBbnN3ZXJcIi8+PC9MaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICA8TGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgICAgICAgICAgIDxBcnJvd0ZvcndhcmRJb3NSb3VuZGVkSWNvbiAvPlxyXG4gICAgICAgICAgICAgICAgPC9MaXN0SXRlbUljb24+XHJcbiAgICAgICAgICAgICAgICA8TGlzdEl0ZW0gPlxyXG4gICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9J3N1YnRpdGxlMSc+XHJcbiAgICAgICAgICAgICAgICAgICAgd2hhdCBjb3VsZCBiZSB0aGUgdmFsdWUgb2YgJ2ErKycgaWYgJ2E9MicgPyBcclxuICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+IFxyXG4gICAgICAgICAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgIDxMaXN0SXRlbT48VGV4dEZpZWxkIGlkPVwicTNcIiBsYWJlbD1cIkFuc3dlclwiLz48L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgIDxMaXN0SXRlbUljb24+XHJcbiAgICAgICAgICAgICAgICAgICAgPEFycm93Rm9yd2FyZElvc1JvdW5kZWRJY29uIC8+XHJcbiAgICAgICAgICAgICAgICA8L0xpc3RJdGVtSWNvbj5cclxuICAgICAgICAgICAgICAgIDxMaXN0SXRlbSA+XHJcbiAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD0nc3VidGl0bGUxJz5cclxuICAgICAgICAgICAgICAgICAgICBMZXRzIHNlZSBpZiB5b3UgY2FuIGZpbmQgdGhlIGFiYnJldmlhdGlvbiBmb3IgSlJFXHJcbiAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgIDxMaXN0SXRlbT48VGV4dEZpZWxkIGlkPVwicTRcIiBsYWJlbD1cIkFuc3dlclwiLz48L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgIDxMaXN0SXRlbUljb24+XHJcbiAgICAgICAgICAgICAgICAgICAgPEFycm93Rm9yd2FyZElvc1JvdW5kZWRJY29uIC8+XHJcbiAgICAgICAgICAgICAgICA8L0xpc3RJdGVtSWNvbj5cclxuICAgICAgICAgICAgICAgIDxMaXN0SXRlbSA+XHJcbiAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD0nc3VidGl0bGUxJz5cclxuICAgICAgICAgICAgICAgICAgICBMZXRzIHNlZSBpZiB5b3UgY2FuIGZpbmQgdGhlIGFiYnJldmlhdGlvbiBmb3IgSkRLXHJcbiAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgIDxMaXN0SXRlbT48VGV4dEZpZWxkIGlkPVwicTVcIiBsYWJlbD1cIkFuc3dlclwiLz48L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgIDxEaXZpZGVyIHZhcmlhbnQ9XCJtaWRkbGVcIiAvPlxyXG4gICAgICAgICAgICA8L0xpc3Q+XHJcbiAgICAgICAgICAgIDxici8+XHJcbiAgICAgICAgICAgIDxCdXR0b24gdmFyaWFudD1cImNvbnRhaW5lZFwiIGNvbG9yPVwicHJpbWFyeVwiIGNsYXNzTmFtZT17Y2xhc3Nlcy5oYW5kbGVCdXR0b259IG9uQ2xpY2s9eyhlKT0+eyBoYW5kbGVTdWJtaXQoZSxwcm9wcyxzdGFydFRpbWUpIH19PlxyXG4gICAgICAgICAgICBOZXh0XHJcbiAgICAgICAgICAgIDwvQnV0dG9uPlxyXG4gICAgICAgIDwvZm9ybT5cclxuICAgIClcclxufVxyXG4iXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7OztBQUFBO0FBQ0E7QUFDQTtBQWNBO0FBQ0E7QUFHQTtBQUNBO0FBQ0E7QUFEQTtBQUdBO0FBQ0E7QUFDQTtBQUZBO0FBSUE7QUFDQTtBQURBO0FBR0E7QUFDQTtBQUNBO0FBRkE7QUFJQTtBQUNBO0FBREE7QUFHQTtBQUNBO0FBQ0E7QUFGQTtBQUlBO0FBQ0E7QUFDQTtBQUNBO0FBSEE7QUFLQTtBQUNBO0FBQ0E7QUFGQTtBQUdBO0FBQ0E7QUFEQTtBQUdBO0FBQ0E7QUFDQTtBQUZBO0FBakNBO0FBQ0E7QUFzQ0E7QUFBQTtBQUNBO0FBQ0E7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQU1BO0FBRUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUVBO0FBQ0E7QUFDQTtBQUVBO0FBQ0E7QUFDQTtBQUNBO0FBRUE7QUFDQTtBQUZBO0FBQ0E7QUFJQTtBQUNBO0FBQ0E7QUFHQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFFQTtBQUNBO0FBN0NBO0FBQUE7QUFBQTtBQUFBO0FBQ0E7QUE2Q0E7QUFDQTtBQUVBO0FBRUE7QUFFQTtBQUFBO0FBQUE7QUFPQTtBQUFBO0FBSUE7QUFBQTtBQUFBO0FBT0E7QUFBQTtBQUlBO0FBQUE7QUFBQTtBQU9BO0FBQUE7QUFJQTtBQUFBO0FBQUE7QUFPQTtBQUFBO0FBSUE7QUFBQTtBQUFBO0FBT0E7QUFBQTtBQUlBO0FBQUE7QUFBQTtBQUVBO0FBQUE7QUFHQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUtBIiwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///./React/Shared/Components/Course/GeneralMaterials/Activity.js\n");
 
 /***/ }),
 
@@ -978,201 +229,7 @@ function Activity(props) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Content; });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _Data_courses__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../Data/courses */ "./React/Shared/Data/courses.js");
-/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @material-ui/core */ "@material-ui/core");
-/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! axios */ "axios");
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_3__);
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
-
-
-
-
-
-var useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["makeStyles"])(theme => ({
-  icon: {
-    marginRight: theme.spacing(2)
-  },
-  handleButton: {
-    margin: theme.spacing(4),
-    float: 'right'
-  },
-  link: {
-    textDecoration: 'none'
-  },
-  heroContent: {
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(8, 0, 6)
-  },
-  heroButtons: {
-    margin: theme.spacing(4)
-  },
-  cardGrid: {
-    paddingTop: theme.spacing(8),
-    paddingBottom: theme.spacing(8)
-  },
-  card: {
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column'
-  },
-  cardMedia: {
-    paddingTop: '56.25%' // 16:9
-
-  },
-  cardContent: {
-    flexGrow: 1
-  },
-  footer: {
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(6)
-  }
-}));
-
-var handleSubmit = /*#__PURE__*/function () {
-  var _ref = _asyncToGenerator(function* (e, props, startTime) {
-    e.preventDefault();
-    var time = Math.round((Date.now() - startTime) / 1000 / 60);
-    var score = time;
-    time = time >= 9 ? 9 : time;
-    var authToken = sessionStorage.getItem('auth');
-
-    try {
-      var res = yield axios__WEBPACK_IMPORTED_MODULE_3___default.a.patch('http://127.0.0.1:8000/api/v1/student/ml/post/' + authToken, {
-        "C": score,
-        "C_T": time
-      });
-
-      if (res.status === 200) {
-        console.log('Successfully Pushed Activity Data');
-      } else {
-        alert("Problem While Pushing");
-      }
-    } catch (err) {
-      alert(err);
-    }
-
-    console.log("score" + score);
-    console.log("time" + time);
-    props.history.push('/course/' + props.match.params.course + '/Visual');
-  });
-
-  return function handleSubmit(_x, _x2, _x3) {
-    return _ref.apply(this, arguments);
-  };
-}();
-
-function Content(props) {
-  var classes = useStyles();
-  var startTime = Date.now();
-  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("form", {
-    autoComplete: "off",
-    noValidate: true
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["List"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "h2"
-  }, "Java")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "This article is about a programming language. For the software platform, see Java (software platform). For the software package downloaded from java.com, see Java Platform, Standard Edition. For other uses, see Java (disambiguation). Not to be confused with JavaScript.")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "Java is a general - purpose programming language that is class - based, object - oriented, and designed to have as few implementation dependencies as possible.It is intended to let application developers write once, run anywhere(WORA), [15] meaning that compiled Java code can run on all platforms that support Java without the need for recompilation. [16] Java applications are typically compiled to bytecode that can run on any Java virtual machine(JVM) regardless of the underlying computer architecture.The syntax of Java is similar to C and C++, but it has fewer low - level facilities than either of them.As of 2019, Java was one of the most popular programming languages in use according to GitHub, [17][18] particularly for client - server web applications, with a reported 9 million developers. [19]")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "Java was originally developed by James Gosling at Sun Microsystems(which has since been acquired by Oracle) and released in 1995 as a core component of Sun Microsystems ' Java platform. The original and reference implementation Java compilers, virtual machines, and class libraries were originally released by Sun under proprietary licenses. As of May 2007, in compliance with the specifications of the Java Community Process, Sun had relicensed most of its Java technologies under the GNU General Public License. Meanwhile, others have developed alternative implementations of these Sun technologies, such as the GNU Compiler for Java (bytecode compiler), GNU Classpath (standard libraries), and IcedTea-Web (browser plugin for applets).")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "The latest versions are Java 13, released in September 2019, and Java 11, a currently supported long-term support (LTS) version, released on September 25, 2018; Oracle released for the legacy Java 8 LTS the last free public update in January 2019 for commercial use, while it will otherwise still support Java 8 with public updates for personal use up to at least December 2020. Oracle (and others) highly recommend uninstalling older versions of Java because of serious risks due to unresolved security issues.[20] Since Java 9 (and 10 and 12) is no longer supported, Oracle advises its users to immediately transition to the latest version (currently Java 13) or an LTS release.")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Divider"], {
-    variant: "middle"
-  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "h2"
-  }, "History")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "James Gosling, Mike Sheridan, and Patrick Naughton initiated the Java language project in June 1991.[21] Java was originally designed for interactive television, but it was too advanced for the digital cable television industry at the time.[22] The language was initially called Oak after an oak tree that stood outside Gosling's office. Later the project went by the name Green and was finally renamed Java, from Java coffee, the coffee from Indonesia.[23] Gosling designed Java with a C/C++-style syntax that system and application programmers would find familiar.[24]")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "Sun Microsystems released the first public implementation as Java 1.0 in 1996.[25] It promised Write Once, Run Anywhere (WORA) functionality, providing no-cost run-times on popular platforms. Fairly secure and featuring configurable security, it allowed network- and file-access restrictions. Major web browsers soon incorporated the ability to run Java applets within web pages, and Java quickly became popular. The Java 1.0 compiler was re-written in Java by Arthur van Hoff to comply strictly with the Java 1.0 language specification.[26] With the advent of Java 2 (released initially as J2SE 1.2 in December 1998 \u2013 1999), new versions had multiple configurations built for different types of platforms. J2EE included technologies and APIs for enterprise applications typically run in server environments, while J2ME featured APIs optimized for mobile applications. The desktop version was renamed J2SE. In 2006, for marketing purposes, Sun renamed new J2 versions as Java EE, Java ME, and Java SE, respectively.")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Divider"], {
-    variant: "middle"
-  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "h2"
-  }, "Principles")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "1.It must be robust and secure.")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "2.It must be architecture-neutral and portable.")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "3.It must execute with high performance.")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "4.It must be interpreted, threaded, and dynamic.")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Divider"], {
-    variant: "middle"
-  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "h2"
-  }, "Versions")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "*JDK 1.0 (January 23, 1996)[37]")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "*JDK 1.1 (February 19, 1996)")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "*J2SE 1.2 (December 8, 1998)")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "*J2SE 1.3 (May 8, 2000)")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "*J2SE 1.4 (February 6, 2002)")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "*J2SE 5.0 (September 30, 2004)")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "*Java SE 6 (December 11, 2006)")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "*Java SE 7 (July 28, 2011)")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "*Java SE 8 (March 18, 2014)")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "*Java SE 9 (September 21, 2017)")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "*Java SE 10 (March 20, 2018)")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "*Java SE 11 (September 25, 2018)[38]")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "*Java SE 12 (March 19, 2019)")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Divider"], {
-    variant: "middle"
-  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "h2"
-  }, "Editions")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "Java Card for smart-cards.")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "Java Platform, Micro Edition (Java ME) \u2013 targeting environments with limited resources.")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "Java Platform, Standard Edition (Java SE) \u2013 targeting workstation environments.")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "Java Platform, Enterprise Edition (Java EE) \u2013 targeting large distributed enterprise or Internet environments.")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "h2"
-  }, "Execution system")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "h6"
-  }, "Java JVM and Bytecode")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "One design goal of Java is portability, which means that programs written for the Java platform must run similarly on any combination of hardware and operating system with adequate run time support. This is achieved by compiling the Java language code to an intermediate representation called Java bytecode, instead of directly to architecture-specific machine code. Java bytecode instructions are analogous to machine code, but they are intended to be executed by a virtual machine (VM) written specifically for the host hardware. End users commonly use a Java Runtime Environment (JRE) installed on their machine for standalone Java applications, or in a web browser for Java applets. Standard libraries provide a generic way to access host-specific features such as graphics, threading, and networking. The use of universal bytecode makes porting simple. However, the overhead of interpreting bytecode into machine instructions made interpreted programs almost always run more slowly than native executables. Just-in-time (JIT) compilers that compile byte-codes to machine code during runtime were introduced from an early stage. Java itself is platform-independent and is adapted to the particular platform it is to run on by a Java virtual machine for it, which translates the Java bytecode into the platform's machine language")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "h6"
-  }, "Performance")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "Programs written in Java have a reputation for being slower and requiring more memory than those written in C++.[44][45] However, Java programs' execution speed improved significantly with the introduction of just-in-time compilation in 1997/1998 for Java 1.1,[46] the addition of language features supporting better code analysis (such as inner classes, the StringBuilder class, optional assertions, etc.), and optimizations in the Java virtual machine, such as HotSpot becoming the default for Sun's JVM in 2000. With Java 1.5, the performance was improved with the addition of the java.util.concurrent package, including lock free implementations of the ConcurrentMaps and other multi-core collections, and it was improved further with Java 1.6.")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "h6"
-  }, "Non-JVM")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "Some platforms offer direct hardware support for Java; there are micro controllers that can run Java bytecode in hardware instead of a software Java virtual machine,[47] and some ARM-based processors could have hardware support for executing Java bytecode through their Jazelle option, though support has mostly been dropped in current implementations of ARM.")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "h6"
-  }, "Automatic memory management")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "Java uses an automatic garbage collector to manage memory in the object lifecycle. The programmer determines when objects are created, and the Java runtime is responsible for recovering the memory once objects are no longer in use. Once no references to an object remain, the unreachable memory becomes eligible to be freed automatically by the garbage collector. Something similar to a memory leak may still occur if a programmer's code holds a reference to an object that is no longer needed, typically when objects that are no longer needed are stored in containers that are still in use. If methods for a non-existent object are called, a null pointer exception is thrown.[48][49] One of the ideas behind Java's automatic memory management model is that programmers can be spared the burden of having to perform manual memory management. In some languages, memory for the creation of objects is implicitly allocated on the stack or explicitly allocated and deallocated from the heap. In the latter case, the responsibility of managing memory resides with the programmer. If the program does not deallocate an object, a memory leak occurs. If the program attempts to access or deallocate memory that has already been deallocated, the result is undefined and difficult to predict, and the program is likely to become unstable or crash. This can be partially remedied by the use of smart pointers, but these add overhead and complexity. Note that garbage collection does not prevent logical memory leaks, i.e. those where the memory is still referenced but never used. Garbage collection may happen at any time. Ideally, it will occur when a program is idle. It is guaranteed to be triggered if there is insufficient free memory on the heap to allocate a new object; this can cause a program to stall momentarily. Explicit memory management is not possible in Java. Java does not support C/C++ style pointer arithmetic, where object addresses can be arithmetically manipulated (e.g. by adding or subtracting an offset). This allows the garbage collector to relocate referenced objects and ensures type safety and security. As in C++ and some other object-oriented languages, variables of Java's primitive data types are either stored directly in fields (for objects) or on the stack (for methods) rather than on the heap, as is commonly true for non-primitive data types (but see escape analysis). This was a conscious decision by Java's designers for performance reasons. Java contains multiple types of garbage collectors. By default, HotSpot uses the parallel scavenge garbage collector.[50] However, there are also several other garbage collectors that can be used to manage the heap. For 90% of applications in Java, the Concurrent Mark-Sweep (CMS) garbage collector is sufficient.[51] Oracle aims to replace CMS with the Garbage-First Collector (G1).[52] Having solved the memory management problem does not relieve the programmer of the burden of handling properly other kind of resources, like network or database connections, file handles, etc., especially in the presence of exceptions. Paradoxically, the presence of a garbage collector has faded the necessity of having an explicit destructor method in the classes, thus rendering the management of these other resources more difficult.[citation needed]"))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Button"], {
-    variant: "contained",
-    color: "primary",
-    className: classes.handleButton,
-    onClick: e => {
-      handleSubmit(e, props, startTime);
-    }
-  }, "Next"));
-}
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"default\", function() { return Content; });\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ \"react\");\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var _Data_courses__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../Data/courses */ \"./React/Shared/Data/courses.js\");\n/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @material-ui/core */ \"@material-ui/core\");\n/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__);\n/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! axios */ \"axios\");\n/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_3__);\nfunction asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }\n\nfunction _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"next\", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"throw\", err); } _next(undefined); }); }; }\n\n\n\n\n\nvar useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"makeStyles\"])(theme => ({\n  icon: {\n    marginRight: theme.spacing(2)\n  },\n  handleButton: {\n    margin: theme.spacing(4),\n    float: 'right'\n  },\n  link: {\n    textDecoration: 'none'\n  },\n  heroContent: {\n    backgroundColor: theme.palette.background.paper,\n    padding: theme.spacing(8, 0, 6)\n  },\n  heroButtons: {\n    margin: theme.spacing(4)\n  },\n  cardGrid: {\n    paddingTop: theme.spacing(8),\n    paddingBottom: theme.spacing(8)\n  },\n  card: {\n    height: '100%',\n    display: 'flex',\n    flexDirection: 'column'\n  },\n  cardMedia: {\n    paddingTop: '56.25%' // 16:9\n\n  },\n  cardContent: {\n    flexGrow: 1\n  },\n  footer: {\n    backgroundColor: theme.palette.background.paper,\n    padding: theme.spacing(6)\n  }\n}));\n\nvar handleSubmit = /*#__PURE__*/function () {\n  var _ref = _asyncToGenerator(function* (e, props, startTime) {\n    e.preventDefault();\n    var time = Math.round((Date.now() - startTime) / 1000 / 60);\n    var score = time;\n    time = time >= 9 ? 9 : time;\n    var authToken = sessionStorage.getItem('auth');\n\n    try {\n      var res = yield axios__WEBPACK_IMPORTED_MODULE_3___default.a.patch('http://127.0.0.1:8000/api/v1/student/ml/post/' + authToken, {\n        \"C\": score,\n        \"C_T\": time\n      });\n\n      if (res.status === 200) {\n        console.log('Successfully Pushed Activity Data');\n      } else {\n        alert(\"Problem While Pushing\");\n      }\n    } catch (err) {\n      alert(err);\n    }\n\n    console.log(\"score\" + score);\n    console.log(\"time\" + time);\n    props.history.push('/course/' + props.match.params.course + '/Visual');\n  });\n\n  return function handleSubmit(_x, _x2, _x3) {\n    return _ref.apply(this, arguments);\n  };\n}();\n\nfunction Content(props) {\n  var classes = useStyles();\n  var startTime = Date.now();\n  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(\"form\", {\n    autoComplete: \"off\",\n    noValidate: true\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"List\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"h2\"\n  }, \"Java\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"This article is about a programming language. For the software platform, see Java (software platform). For the software package downloaded from java.com, see Java Platform, Standard Edition. For other uses, see Java (disambiguation). Not to be confused with JavaScript.\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Java is a general - purpose programming language that is class - based, object - oriented, and designed to have as few implementation dependencies as possible.It is intended to let application developers write once, run anywhere(WORA), [15] meaning that compiled Java code can run on all platforms that support Java without the need for recompilation. [16] Java applications are typically compiled to bytecode that can run on any Java virtual machine(JVM) regardless of the underlying computer architecture.The syntax of Java is similar to C and C++, but it has fewer low - level facilities than either of them.As of 2019, Java was one of the most popular programming languages in use according to GitHub, [17][18] particularly for client - server web applications, with a reported 9 million developers. [19]\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Java was originally developed by James Gosling at Sun Microsystems(which has since been acquired by Oracle) and released in 1995 as a core component of Sun Microsystems ' Java platform. The original and reference implementation Java compilers, virtual machines, and class libraries were originally released by Sun under proprietary licenses. As of May 2007, in compliance with the specifications of the Java Community Process, Sun had relicensed most of its Java technologies under the GNU General Public License. Meanwhile, others have developed alternative implementations of these Sun technologies, such as the GNU Compiler for Java (bytecode compiler), GNU Classpath (standard libraries), and IcedTea-Web (browser plugin for applets).\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"The latest versions are Java 13, released in September 2019, and Java 11, a currently supported long-term support (LTS) version, released on September 25, 2018; Oracle released for the legacy Java 8 LTS the last free public update in January 2019 for commercial use, while it will otherwise still support Java 8 with public updates for personal use up to at least December 2020. Oracle (and others) highly recommend uninstalling older versions of Java because of serious risks due to unresolved security issues.[20] Since Java 9 (and 10 and 12) is no longer supported, Oracle advises its users to immediately transition to the latest version (currently Java 13) or an LTS release.\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Divider\"], {\n    variant: \"middle\"\n  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"h2\"\n  }, \"History\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"James Gosling, Mike Sheridan, and Patrick Naughton initiated the Java language project in June 1991.[21] Java was originally designed for interactive television, but it was too advanced for the digital cable television industry at the time.[22] The language was initially called Oak after an oak tree that stood outside Gosling's office. Later the project went by the name Green and was finally renamed Java, from Java coffee, the coffee from Indonesia.[23] Gosling designed Java with a C/C++-style syntax that system and application programmers would find familiar.[24]\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Sun Microsystems released the first public implementation as Java 1.0 in 1996.[25] It promised Write Once, Run Anywhere (WORA) functionality, providing no-cost run-times on popular platforms. Fairly secure and featuring configurable security, it allowed network- and file-access restrictions. Major web browsers soon incorporated the ability to run Java applets within web pages, and Java quickly became popular. The Java 1.0 compiler was re-written in Java by Arthur van Hoff to comply strictly with the Java 1.0 language specification.[26] With the advent of Java 2 (released initially as J2SE 1.2 in December 1998 \\u2013 1999), new versions had multiple configurations built for different types of platforms. J2EE included technologies and APIs for enterprise applications typically run in server environments, while J2ME featured APIs optimized for mobile applications. The desktop version was renamed J2SE. In 2006, for marketing purposes, Sun renamed new J2 versions as Java EE, Java ME, and Java SE, respectively.\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Divider\"], {\n    variant: \"middle\"\n  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"h2\"\n  }, \"Principles\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"1.It must be robust and secure.\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"2.It must be architecture-neutral and portable.\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"3.It must execute with high performance.\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"4.It must be interpreted, threaded, and dynamic.\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Divider\"], {\n    variant: \"middle\"\n  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"h2\"\n  }, \"Versions\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"*JDK 1.0 (January 23, 1996)[37]\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"*JDK 1.1 (February 19, 1996)\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"*J2SE 1.2 (December 8, 1998)\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"*J2SE 1.3 (May 8, 2000)\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"*J2SE 1.4 (February 6, 2002)\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"*J2SE 5.0 (September 30, 2004)\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"*Java SE 6 (December 11, 2006)\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"*Java SE 7 (July 28, 2011)\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"*Java SE 8 (March 18, 2014)\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"*Java SE 9 (September 21, 2017)\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"*Java SE 10 (March 20, 2018)\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"*Java SE 11 (September 25, 2018)[38]\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"*Java SE 12 (March 19, 2019)\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Divider\"], {\n    variant: \"middle\"\n  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"h2\"\n  }, \"Editions\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Java Card for smart-cards.\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Java Platform, Micro Edition (Java ME) \\u2013 targeting environments with limited resources.\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Java Platform, Standard Edition (Java SE) \\u2013 targeting workstation environments.\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Java Platform, Enterprise Edition (Java EE) \\u2013 targeting large distributed enterprise or Internet environments.\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"h2\"\n  }, \"Execution system\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"h6\"\n  }, \"Java JVM and Bytecode\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"One design goal of Java is portability, which means that programs written for the Java platform must run similarly on any combination of hardware and operating system with adequate run time support. This is achieved by compiling the Java language code to an intermediate representation called Java bytecode, instead of directly to architecture-specific machine code. Java bytecode instructions are analogous to machine code, but they are intended to be executed by a virtual machine (VM) written specifically for the host hardware. End users commonly use a Java Runtime Environment (JRE) installed on their machine for standalone Java applications, or in a web browser for Java applets. Standard libraries provide a generic way to access host-specific features such as graphics, threading, and networking. The use of universal bytecode makes porting simple. However, the overhead of interpreting bytecode into machine instructions made interpreted programs almost always run more slowly than native executables. Just-in-time (JIT) compilers that compile byte-codes to machine code during runtime were introduced from an early stage. Java itself is platform-independent and is adapted to the particular platform it is to run on by a Java virtual machine for it, which translates the Java bytecode into the platform's machine language\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"h6\"\n  }, \"Performance\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Programs written in Java have a reputation for being slower and requiring more memory than those written in C++.[44][45] However, Java programs' execution speed improved significantly with the introduction of just-in-time compilation in 1997/1998 for Java 1.1,[46] the addition of language features supporting better code analysis (such as inner classes, the StringBuilder class, optional assertions, etc.), and optimizations in the Java virtual machine, such as HotSpot becoming the default for Sun's JVM in 2000. With Java 1.5, the performance was improved with the addition of the java.util.concurrent package, including lock free implementations of the ConcurrentMaps and other multi-core collections, and it was improved further with Java 1.6.\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"h6\"\n  }, \"Non-JVM\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Some platforms offer direct hardware support for Java; there are micro controllers that can run Java bytecode in hardware instead of a software Java virtual machine,[47] and some ARM-based processors could have hardware support for executing Java bytecode through their Jazelle option, though support has mostly been dropped in current implementations of ARM.\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"h6\"\n  }, \"Automatic memory management\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Java uses an automatic garbage collector to manage memory in the object lifecycle. The programmer determines when objects are created, and the Java runtime is responsible for recovering the memory once objects are no longer in use. Once no references to an object remain, the unreachable memory becomes eligible to be freed automatically by the garbage collector. Something similar to a memory leak may still occur if a programmer's code holds a reference to an object that is no longer needed, typically when objects that are no longer needed are stored in containers that are still in use. If methods for a non-existent object are called, a null pointer exception is thrown.[48][49] One of the ideas behind Java's automatic memory management model is that programmers can be spared the burden of having to perform manual memory management. In some languages, memory for the creation of objects is implicitly allocated on the stack or explicitly allocated and deallocated from the heap. In the latter case, the responsibility of managing memory resides with the programmer. If the program does not deallocate an object, a memory leak occurs. If the program attempts to access or deallocate memory that has already been deallocated, the result is undefined and difficult to predict, and the program is likely to become unstable or crash. This can be partially remedied by the use of smart pointers, but these add overhead and complexity. Note that garbage collection does not prevent logical memory leaks, i.e. those where the memory is still referenced but never used. Garbage collection may happen at any time. Ideally, it will occur when a program is idle. It is guaranteed to be triggered if there is insufficient free memory on the heap to allocate a new object; this can cause a program to stall momentarily. Explicit memory management is not possible in Java. Java does not support C/C++ style pointer arithmetic, where object addresses can be arithmetically manipulated (e.g. by adding or subtracting an offset). This allows the garbage collector to relocate referenced objects and ensures type safety and security. As in C++ and some other object-oriented languages, variables of Java's primitive data types are either stored directly in fields (for objects) or on the stack (for methods) rather than on the heap, as is commonly true for non-primitive data types (but see escape analysis). This was a conscious decision by Java's designers for performance reasons. Java contains multiple types of garbage collectors. By default, HotSpot uses the parallel scavenge garbage collector.[50] However, there are also several other garbage collectors that can be used to manage the heap. For 90% of applications in Java, the Concurrent Mark-Sweep (CMS) garbage collector is sufficient.[51] Oracle aims to replace CMS with the Garbage-First Collector (G1).[52] Having solved the memory management problem does not relieve the programmer of the burden of handling properly other kind of resources, like network or database connections, file handles, etc., especially in the presence of exceptions. Paradoxically, the presence of a garbage collector has faded the necessity of having an explicit destructor method in the classes, thus rendering the management of these other resources more difficult.[citation needed]\"))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(\"br\", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Button\"], {\n    variant: \"contained\",\n    color: \"primary\",\n    className: classes.handleButton,\n    onClick: e => {\n      handleSubmit(e, props, startTime);\n    }\n  }, \"Next\"));\n}//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9Db3Vyc2UvR2VuZXJhbE1hdGVyaWFscy9Db250ZW50LmpzLmpzIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vLy4vUmVhY3QvU2hhcmVkL0NvbXBvbmVudHMvQ291cnNlL0dlbmVyYWxNYXRlcmlhbHMvQ29udGVudC5qcz85YmFjIl0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCBSZWFjdCwgeyB1c2VTdGF0ZSwgdXNlRWZmZWN0IH0gZnJvbSAncmVhY3QnXHJcbmltcG9ydCBjb3Vyc2VzIGZyb20gJy4uLy4uLy4uL0RhdGEvY291cnNlcydcclxuaW1wb3J0IHtcclxuICAgIFR5cG9ncmFwaHksXHJcbiAgICBtYWtlU3R5bGVzLFxyXG4gICAgQnV0dG9uLFxyXG4gICAgTGlzdCxcclxuICAgIExpc3RJdGVtLFxyXG4gICAgRGl2aWRlciB9IGZyb20gJ0BtYXRlcmlhbC11aS9jb3JlJ1xyXG5pbXBvcnQgYXhpb3MgZnJvbSAnYXhpb3MnXHJcblxyXG5cclxuY29uc3QgdXNlU3R5bGVzID0gbWFrZVN0eWxlcyh0aGVtZSA9PiAoe1xyXG4gICAgaWNvbjoge1xyXG4gICAgICAgIG1hcmdpblJpZ2h0OiB0aGVtZS5zcGFjaW5nKDIpLFxyXG4gICAgfSxcclxuICAgIGhhbmRsZUJ1dHRvbiA6e1xyXG4gICAgICAgIG1hcmdpbjogdGhlbWUuc3BhY2luZyg0KSxcclxuICAgICAgICBmbG9hdDoncmlnaHQnXHJcbiAgICAgIH0sXHJcbiAgICBsaW5rOiB7XHJcbiAgICAgICAgdGV4dERlY29yYXRpb246ICdub25lJyxcclxuICAgIH0sXHJcbiAgICBoZXJvQ29udGVudDoge1xyXG4gICAgICAgIGJhY2tncm91bmRDb2xvcjogdGhlbWUucGFsZXR0ZS5iYWNrZ3JvdW5kLnBhcGVyLFxyXG4gICAgICAgIHBhZGRpbmc6IHRoZW1lLnNwYWNpbmcoOCwgMCwgNiksXHJcbiAgICB9LFxyXG4gICAgaGVyb0J1dHRvbnM6IHtcclxuICAgICAgICBtYXJnaW46IHRoZW1lLnNwYWNpbmcoNCksXHJcbiAgICB9LFxyXG4gICAgY2FyZEdyaWQ6IHtcclxuICAgICAgICBwYWRkaW5nVG9wOiB0aGVtZS5zcGFjaW5nKDgpLFxyXG4gICAgICAgIHBhZGRpbmdCb3R0b206IHRoZW1lLnNwYWNpbmcoOCksXHJcbiAgICB9LFxyXG4gICAgY2FyZDoge1xyXG4gICAgICAgIGhlaWdodDogJzEwMCUnLFxyXG4gICAgICAgIGRpc3BsYXk6ICdmbGV4JyxcclxuICAgICAgICBmbGV4RGlyZWN0aW9uOiAnY29sdW1uJyxcclxuICAgIH0sXHJcbiAgICBjYXJkTWVkaWE6IHtcclxuICAgICAgICBwYWRkaW5nVG9wOiAnNTYuMjUlJywgLy8gMTY6OVxyXG4gICAgfSxcclxuICAgIGNhcmRDb250ZW50OiB7XHJcbiAgICAgICAgZmxleEdyb3c6IDEsXHJcbiAgICB9LFxyXG4gICAgZm9vdGVyOiB7XHJcbiAgICAgICAgYmFja2dyb3VuZENvbG9yOiB0aGVtZS5wYWxldHRlLmJhY2tncm91bmQucGFwZXIsXHJcbiAgICAgICAgcGFkZGluZzogdGhlbWUuc3BhY2luZyg2KSxcclxuICAgIH0sXHJcbn0pKTtcclxuXHJcblxyXG5jb25zdCBoYW5kbGVTdWJtaXQgPSBhc3luYyAoZSwgcHJvcHMsIHN0YXJ0VGltZSkgPT4ge1xyXG4gICAgZS5wcmV2ZW50RGVmYXVsdCgpXHJcbiAgICBsZXQgdGltZSA9IE1hdGgucm91bmQoKChEYXRlLm5vdygpIC0gc3RhcnRUaW1lKS8xMDAwKS82MClcclxuICAgIGxldCBzY29yZSA9IHRpbWVcclxuICAgIHRpbWUgPSB0aW1lID49IDkgPyA5IDogdGltZVxyXG5cclxuICAgIGNvbnN0IGF1dGhUb2tlbiA9IHNlc3Npb25TdG9yYWdlLmdldEl0ZW0oJ2F1dGgnKVxyXG5cclxuICAgIHRyeSB7XHJcbiAgICAgICAgY29uc3QgcmVzID0gYXdhaXQgYXhpb3MucGF0Y2goJ2h0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hcGkvdjEvc3R1ZGVudC9tbC9wb3N0LycrYXV0aFRva2VuLFxyXG4gICAgICAgIHtcclxuICAgICAgICAgIFwiQ1wiIDogc2NvcmUsXHJcbiAgICAgICAgICBcIkNfVFwiIDogIHRpbWVcclxuICAgICAgICB9KVxyXG4gICAgXHJcbiAgICAgICAgaWYocmVzLnN0YXR1cyA9PT0gMjAwKSB7XHJcbiAgICAgICAgICBjb25zb2xlLmxvZygnU3VjY2Vzc2Z1bGx5IFB1c2hlZCBBY3Rpdml0eSBEYXRhJylcclxuICAgICAgICB9XHJcbiAgICAgICAgXHJcbiAgICAgICAgZWxzZSB7XHJcbiAgICAgICAgICBhbGVydChcIlByb2JsZW0gV2hpbGUgUHVzaGluZ1wiKTtcclxuICAgICAgICB9XHJcbiAgICAgIH0gY2F0Y2goZXJyICl7XHJcbiAgICAgICAgYWxlcnQoZXJyKVxyXG4gICAgICB9XHJcblxyXG4gICAgY29uc29sZS5sb2coXCJzY29yZVwiK3Njb3JlKVxyXG4gICAgY29uc29sZS5sb2coXCJ0aW1lXCIrdGltZSlcclxuICAgIHByb3BzLmhpc3RvcnkucHVzaCgnL2NvdXJzZS8nICsgcHJvcHMubWF0Y2gucGFyYW1zLmNvdXJzZSArICcvVmlzdWFsJylcclxufVxyXG5cclxuZXhwb3J0IGRlZmF1bHQgZnVuY3Rpb24gQ29udGVudChwcm9wcykge1xyXG4gICAgY29uc3QgY2xhc3NlcyA9IHVzZVN0eWxlcygpXHJcblxyXG4gICAgY29uc3Qgc3RhcnRUaW1lID0gRGF0ZS5ub3coKVxyXG5cclxuICAgIHJldHVybiAoXHJcbiAgICAgICAgPGZvcm0gYXV0b0NvbXBsZXRlPVwib2ZmXCIgbm9WYWxpZGF0ZT5cclxuICAgICAgICAgICAgPExpc3QgPlxyXG4gICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9J2gyJz5cclxuICAgICAgICAgICAgICAgICAgICAgICAgSmF2YVxyXG4gICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PSdib2R5MSc+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIFRoaXMgYXJ0aWNsZSBpcyBhYm91dCBhIHByb2dyYW1taW5nIGxhbmd1YWdlLiBGb3IgdGhlIHNvZnR3YXJlIHBsYXRmb3JtLCBzZWUgSmF2YSAoc29mdHdhcmUgcGxhdGZvcm0pLlxyXG4gICAgICAgICAgICAgICAgICAgICAgICBGb3IgdGhlIHNvZnR3YXJlIHBhY2thZ2UgZG93bmxvYWRlZCBmcm9tIGphdmEuY29tLCBzZWUgSmF2YSBQbGF0Zm9ybSwgU3RhbmRhcmQgRWRpdGlvbi4gRm9yIG90aGVyIHVzZXMsIHNlZSBKYXZhIChkaXNhbWJpZ3VhdGlvbikuXHJcbiAgICAgICAgICAgICAgICAgICAgICAgIE5vdCB0byBiZSBjb25mdXNlZCB3aXRoIEphdmFTY3JpcHQuXHJcbiAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9J2JvZHkxJz5cclxuICAgICAgICAgICAgICAgICAgICAgICAgSmF2YSBpcyBhIGdlbmVyYWwgLSBwdXJwb3NlIHByb2dyYW1taW5nIGxhbmd1YWdlIHRoYXQgaXMgY2xhc3MgLSBiYXNlZCwgb2JqZWN0IC0gb3JpZW50ZWQsIGFuZCBkZXNpZ25lZCB0byBoYXZlIGFzIGZldyBpbXBsZW1lbnRhdGlvbiBkZXBlbmRlbmNpZXMgYXMgcG9zc2libGUuSXQgaXMgaW50ZW5kZWQgdG9cclxuICAgICAgICAgICAgICAgICAgICAgICAgbGV0IGFwcGxpY2F0aW9uIGRldmVsb3BlcnMgd3JpdGUgb25jZSwgcnVuIGFueXdoZXJlKFdPUkEpLCBbMTVdIG1lYW5pbmcgdGhhdCBjb21waWxlZCBKYXZhIGNvZGUgY2FuIHJ1biBvbiBhbGwgcGxhdGZvcm1zIHRoYXQgc3VwcG9ydCBKYXZhIHdpdGhvdXQgdGhlIG5lZWRcclxuICAgICAgICAgICAgICAgICAgICAgICAgZm9yIHJlY29tcGlsYXRpb24uIFsxNl0gSmF2YSBhcHBsaWNhdGlvbnMgYXJlIHR5cGljYWxseSBjb21waWxlZCB0byBieXRlY29kZSB0aGF0IGNhbiBydW4gb24gYW55IEphdmEgdmlydHVhbCBtYWNoaW5lKEpWTSkgcmVnYXJkbGVzcyBvZiB0aGUgdW5kZXJseWluZyBjb21wdXRlciBhcmNoaXRlY3R1cmUuVGhlIHN5bnRheCBvZiBKYXZhIGlzIHNpbWlsYXIgdG8gQyBhbmQgQysrLCBidXQgaXQgaGFzIGZld2VyIGxvdyAtIGxldmVsIGZhY2lsaXRpZXMgdGhhbiBlaXRoZXIgb2YgdGhlbS5BcyBvZiAyMDE5LCBKYXZhIHdhcyBvbmUgb2YgdGhlIG1vc3QgcG9wdWxhciBwcm9ncmFtbWluZyBsYW5ndWFnZXMgaW4gdXNlIGFjY29yZGluZyB0byBHaXRIdWIsIFsxN11bMThdIHBhcnRpY3VsYXJseVxyXG4gICAgICAgICAgICAgICAgICAgICAgICBmb3IgY2xpZW50IC0gc2VydmVyIHdlYiBhcHBsaWNhdGlvbnMsIHdpdGggYSByZXBvcnRlZCA5IG1pbGxpb24gZGV2ZWxvcGVycy4gWzE5XVxyXG4gICAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD0nYm9keTEnPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICBKYXZhIHdhcyBvcmlnaW5hbGx5IGRldmVsb3BlZCBieSBKYW1lcyBHb3NsaW5nIGF0IFN1biBNaWNyb3N5c3RlbXMod2hpY2ggaGFzIHNpbmNlIGJlZW4gYWNxdWlyZWQgYnkgT3JhY2xlKSBhbmQgcmVsZWFzZWQgaW4gMTk5NSBhcyBhIGNvcmUgY29tcG9uZW50IG9mIFN1biBNaWNyb3N5c3RlbXMgJyBKYXZhIHBsYXRmb3JtLiBUaGUgb3JpZ2luYWwgYW5kIHJlZmVyZW5jZSBpbXBsZW1lbnRhdGlvbiBKYXZhIGNvbXBpbGVycywgdmlydHVhbCBtYWNoaW5lcywgYW5kIGNsYXNzIGxpYnJhcmllcyB3ZXJlIG9yaWdpbmFsbHkgcmVsZWFzZWQgYnkgU3VuIHVuZGVyIHByb3ByaWV0YXJ5IGxpY2Vuc2VzLiBBcyBvZiBNYXkgMjAwNywgaW4gY29tcGxpYW5jZSB3aXRoIHRoZSBzcGVjaWZpY2F0aW9ucyBvZiB0aGUgSmF2YSBDb21tdW5pdHkgUHJvY2VzcywgU3VuIGhhZCByZWxpY2Vuc2VkIG1vc3Qgb2YgaXRzIEphdmEgdGVjaG5vbG9naWVzIHVuZGVyIHRoZSBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZS4gTWVhbndoaWxlLCBvdGhlcnMgaGF2ZSBkZXZlbG9wZWQgYWx0ZXJuYXRpdmUgaW1wbGVtZW50YXRpb25zIG9mIHRoZXNlIFN1biB0ZWNobm9sb2dpZXMsIHN1Y2ggYXMgdGhlIEdOVSBDb21waWxlciBmb3IgSmF2YSAoYnl0ZWNvZGUgY29tcGlsZXIpLCBHTlUgQ2xhc3NwYXRoIChzdGFuZGFyZCBsaWJyYXJpZXMpLCBhbmQgSWNlZFRlYS1XZWIgKGJyb3dzZXIgcGx1Z2luIGZvciBhcHBsZXRzKS5cclxuICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9J2JvZHkxJz5cclxuICAgICAgICAgICAgICAgICAgICAgICAgVGhlIGxhdGVzdCB2ZXJzaW9ucyBhcmUgSmF2YSAxMywgcmVsZWFzZWQgaW4gU2VwdGVtYmVyIDIwMTksIGFuZCBKYXZhIDExLCBhIGN1cnJlbnRseSBzdXBwb3J0ZWQgbG9uZy10ZXJtIHN1cHBvcnQgKExUUykgdmVyc2lvbiwgcmVsZWFzZWQgb24gU2VwdGVtYmVyIDI1LCAyMDE4OyBPcmFjbGUgcmVsZWFzZWQgZm9yIHRoZSBsZWdhY3kgSmF2YSA4IExUUyB0aGUgbGFzdCBmcmVlIHB1YmxpYyB1cGRhdGUgaW4gSmFudWFyeSAyMDE5IGZvciBjb21tZXJjaWFsIHVzZSwgd2hpbGUgaXQgd2lsbCBvdGhlcndpc2Ugc3RpbGwgc3VwcG9ydCBKYXZhIDggd2l0aCBwdWJsaWMgdXBkYXRlcyBmb3IgcGVyc29uYWwgdXNlIHVwIHRvIGF0IGxlYXN0IERlY2VtYmVyIDIwMjAuIE9yYWNsZSAoYW5kIG90aGVycykgaGlnaGx5IHJlY29tbWVuZCB1bmluc3RhbGxpbmcgb2xkZXIgdmVyc2lvbnMgb2YgSmF2YSBiZWNhdXNlIG9mIHNlcmlvdXMgcmlza3MgZHVlIHRvIHVucmVzb2x2ZWQgc2VjdXJpdHkgaXNzdWVzLlsyMF0gU2luY2UgSmF2YSA5IChhbmQgMTAgYW5kIDEyKSBpcyBubyBsb25nZXIgc3VwcG9ydGVkLCBPcmFjbGUgYWR2aXNlcyBpdHMgdXNlcnMgdG8gaW1tZWRpYXRlbHkgdHJhbnNpdGlvbiB0byB0aGUgbGF0ZXN0IHZlcnNpb24gKGN1cnJlbnRseSBKYXZhIDEzKSBvciBhbiBMVFMgcmVsZWFzZS5cclxuICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgPERpdmlkZXIgdmFyaWFudD1cIm1pZGRsZVwiIC8+XHJcbiAgICAgICAgICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD0naDInPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICBIaXN0b3J5XHJcbiAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PSdib2R5MSc+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIEphbWVzIEdvc2xpbmcsIE1pa2UgU2hlcmlkYW4sIGFuZCBQYXRyaWNrIE5hdWdodG9uIGluaXRpYXRlZCB0aGUgSmF2YSBsYW5ndWFnZSBwcm9qZWN0IGluIEp1bmUgMTk5MS5bMjFdIEphdmEgd2FzIG9yaWdpbmFsbHkgZGVzaWduZWQgZm9yIGludGVyYWN0aXZlIHRlbGV2aXNpb24sIGJ1dCBpdCB3YXMgdG9vIGFkdmFuY2VkIGZvciB0aGUgZGlnaXRhbCBjYWJsZSB0ZWxldmlzaW9uIGluZHVzdHJ5IGF0IHRoZSB0aW1lLlsyMl0gVGhlIGxhbmd1YWdlIHdhcyBpbml0aWFsbHkgY2FsbGVkIE9hayBhZnRlciBhbiBvYWsgdHJlZSB0aGF0IHN0b29kIG91dHNpZGUgR29zbGluZydzIG9mZmljZS4gTGF0ZXIgdGhlIHByb2plY3Qgd2VudCBieSB0aGUgbmFtZSBHcmVlbiBhbmQgd2FzIGZpbmFsbHkgcmVuYW1lZCBKYXZhLCBmcm9tIEphdmEgY29mZmVlLCB0aGUgY29mZmVlIGZyb20gSW5kb25lc2lhLlsyM10gR29zbGluZyBkZXNpZ25lZCBKYXZhIHdpdGggYSBDL0MrKy1zdHlsZSBzeW50YXggdGhhdCBzeXN0ZW0gYW5kIGFwcGxpY2F0aW9uIHByb2dyYW1tZXJzIHdvdWxkIGZpbmQgZmFtaWxpYXIuWzI0XVxyXG4gICAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD0nYm9keTEnPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICBTdW4gTWljcm9zeXN0ZW1zIHJlbGVhc2VkIHRoZSBmaXJzdCBwdWJsaWMgaW1wbGVtZW50YXRpb24gYXMgSmF2YSAxLjAgaW4gMTk5Ni5bMjVdIEl0IHByb21pc2VkIFdyaXRlIE9uY2UsIFJ1biBBbnl3aGVyZSAoV09SQSkgZnVuY3Rpb25hbGl0eSwgcHJvdmlkaW5nIG5vLWNvc3QgcnVuLXRpbWVzIG9uIHBvcHVsYXIgcGxhdGZvcm1zLiBGYWlybHkgc2VjdXJlIGFuZCBmZWF0dXJpbmcgY29uZmlndXJhYmxlIHNlY3VyaXR5LCBpdCBhbGxvd2VkIG5ldHdvcmstIGFuZCBmaWxlLWFjY2VzcyByZXN0cmljdGlvbnMuIE1ham9yIHdlYiBicm93c2VycyBzb29uIGluY29ycG9yYXRlZCB0aGUgYWJpbGl0eSB0byBydW4gSmF2YSBhcHBsZXRzIHdpdGhpbiB3ZWIgcGFnZXMsIGFuZCBKYXZhIHF1aWNrbHkgYmVjYW1lIHBvcHVsYXIuIFRoZSBKYXZhIDEuMCBjb21waWxlciB3YXMgcmUtd3JpdHRlbiBpbiBKYXZhIGJ5IEFydGh1ciB2YW4gSG9mZiB0byBjb21wbHkgc3RyaWN0bHkgd2l0aCB0aGUgSmF2YSAxLjAgbGFuZ3VhZ2Ugc3BlY2lmaWNhdGlvbi5bMjZdIFdpdGggdGhlIGFkdmVudCBvZiBKYXZhIDIgKHJlbGVhc2VkIGluaXRpYWxseSBhcyBKMlNFIDEuMiBpbiBEZWNlbWJlciAxOTk4IOKAkyAxOTk5KSwgbmV3IHZlcnNpb25zIGhhZCBtdWx0aXBsZSBjb25maWd1cmF0aW9ucyBidWlsdCBmb3IgZGlmZmVyZW50IHR5cGVzIG9mIHBsYXRmb3Jtcy4gSjJFRSBpbmNsdWRlZCB0ZWNobm9sb2dpZXMgYW5kIEFQSXMgZm9yIGVudGVycHJpc2UgYXBwbGljYXRpb25zIHR5cGljYWxseSBydW4gaW4gc2VydmVyIGVudmlyb25tZW50cywgd2hpbGUgSjJNRSBmZWF0dXJlZCBBUElzIG9wdGltaXplZCBmb3IgbW9iaWxlIGFwcGxpY2F0aW9ucy4gVGhlIGRlc2t0b3AgdmVyc2lvbiB3YXMgcmVuYW1lZCBKMlNFLiBJbiAyMDA2LCBmb3IgbWFya2V0aW5nIHB1cnBvc2VzLCBTdW4gcmVuYW1lZCBuZXcgSjIgdmVyc2lvbnMgYXMgSmF2YSBFRSwgSmF2YSBNRSwgYW5kIEphdmEgU0UsIHJlc3BlY3RpdmVseS5cclxuICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgPERpdmlkZXIgdmFyaWFudD1cIm1pZGRsZVwiIC8+XHJcbiAgICAgICAgICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD0naDInPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICBQcmluY2lwbGVzXHJcbiAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PSdib2R5MSc+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIDEuSXQgbXVzdCBiZSByb2J1c3QgYW5kIHNlY3VyZS5cclxuICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9J2JvZHkxJz5cclxuICAgICAgICAgICAgICAgICAgICAgICAgMi5JdCBtdXN0IGJlIGFyY2hpdGVjdHVyZS1uZXV0cmFsIGFuZCBwb3J0YWJsZS5cclxuICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9J2JvZHkxJz5cclxuICAgICAgICAgICAgICAgICAgICAgICAgMy5JdCBtdXN0IGV4ZWN1dGUgd2l0aCBoaWdoIHBlcmZvcm1hbmNlLlxyXG4gICAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD0nYm9keTEnPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICA0Lkl0IG11c3QgYmUgaW50ZXJwcmV0ZWQsIHRocmVhZGVkLCBhbmQgZHluYW1pYy5cclxuICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgPERpdmlkZXIgdmFyaWFudD1cIm1pZGRsZVwiIC8+XHJcbiAgICAgICAgICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD0naDInPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICBWZXJzaW9uc1xyXG4gICAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD0nYm9keTEnPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAqSkRLIDEuMCAoSmFudWFyeSAyMywgMTk5NilbMzddXHJcbiAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PSdib2R5MSc+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICpKREsgMS4xIChGZWJydWFyeSAxOSwgMTk5NilcclxuICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9J2JvZHkxJz5cclxuICAgICAgICAgICAgICAgICAgICAgICAgKkoyU0UgMS4yIChEZWNlbWJlciA4LCAxOTk4KVxyXG4gICAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD0nYm9keTEnPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAqSjJTRSAxLjMgKE1heSA4LCAyMDAwKVxyXG4gICAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD0nYm9keTEnPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAqSjJTRSAxLjQgKEZlYnJ1YXJ5IDYsIDIwMDIpXHJcbiAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PSdib2R5MSc+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICpKMlNFIDUuMCAoU2VwdGVtYmVyIDMwLCAyMDA0KVxyXG4gICAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD0nYm9keTEnPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAqSmF2YSBTRSA2IChEZWNlbWJlciAxMSwgMjAwNilcclxuICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9J2JvZHkxJz5cclxuICAgICAgICAgICAgICAgICAgICAgICAgKkphdmEgU0UgNyAoSnVseSAyOCwgMjAxMSlcclxuICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9J2JvZHkxJz5cclxuICAgICAgICAgICAgICAgICAgICAgICAgKkphdmEgU0UgOCAoTWFyY2ggMTgsIDIwMTQpXHJcbiAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PSdib2R5MSc+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICpKYXZhIFNFIDkgKFNlcHRlbWJlciAyMSwgMjAxNylcclxuICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9J2JvZHkxJz5cclxuICAgICAgICAgICAgICAgICAgICAgICAgKkphdmEgU0UgMTAgKE1hcmNoIDIwLCAyMDE4KVxyXG4gICAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD0nYm9keTEnPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAqSmF2YSBTRSAxMSAoU2VwdGVtYmVyIDI1LCAyMDE4KVszOF1cclxuICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9J2JvZHkxJz5cclxuICAgICAgICAgICAgICAgICAgICAgICAgKkphdmEgU0UgMTIgKE1hcmNoIDE5LCAyMDE5KVxyXG4gICAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICBcclxuICAgICAgICAgICAgICAgIDxEaXZpZGVyIHZhcmlhbnQ9XCJtaWRkbGVcIiAvPlxyXG4gICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9J2gyJz5cclxuICAgICAgICAgICAgICAgICAgICAgICAgRWRpdGlvbnNcclxuICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9J2JvZHkxJz5cclxuICAgICAgICAgICAgICAgICAgICAgICAgSmF2YSBDYXJkIGZvciBzbWFydC1jYXJkcy5cclxuICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9J2JvZHkxJz5cclxuICAgICAgICAgICAgICAgICAgICAgICAgSmF2YSBQbGF0Zm9ybSwgTWljcm8gRWRpdGlvbiAoSmF2YSBNRSkg4oCTIHRhcmdldGluZyBlbnZpcm9ubWVudHMgd2l0aCBsaW1pdGVkIHJlc291cmNlcy5cclxuICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9J2JvZHkxJz5cclxuICAgICAgICAgICAgICAgICAgICAgICAgSmF2YSBQbGF0Zm9ybSwgU3RhbmRhcmQgRWRpdGlvbiAoSmF2YSBTRSkg4oCTIHRhcmdldGluZyB3b3Jrc3RhdGlvbiBlbnZpcm9ubWVudHMuXHJcbiAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PSdib2R5MSc+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIEphdmEgUGxhdGZvcm0sIEVudGVycHJpc2UgRWRpdGlvbiAoSmF2YSBFRSkg4oCTIHRhcmdldGluZyBsYXJnZSBkaXN0cmlidXRlZCBlbnRlcnByaXNlIG9yIEludGVybmV0IGVudmlyb25tZW50cy5cclxuICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9J2gyJz5cclxuICAgICAgICAgICAgICAgICAgICAgICAgRXhlY3V0aW9uIHN5c3RlbVxyXG4gICAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD0naDYnPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICBKYXZhIEpWTSBhbmQgQnl0ZWNvZGVcclxuICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9J2JvZHkxJz5cclxuICAgICAgICAgICAgICAgICAgICBPbmUgZGVzaWduIGdvYWwgb2YgSmF2YSBpcyBwb3J0YWJpbGl0eSwgd2hpY2ggbWVhbnMgdGhhdCBwcm9ncmFtcyB3cml0dGVuIGZvciB0aGUgSmF2YSBwbGF0Zm9ybSBtdXN0IHJ1biBzaW1pbGFybHkgb24gYW55IGNvbWJpbmF0aW9uIG9mIGhhcmR3YXJlIGFuZCBvcGVyYXRpbmcgc3lzdGVtIHdpdGggYWRlcXVhdGUgcnVuIHRpbWUgc3VwcG9ydC4gVGhpcyBpcyBhY2hpZXZlZCBieSBjb21waWxpbmcgdGhlIEphdmEgbGFuZ3VhZ2UgY29kZSB0byBhbiBpbnRlcm1lZGlhdGUgcmVwcmVzZW50YXRpb24gY2FsbGVkIEphdmEgYnl0ZWNvZGUsIGluc3RlYWQgb2YgZGlyZWN0bHkgdG8gYXJjaGl0ZWN0dXJlLXNwZWNpZmljIG1hY2hpbmUgY29kZS4gSmF2YSBieXRlY29kZSBpbnN0cnVjdGlvbnMgYXJlIGFuYWxvZ291cyB0byBtYWNoaW5lIGNvZGUsIGJ1dCB0aGV5IGFyZSBpbnRlbmRlZCB0byBiZSBleGVjdXRlZCBieSBhIHZpcnR1YWwgbWFjaGluZSAoVk0pIHdyaXR0ZW4gc3BlY2lmaWNhbGx5IGZvciB0aGUgaG9zdCBoYXJkd2FyZS4gRW5kIHVzZXJzIGNvbW1vbmx5IHVzZSBhIEphdmEgUnVudGltZSBFbnZpcm9ubWVudCAoSlJFKSBpbnN0YWxsZWQgb24gdGhlaXIgbWFjaGluZSBmb3Igc3RhbmRhbG9uZSBKYXZhIGFwcGxpY2F0aW9ucywgb3IgaW4gYSB3ZWIgYnJvd3NlciBmb3IgSmF2YSBhcHBsZXRzLlxyXG5cclxuU3RhbmRhcmQgbGlicmFyaWVzIHByb3ZpZGUgYSBnZW5lcmljIHdheSB0byBhY2Nlc3MgaG9zdC1zcGVjaWZpYyBmZWF0dXJlcyBzdWNoIGFzIGdyYXBoaWNzLCB0aHJlYWRpbmcsIGFuZCBuZXR3b3JraW5nLlxyXG5cclxuVGhlIHVzZSBvZiB1bml2ZXJzYWwgYnl0ZWNvZGUgbWFrZXMgcG9ydGluZyBzaW1wbGUuIEhvd2V2ZXIsIHRoZSBvdmVyaGVhZCBvZiBpbnRlcnByZXRpbmcgYnl0ZWNvZGUgaW50byBtYWNoaW5lIGluc3RydWN0aW9ucyBtYWRlIGludGVycHJldGVkIHByb2dyYW1zIGFsbW9zdCBhbHdheXMgcnVuIG1vcmUgc2xvd2x5IHRoYW4gbmF0aXZlIGV4ZWN1dGFibGVzLiBKdXN0LWluLXRpbWUgKEpJVCkgY29tcGlsZXJzIHRoYXQgY29tcGlsZSBieXRlLWNvZGVzIHRvIG1hY2hpbmUgY29kZSBkdXJpbmcgcnVudGltZSB3ZXJlIGludHJvZHVjZWQgZnJvbSBhbiBlYXJseSBzdGFnZS4gSmF2YSBpdHNlbGYgaXMgcGxhdGZvcm0taW5kZXBlbmRlbnQgYW5kIGlzIGFkYXB0ZWQgdG8gdGhlIHBhcnRpY3VsYXIgcGxhdGZvcm0gaXQgaXMgdG8gcnVuIG9uIGJ5IGEgSmF2YSB2aXJ0dWFsIG1hY2hpbmUgZm9yIGl0LCB3aGljaCB0cmFuc2xhdGVzIHRoZSBKYXZhIGJ5dGVjb2RlIGludG8gdGhlIHBsYXRmb3JtJ3MgbWFjaGluZSBsYW5ndWFnZVxyXG4gICAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9J2g2Jz5cclxuICAgICAgICAgICAgICAgICAgICAgICAgUGVyZm9ybWFuY2VcclxuICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9J2JvZHkxJz5cclxuICAgICAgICAgICAgICAgICAgICBQcm9ncmFtcyB3cml0dGVuIGluIEphdmEgaGF2ZSBhIHJlcHV0YXRpb24gZm9yIGJlaW5nIHNsb3dlciBhbmQgcmVxdWlyaW5nIG1vcmUgbWVtb3J5IHRoYW4gdGhvc2Ugd3JpdHRlbiBpbiBDKysuWzQ0XVs0NV0gSG93ZXZlciwgSmF2YSBwcm9ncmFtcycgZXhlY3V0aW9uIHNwZWVkIGltcHJvdmVkIHNpZ25pZmljYW50bHkgd2l0aCB0aGUgaW50cm9kdWN0aW9uIG9mIGp1c3QtaW4tdGltZSBjb21waWxhdGlvbiBpbiAxOTk3LzE5OTggZm9yIEphdmEgMS4xLFs0Nl0gdGhlIGFkZGl0aW9uIG9mIGxhbmd1YWdlIGZlYXR1cmVzIHN1cHBvcnRpbmcgYmV0dGVyIGNvZGUgYW5hbHlzaXMgKHN1Y2ggYXMgaW5uZXIgY2xhc3NlcywgdGhlIFN0cmluZ0J1aWxkZXIgY2xhc3MsIG9wdGlvbmFsIGFzc2VydGlvbnMsIGV0Yy4pLCBhbmQgb3B0aW1pemF0aW9ucyBpbiB0aGUgSmF2YSB2aXJ0dWFsIG1hY2hpbmUsIHN1Y2ggYXMgSG90U3BvdCBiZWNvbWluZyB0aGUgZGVmYXVsdCBmb3IgU3VuJ3MgSlZNIGluIDIwMDAuIFdpdGggSmF2YSAxLjUsIHRoZSBwZXJmb3JtYW5jZSB3YXMgaW1wcm92ZWQgd2l0aCB0aGUgYWRkaXRpb24gb2YgdGhlIGphdmEudXRpbC5jb25jdXJyZW50IHBhY2thZ2UsIGluY2x1ZGluZyBsb2NrIGZyZWUgaW1wbGVtZW50YXRpb25zIG9mIHRoZSBDb25jdXJyZW50TWFwcyBhbmQgb3RoZXIgbXVsdGktY29yZSBjb2xsZWN0aW9ucywgYW5kIGl0IHdhcyBpbXByb3ZlZCBmdXJ0aGVyIHdpdGggSmF2YSAxLjYuXHJcbiAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD0naDYnPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICBOb24tSlZNXHJcbiAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PSdib2R5MSc+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIFNvbWUgcGxhdGZvcm1zIG9mZmVyIGRpcmVjdCBoYXJkd2FyZSBzdXBwb3J0IGZvciBKYXZhOyB0aGVyZSBhcmUgbWljcm8gY29udHJvbGxlcnMgdGhhdCBjYW4gcnVuIEphdmEgYnl0ZWNvZGUgaW4gaGFyZHdhcmUgaW5zdGVhZCBvZiBhIHNvZnR3YXJlIEphdmEgdmlydHVhbCBtYWNoaW5lLFs0N10gYW5kIHNvbWUgQVJNLWJhc2VkIHByb2Nlc3NvcnMgY291bGQgaGF2ZSBoYXJkd2FyZSBzdXBwb3J0IGZvciBleGVjdXRpbmcgSmF2YSBieXRlY29kZSB0aHJvdWdoIHRoZWlyIEphemVsbGUgb3B0aW9uLCB0aG91Z2ggc3VwcG9ydCBoYXMgbW9zdGx5IGJlZW4gZHJvcHBlZCBpbiBjdXJyZW50IGltcGxlbWVudGF0aW9ucyBvZiBBUk0uXHJcbiAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PSdoNic+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIEF1dG9tYXRpYyBtZW1vcnkgbWFuYWdlbWVudFxyXG4gICAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9J2JvZHkxJz5cclxuICAgICAgICAgICAgICAgICAgICAgICAgSmF2YSB1c2VzIGFuIGF1dG9tYXRpYyBnYXJiYWdlIGNvbGxlY3RvciB0byBtYW5hZ2UgbWVtb3J5IGluIHRoZSBvYmplY3QgbGlmZWN5Y2xlLiBUaGUgcHJvZ3JhbW1lciBkZXRlcm1pbmVzIHdoZW4gb2JqZWN0cyBhcmUgY3JlYXRlZCwgYW5kIHRoZSBKYXZhIHJ1bnRpbWUgaXMgcmVzcG9uc2libGUgZm9yIHJlY292ZXJpbmcgdGhlIG1lbW9yeSBvbmNlIG9iamVjdHMgYXJlIG5vIGxvbmdlciBpbiB1c2UuIE9uY2Ugbm8gcmVmZXJlbmNlcyB0byBhbiBvYmplY3QgcmVtYWluLCB0aGUgdW5yZWFjaGFibGUgbWVtb3J5IGJlY29tZXMgZWxpZ2libGUgdG8gYmUgZnJlZWQgYXV0b21hdGljYWxseSBieSB0aGUgZ2FyYmFnZSBjb2xsZWN0b3IuIFNvbWV0aGluZyBzaW1pbGFyIHRvIGEgbWVtb3J5IGxlYWsgbWF5IHN0aWxsIG9jY3VyIGlmIGEgcHJvZ3JhbW1lcidzIGNvZGUgaG9sZHMgYSByZWZlcmVuY2UgdG8gYW4gb2JqZWN0IHRoYXQgaXMgbm8gbG9uZ2VyIG5lZWRlZCwgdHlwaWNhbGx5IHdoZW4gb2JqZWN0cyB0aGF0IGFyZSBubyBsb25nZXIgbmVlZGVkIGFyZSBzdG9yZWQgaW4gY29udGFpbmVycyB0aGF0IGFyZSBzdGlsbCBpbiB1c2UuIElmIG1ldGhvZHMgZm9yIGEgbm9uLWV4aXN0ZW50IG9iamVjdCBhcmUgY2FsbGVkLCBhIG51bGwgcG9pbnRlciBleGNlcHRpb24gaXMgdGhyb3duLls0OF1bNDldXHJcblxyXG4gICAgICAgICAgICAgICAgICAgICAgICBPbmUgb2YgdGhlIGlkZWFzIGJlaGluZCBKYXZhJ3MgYXV0b21hdGljIG1lbW9yeSBtYW5hZ2VtZW50IG1vZGVsIGlzIHRoYXQgcHJvZ3JhbW1lcnMgY2FuIGJlIHNwYXJlZCB0aGUgYnVyZGVuIG9mIGhhdmluZyB0byBwZXJmb3JtIG1hbnVhbCBtZW1vcnkgbWFuYWdlbWVudC4gSW4gc29tZSBsYW5ndWFnZXMsIG1lbW9yeSBmb3IgdGhlIGNyZWF0aW9uIG9mIG9iamVjdHMgaXMgaW1wbGljaXRseSBhbGxvY2F0ZWQgb24gdGhlIHN0YWNrIG9yIGV4cGxpY2l0bHkgYWxsb2NhdGVkIGFuZCBkZWFsbG9jYXRlZCBmcm9tIHRoZSBoZWFwLiBJbiB0aGUgbGF0dGVyIGNhc2UsIHRoZSByZXNwb25zaWJpbGl0eSBvZiBtYW5hZ2luZyBtZW1vcnkgcmVzaWRlcyB3aXRoIHRoZSBwcm9ncmFtbWVyLiBJZiB0aGUgcHJvZ3JhbSBkb2VzIG5vdCBkZWFsbG9jYXRlIGFuIG9iamVjdCwgYSBtZW1vcnkgbGVhayBvY2N1cnMuIElmIHRoZSBwcm9ncmFtIGF0dGVtcHRzIHRvIGFjY2VzcyBvciBkZWFsbG9jYXRlIG1lbW9yeSB0aGF0IGhhcyBhbHJlYWR5IGJlZW4gZGVhbGxvY2F0ZWQsIHRoZSByZXN1bHQgaXMgdW5kZWZpbmVkIGFuZCBkaWZmaWN1bHQgdG8gcHJlZGljdCwgYW5kIHRoZSBwcm9ncmFtIGlzIGxpa2VseSB0byBiZWNvbWUgdW5zdGFibGUgb3IgY3Jhc2guIFRoaXMgY2FuIGJlIHBhcnRpYWxseSByZW1lZGllZCBieSB0aGUgdXNlIG9mIHNtYXJ0IHBvaW50ZXJzLCBidXQgdGhlc2UgYWRkIG92ZXJoZWFkIGFuZCBjb21wbGV4aXR5LiBOb3RlIHRoYXQgZ2FyYmFnZSBjb2xsZWN0aW9uIGRvZXMgbm90IHByZXZlbnQgbG9naWNhbCBtZW1vcnkgbGVha3MsIGkuZS4gdGhvc2Ugd2hlcmUgdGhlIG1lbW9yeSBpcyBzdGlsbCByZWZlcmVuY2VkIGJ1dCBuZXZlciB1c2VkLlxyXG5cclxuICAgICAgICAgICAgICAgICAgICAgICAgR2FyYmFnZSBjb2xsZWN0aW9uIG1heSBoYXBwZW4gYXQgYW55IHRpbWUuIElkZWFsbHksIGl0IHdpbGwgb2NjdXIgd2hlbiBhIHByb2dyYW0gaXMgaWRsZS4gSXQgaXMgZ3VhcmFudGVlZCB0byBiZSB0cmlnZ2VyZWQgaWYgdGhlcmUgaXMgaW5zdWZmaWNpZW50IGZyZWUgbWVtb3J5IG9uIHRoZSBoZWFwIHRvIGFsbG9jYXRlIGEgbmV3IG9iamVjdDsgdGhpcyBjYW4gY2F1c2UgYSBwcm9ncmFtIHRvIHN0YWxsIG1vbWVudGFyaWx5LiBFeHBsaWNpdCBtZW1vcnkgbWFuYWdlbWVudCBpcyBub3QgcG9zc2libGUgaW4gSmF2YS5cclxuXHJcbiAgICAgICAgICAgICAgICAgICAgICAgIEphdmEgZG9lcyBub3Qgc3VwcG9ydCBDL0MrKyBzdHlsZSBwb2ludGVyIGFyaXRobWV0aWMsIHdoZXJlIG9iamVjdCBhZGRyZXNzZXMgY2FuIGJlIGFyaXRobWV0aWNhbGx5IG1hbmlwdWxhdGVkIChlLmcuIGJ5IGFkZGluZyBvciBzdWJ0cmFjdGluZyBhbiBvZmZzZXQpLiBUaGlzIGFsbG93cyB0aGUgZ2FyYmFnZSBjb2xsZWN0b3IgdG8gcmVsb2NhdGUgcmVmZXJlbmNlZCBvYmplY3RzIGFuZCBlbnN1cmVzIHR5cGUgc2FmZXR5IGFuZCBzZWN1cml0eS5cclxuXHJcbiAgICAgICAgICAgICAgICAgICAgICAgIEFzIGluIEMrKyBhbmQgc29tZSBvdGhlciBvYmplY3Qtb3JpZW50ZWQgbGFuZ3VhZ2VzLCB2YXJpYWJsZXMgb2YgSmF2YSdzIHByaW1pdGl2ZSBkYXRhIHR5cGVzIGFyZSBlaXRoZXIgc3RvcmVkIGRpcmVjdGx5IGluIGZpZWxkcyAoZm9yIG9iamVjdHMpIG9yIG9uIHRoZSBzdGFjayAoZm9yIG1ldGhvZHMpIHJhdGhlciB0aGFuIG9uIHRoZSBoZWFwLCBhcyBpcyBjb21tb25seSB0cnVlIGZvciBub24tcHJpbWl0aXZlIGRhdGEgdHlwZXMgKGJ1dCBzZWUgZXNjYXBlIGFuYWx5c2lzKS4gVGhpcyB3YXMgYSBjb25zY2lvdXMgZGVjaXNpb24gYnkgSmF2YSdzIGRlc2lnbmVycyBmb3IgcGVyZm9ybWFuY2UgcmVhc29ucy5cclxuXHJcbiAgICAgICAgICAgICAgICAgICAgICAgIEphdmEgY29udGFpbnMgbXVsdGlwbGUgdHlwZXMgb2YgZ2FyYmFnZSBjb2xsZWN0b3JzLiBCeSBkZWZhdWx0LCBIb3RTcG90IHVzZXMgdGhlIHBhcmFsbGVsIHNjYXZlbmdlIGdhcmJhZ2UgY29sbGVjdG9yLls1MF0gSG93ZXZlciwgdGhlcmUgYXJlIGFsc28gc2V2ZXJhbCBvdGhlciBnYXJiYWdlIGNvbGxlY3RvcnMgdGhhdCBjYW4gYmUgdXNlZCB0byBtYW5hZ2UgdGhlIGhlYXAuIEZvciA5MCUgb2YgYXBwbGljYXRpb25zIGluIEphdmEsIHRoZSBDb25jdXJyZW50IE1hcmstU3dlZXAgKENNUykgZ2FyYmFnZSBjb2xsZWN0b3IgaXMgc3VmZmljaWVudC5bNTFdIE9yYWNsZSBhaW1zIHRvIHJlcGxhY2UgQ01TIHdpdGggdGhlIEdhcmJhZ2UtRmlyc3QgQ29sbGVjdG9yIChHMSkuWzUyXVxyXG5cclxuICAgICAgICAgICAgICAgICAgICAgICAgSGF2aW5nIHNvbHZlZCB0aGUgbWVtb3J5IG1hbmFnZW1lbnQgcHJvYmxlbSBkb2VzIG5vdCByZWxpZXZlIHRoZSBwcm9ncmFtbWVyIG9mIHRoZSBidXJkZW4gb2YgaGFuZGxpbmcgcHJvcGVybHkgb3RoZXIga2luZCBvZiByZXNvdXJjZXMsIGxpa2UgbmV0d29yayBvciBkYXRhYmFzZSBjb25uZWN0aW9ucywgZmlsZSBoYW5kbGVzLCBldGMuLCBlc3BlY2lhbGx5IGluIHRoZSBwcmVzZW5jZSBvZiBleGNlcHRpb25zLiBQYXJhZG94aWNhbGx5LCB0aGUgcHJlc2VuY2Ugb2YgYSBnYXJiYWdlIGNvbGxlY3RvciBoYXMgZmFkZWQgdGhlIG5lY2Vzc2l0eSBvZiBoYXZpbmcgYW4gZXhwbGljaXQgZGVzdHJ1Y3RvciBtZXRob2QgaW4gdGhlIGNsYXNzZXMsIHRodXMgcmVuZGVyaW5nIHRoZSBtYW5hZ2VtZW50IG9mIHRoZXNlIG90aGVyIHJlc291cmNlcyBtb3JlIGRpZmZpY3VsdC5bY2l0YXRpb24gbmVlZGVkXVxyXG4gICAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgICAgIDwvTGlzdD5cclxuICAgICAgICAgICAgPGJyIC8+XHJcbiAgICAgICAgICAgIDxCdXR0b24gdmFyaWFudD1cImNvbnRhaW5lZFwiIGNvbG9yPVwicHJpbWFyeVwiIGNsYXNzTmFtZT17Y2xhc3Nlcy5oYW5kbGVCdXR0b259IG9uQ2xpY2s9eyhlKSA9PiB7IGhhbmRsZVN1Ym1pdChlLCBwcm9wcywgc3RhcnRUaW1lKSB9fT5cclxuICAgICAgICAgICAgICAgIE5leHRcclxuICAgICAgICAgICAgPC9CdXR0b24+XHJcbiAgICAgICAgPC9mb3JtPlxyXG4gICAgKVxyXG59XHJcbiJdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7OztBQUFBO0FBQ0E7QUFDQTtBQU9BO0FBR0E7QUFDQTtBQUNBO0FBREE7QUFHQTtBQUNBO0FBQ0E7QUFGQTtBQUlBO0FBQ0E7QUFEQTtBQUdBO0FBQ0E7QUFDQTtBQUZBO0FBSUE7QUFDQTtBQURBO0FBR0E7QUFDQTtBQUNBO0FBRkE7QUFJQTtBQUNBO0FBQ0E7QUFDQTtBQUhBO0FBS0E7QUFDQTtBQUNBO0FBRkE7QUFHQTtBQUNBO0FBREE7QUFHQTtBQUNBO0FBQ0E7QUFGQTtBQWpDQTtBQUNBO0FBdUNBO0FBQUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUVBO0FBQ0E7QUFDQTtBQUNBO0FBRUE7QUFDQTtBQUZBO0FBQ0E7QUFJQTtBQUNBO0FBQ0E7QUFHQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBOUJBO0FBQUE7QUFBQTtBQUFBO0FBQ0E7QUE4QkE7QUFDQTtBQUVBO0FBRUE7QUFDQTtBQUFBO0FBQUE7QUFHQTtBQUFBO0FBS0E7QUFBQTtBQU9BO0FBQUE7QUFRQTtBQUFBO0FBS0E7QUFBQTtBQUlBO0FBQUE7QUFFQTtBQUFBO0FBS0E7QUFBQTtBQUtBO0FBQUE7QUFJQTtBQUFBO0FBRUE7QUFBQTtBQUtBO0FBQUE7QUFLQTtBQUFBO0FBS0E7QUFBQTtBQUtBO0FBQUE7QUFJQTtBQUFBO0FBRUE7QUFBQTtBQUtBO0FBQUE7QUFLQTtBQUFBO0FBS0E7QUFBQTtBQUtBO0FBQUE7QUFLQTtBQUFBO0FBS0E7QUFBQTtBQUtBO0FBQUE7QUFLQTtBQUFBO0FBS0E7QUFBQTtBQUtBO0FBQUE7QUFLQTtBQUFBO0FBS0E7QUFBQTtBQUtBO0FBQUE7QUFLQTtBQUFBO0FBRUE7QUFBQTtBQUtBO0FBQUE7QUFLQTtBQUFBO0FBS0E7QUFBQTtBQUtBO0FBQUE7QUFLQTtBQUFBO0FBS0E7QUFBQTtBQUtBO0FBQUE7QUFTQTtBQUFBO0FBS0E7QUFBQTtBQUtBO0FBQUE7QUFLQTtBQUFBO0FBS0E7QUFBQTtBQUtBO0FBQUE7QUFrQkE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFLQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///./React/Shared/Components/Course/GeneralMaterials/Content.js\n");
 
 /***/ }),
 
@@ -1184,209 +241,7 @@ function Content(props) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Definitions; });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _Data_courses__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../Data/courses */ "./React/Shared/Data/courses.js");
-/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @material-ui/core */ "@material-ui/core");
-/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! axios */ "axios");
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_3__);
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
-
-
-
-
-
-var useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["makeStyles"])(theme => ({
-  icon: {
-    marginRight: theme.spacing(2)
-  },
-  link: {
-    textDecoration: 'none'
-  },
-  handleButton: {
-    margin: theme.spacing(4),
-    float: 'right'
-  },
-  heroContent: {
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(8, 0, 6)
-  },
-  heroButtons: {
-    margin: theme.spacing(4)
-  },
-  cardGrid: {
-    paddingTop: theme.spacing(8),
-    paddingBottom: theme.spacing(8)
-  },
-  card: {
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column'
-  },
-  cardMedia: {
-    paddingTop: '56.25%' // 16:9
-
-  },
-  cardContent: {
-    flexGrow: 1
-  },
-  footer: {
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(6)
-  },
-  Text: {
-    display: 'block'
-  }
-}));
-
-var handleSubmit = /*#__PURE__*/function () {
-  var _ref = _asyncToGenerator(function* (e, props, startTime, score) {
-    e.preventDefault();
-    score *= 2;
-    var time = Math.round((Date.now() - startTime) / 1000 / 60);
-    var authToken = sessionStorage.getItem('auth');
-
-    try {
-      var res = yield axios__WEBPACK_IMPORTED_MODULE_3___default.a.patch('http://127.0.0.1:8000/api/v1/student/ml/post/' + authToken, {
-        "D": score,
-        "D_T": time
-      });
-
-      if (res.status === 200) {
-        console.log('Successfully Pushed Activity Data');
-      } else {
-        alert("Problem While Pushing");
-      }
-    } catch (err) {
-      alert(err);
-    }
-
-    time = time >= 9 ? 9 : time;
-    console.log("score" + score);
-    console.log("time" + time);
-    props.history.push('/course/' + props.match.params.course + '/Activity');
-  });
-
-  return function handleSubmit(_x, _x2, _x3, _x4) {
-    return _ref.apply(this, arguments);
-  };
-}();
-
-function Definitions(props) {
-  var classes = useStyles();
-  var startTime = Date.now();
-  var [java, setJava] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false);
-
-  var handleJava = () => {
-    setJava(true);
-  };
-
-  var [jvm, setJvm] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false);
-
-  var handleJvm = () => {
-    setJvm(true);
-  };
-
-  var [jdk, setJdk] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false);
-
-  var handleJdk = () => {
-    setJdk(true);
-  };
-
-  var [jre, setJre] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false);
-
-  var handleJre = () => {
-    setJre(true);
-  };
-
-  var [jar, setJar] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false);
-
-  var handleJar = () => {
-    setJar(true);
-  };
-
-  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Container"], {
-    maxWidth: "sm"
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("form", {
-    autoComplete: "off",
-    noValidate: true
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["List"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Paper"], {
-    className: classes.heroButtons
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], {
-    onClick: handleJava
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "h5",
-    gutterBottom: true
-  }, "Java")), java ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1",
-    gutterBottom: true
-  }, "Java is a high-level programming language developed by Sun Microsystems. It was originally designed for developing programs for set-top boxes and handheld devices, but later became a popular choice for creating web applications.")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1",
-    gutterBottom: true
-  }, "The Java syntax is similar to C++, but is strictly an object-oriented programming language. For example, most Java programs contain classes, which are used to define objects, and methods, which are assigned to individual classes. Java is also known for being more strict than C++, meaning variables and functions must be explicitly defined. This means Java source code may produce errors or \"exceptions\" more easily than other languages, but it also limits other types of errors that may be caused by undefined variables or unassigned types."))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Paper"], {
-    className: classes.heroButtons
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], {
-    onClick: handleJvm
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "h5"
-  }, "JVM")), jvm ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "JVM(Java Virtual Machine) acts as a run-time engine to run Java applications. JVM is the one that actually calls the main method present in a java code. JVM is a part of JRE(Java Runtime Environment).")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "Java applications are called WORA (Write Once Run Anywhere). This means a programmer can develop Java code on one system and can expect it to run on any other Java enabled system without any adjustment. This is all possible because of JVM.")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "When we compile a .java file, .class files(contains byte-code) with the same class names present in .java file are generated by the Java compiler. This .class file goes into various steps when we run it. These steps together describe the whole JVM."))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Paper"], {
-    className: classes.heroButtons
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], {
-    onClick: handleJre
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "h5"
-  }, "JRE")), jre ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "JRE stands for \u201CJava Runtime Environment\u201D and may also be written as \u201CJava RTE.\u201D The Java Runtime Environment provides the minimum requirements for executing a Java application; it consists of the Java Virtual Machine (JVM), core classes, and supporting files.")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "Java Runtime Environment (to say JRE) is an installation package which provides environment to only run(not develop) the java program(or application)onto your machine. JRE is only used by them who only wants to run the Java Programs i.e. end users of your system."))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Paper"], {
-    className: classes.heroButtons
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], {
-    onClick: handleJdk
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "h5"
-  }, "JDK")), jdk ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "The Java Development Kit (JDK) is a software development environment used for developing Java applications and applets. It includes the Java Runtime Environment (JRE), an interpreter/loader (Java), a compiler (javac), an archiver (jar), a documentation generator (Javadoc) and other tools needed in Java development.")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "Java Development Kit (in short JDK) is Kit which provides the environment to develop and execute(run) the Java program. JDK is a kit(or package) which includes two things Development Tools(to provide an environment to develop your java programs) JRE (to execute your java program). became a popular choice for creating web applications."))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Paper"], {
-    className: classes.heroButtons
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], {
-    onClick: handleJar
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "h5"
-  }, "JAR")), jar ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "Java is a high-level programming language developed by Sun Microsystems. It was originally designed for developing programs for set-top boxes and handheld devices, but later became a popular choice for creating web applications.")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "body1"
-  }, "Java is a high-level programming language developed by Sun Microsystems. It was originally designed for developing programs for set-top boxes and handheld devices, but later became a popular choice for creating web applications."))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Divider"], {
-    variant: "middle"
-  })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Button"], {
-    variant: "contained",
-    color: "primary",
-    className: classes.handleButton,
-    onClick: e => {
-      var score = 0;
-      java ? score++ : score;
-      jdk ? score++ : score;
-      jre ? score++ : score;
-      jar ? score++ : score;
-      jvm ? score++ : score;
-      handleSubmit(e, props, startTime, score);
-    }
-  }, "Next")));
-}
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"default\", function() { return Definitions; });\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ \"react\");\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var _Data_courses__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../Data/courses */ \"./React/Shared/Data/courses.js\");\n/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @material-ui/core */ \"@material-ui/core\");\n/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__);\n/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! axios */ \"axios\");\n/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_3__);\nfunction asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }\n\nfunction _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"next\", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"throw\", err); } _next(undefined); }); }; }\n\n\n\n\n\nvar useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"makeStyles\"])(theme => ({\n  icon: {\n    marginRight: theme.spacing(2)\n  },\n  link: {\n    textDecoration: 'none'\n  },\n  handleButton: {\n    margin: theme.spacing(4),\n    float: 'right'\n  },\n  heroContent: {\n    backgroundColor: theme.palette.background.paper,\n    padding: theme.spacing(8, 0, 6)\n  },\n  heroButtons: {\n    margin: theme.spacing(4)\n  },\n  cardGrid: {\n    paddingTop: theme.spacing(8),\n    paddingBottom: theme.spacing(8)\n  },\n  card: {\n    height: '100%',\n    display: 'flex',\n    flexDirection: 'column'\n  },\n  cardMedia: {\n    paddingTop: '56.25%' // 16:9\n\n  },\n  cardContent: {\n    flexGrow: 1\n  },\n  footer: {\n    backgroundColor: theme.palette.background.paper,\n    padding: theme.spacing(6)\n  },\n  Text: {\n    display: 'block'\n  }\n}));\n\nvar handleSubmit = /*#__PURE__*/function () {\n  var _ref = _asyncToGenerator(function* (e, props, startTime, score) {\n    e.preventDefault();\n    score *= 2;\n    var time = Math.round((Date.now() - startTime) / 1000 / 60);\n    var authToken = sessionStorage.getItem('auth');\n\n    try {\n      var res = yield axios__WEBPACK_IMPORTED_MODULE_3___default.a.patch('http://127.0.0.1:8000/api/v1/student/ml/post/' + authToken, {\n        \"D\": score,\n        \"D_T\": time\n      });\n\n      if (res.status === 200) {\n        console.log('Successfully Pushed Activity Data');\n      } else {\n        alert(\"Problem While Pushing\");\n      }\n    } catch (err) {\n      alert(err);\n    }\n\n    time = time >= 9 ? 9 : time;\n    console.log(\"score\" + score);\n    console.log(\"time\" + time);\n    props.history.push('/course/' + props.match.params.course + '/Activity');\n  });\n\n  return function handleSubmit(_x, _x2, _x3, _x4) {\n    return _ref.apply(this, arguments);\n  };\n}();\n\nfunction Definitions(props) {\n  var classes = useStyles();\n  var startTime = Date.now();\n  var [java, setJava] = Object(react__WEBPACK_IMPORTED_MODULE_0__[\"useState\"])(false);\n\n  var handleJava = () => {\n    setJava(true);\n  };\n\n  var [jvm, setJvm] = Object(react__WEBPACK_IMPORTED_MODULE_0__[\"useState\"])(false);\n\n  var handleJvm = () => {\n    setJvm(true);\n  };\n\n  var [jdk, setJdk] = Object(react__WEBPACK_IMPORTED_MODULE_0__[\"useState\"])(false);\n\n  var handleJdk = () => {\n    setJdk(true);\n  };\n\n  var [jre, setJre] = Object(react__WEBPACK_IMPORTED_MODULE_0__[\"useState\"])(false);\n\n  var handleJre = () => {\n    setJre(true);\n  };\n\n  var [jar, setJar] = Object(react__WEBPACK_IMPORTED_MODULE_0__[\"useState\"])(false);\n\n  var handleJar = () => {\n    setJar(true);\n  };\n\n  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Container\"], {\n    maxWidth: \"sm\"\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(\"form\", {\n    autoComplete: \"off\",\n    noValidate: true\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"List\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Paper\"], {\n    className: classes.heroButtons\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], {\n    onClick: handleJava\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"h5\",\n    gutterBottom: true\n  }, \"Java\")), java ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\",\n    gutterBottom: true\n  }, \"Java is a high-level programming language developed by Sun Microsystems. It was originally designed for developing programs for set-top boxes and handheld devices, but later became a popular choice for creating web applications.\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\",\n    gutterBottom: true\n  }, \"The Java syntax is similar to C++, but is strictly an object-oriented programming language. For example, most Java programs contain classes, which are used to define objects, and methods, which are assigned to individual classes. Java is also known for being more strict than C++, meaning variables and functions must be explicitly defined. This means Java source code may produce errors or \\\"exceptions\\\" more easily than other languages, but it also limits other types of errors that may be caused by undefined variables or unassigned types.\"))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Paper\"], {\n    className: classes.heroButtons\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], {\n    onClick: handleJvm\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"h5\"\n  }, \"JVM\")), jvm ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"JVM(Java Virtual Machine) acts as a run-time engine to run Java applications. JVM is the one that actually calls the main method present in a java code. JVM is a part of JRE(Java Runtime Environment).\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Java applications are called WORA (Write Once Run Anywhere). This means a programmer can develop Java code on one system and can expect it to run on any other Java enabled system without any adjustment. This is all possible because of JVM.\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"When we compile a .java file, .class files(contains byte-code) with the same class names present in .java file are generated by the Java compiler. This .class file goes into various steps when we run it. These steps together describe the whole JVM.\"))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Paper\"], {\n    className: classes.heroButtons\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], {\n    onClick: handleJre\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"h5\"\n  }, \"JRE\")), jre ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"JRE stands for \\u201CJava Runtime Environment\\u201D and may also be written as \\u201CJava RTE.\\u201D The Java Runtime Environment provides the minimum requirements for executing a Java application; it consists of the Java Virtual Machine (JVM), core classes, and supporting files.\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Java Runtime Environment (to say JRE) is an installation package which provides environment to only run(not develop) the java program(or application)onto your machine. JRE is only used by them who only wants to run the Java Programs i.e. end users of your system.\"))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Paper\"], {\n    className: classes.heroButtons\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], {\n    onClick: handleJdk\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"h5\"\n  }, \"JDK\")), jdk ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"The Java Development Kit (JDK) is a software development environment used for developing Java applications and applets. It includes the Java Runtime Environment (JRE), an interpreter/loader (Java), a compiler (javac), an archiver (jar), a documentation generator (Javadoc) and other tools needed in Java development.\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Java Development Kit (in short JDK) is Kit which provides the environment to develop and execute(run) the Java program. JDK is a kit(or package) which includes two things Development Tools(to provide an environment to develop your java programs) JRE (to execute your java program). became a popular choice for creating web applications.\"))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Paper\"], {\n    className: classes.heroButtons\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], {\n    onClick: handleJar\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"h5\"\n  }, \"JAR\")), jar ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Java is a high-level programming language developed by Sun Microsystems. It was originally designed for developing programs for set-top boxes and handheld devices, but later became a popular choice for creating web applications.\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Java is a high-level programming language developed by Sun Microsystems. It was originally designed for developing programs for set-top boxes and handheld devices, but later became a popular choice for creating web applications.\"))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Divider\"], {\n    variant: \"middle\"\n  })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(\"br\", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Button\"], {\n    variant: \"contained\",\n    color: \"primary\",\n    className: classes.handleButton,\n    onClick: e => {\n      var score = 0;\n      java ? score++ : score;\n      jdk ? score++ : score;\n      jre ? score++ : score;\n      jar ? score++ : score;\n      jvm ? score++ : score;\n      handleSubmit(e, props, startTime, score);\n    }\n  }, \"Next\")));\n}//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9Db3Vyc2UvR2VuZXJhbE1hdGVyaWFscy9EZWZpbml0aW9ucy5qcy5qcyIsInNvdXJjZXMiOlsid2VicGFjazovLy8uL1JlYWN0L1NoYXJlZC9Db21wb25lbnRzL0NvdXJzZS9HZW5lcmFsTWF0ZXJpYWxzL0RlZmluaXRpb25zLmpzPzIxNmMiXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IFJlYWN0LCB7dXNlU3RhdGUsIHVzZUVmZmVjdH0gZnJvbSAncmVhY3QnXHJcbmltcG9ydCBjb3Vyc2VzIGZyb20gJy4uLy4uLy4uL0RhdGEvY291cnNlcydcclxuaW1wb3J0IHsgVHlwb2dyYXBoeSwgXHJcbiAgICBQYXBlciwgXHJcbiAgICBtYWtlU3R5bGVzLCBcclxuICAgIEJ1dHRvbixcclxuICAgIExpc3QsXHJcbiAgICBMaXN0SXRlbSxcclxuICAgIERpdmlkZXIsXHJcbiAgICBDb250YWluZXIsfSBmcm9tICdAbWF0ZXJpYWwtdWkvY29yZSdcclxuaW1wb3J0IGF4aW9zIGZyb20gJ2F4aW9zJ1xyXG5cclxuXHJcbmNvbnN0IHVzZVN0eWxlcyA9IG1ha2VTdHlsZXModGhlbWUgPT4gKHtcclxuICAgIGljb246IHtcclxuICAgICAgbWFyZ2luUmlnaHQ6IHRoZW1lLnNwYWNpbmcoMiksXHJcbiAgICB9LFxyXG4gICAgbGluayA6IHtcclxuICAgICAgdGV4dERlY29yYXRpb24gOiAnbm9uZScsXHJcbiAgICB9LFxyXG4gICAgaGFuZGxlQnV0dG9uIDp7XHJcbiAgICAgICAgbWFyZ2luOiB0aGVtZS5zcGFjaW5nKDQpLFxyXG4gICAgICAgIGZsb2F0OidyaWdodCdcclxuICAgICAgfSxcclxuICAgIGhlcm9Db250ZW50OiB7XHJcbiAgICAgIGJhY2tncm91bmRDb2xvcjogdGhlbWUucGFsZXR0ZS5iYWNrZ3JvdW5kLnBhcGVyLFxyXG4gICAgICBwYWRkaW5nOiB0aGVtZS5zcGFjaW5nKDgsIDAsIDYpLFxyXG4gICAgfSxcclxuICAgIGhlcm9CdXR0b25zOiB7XHJcbiAgICAgIG1hcmdpbjogdGhlbWUuc3BhY2luZyg0KSxcclxuICAgIFxyXG4gICAgfSxcclxuICAgIGNhcmRHcmlkOiB7XHJcbiAgICAgIHBhZGRpbmdUb3A6IHRoZW1lLnNwYWNpbmcoOCksXHJcbiAgICAgIHBhZGRpbmdCb3R0b206IHRoZW1lLnNwYWNpbmcoOCksXHJcbiAgICB9LFxyXG4gICAgY2FyZDoge1xyXG4gICAgICBoZWlnaHQ6ICcxMDAlJyxcclxuICAgICAgZGlzcGxheTogJ2ZsZXgnLFxyXG4gICAgICBmbGV4RGlyZWN0aW9uOiAnY29sdW1uJyxcclxuICAgIH0sXHJcbiAgICBjYXJkTWVkaWE6IHtcclxuICAgICAgcGFkZGluZ1RvcDogJzU2LjI1JScsIC8vIDE2OjlcclxuICAgIH0sXHJcbiAgICBjYXJkQ29udGVudDoge1xyXG4gICAgICBmbGV4R3JvdzogMSxcclxuICAgIH0sXHJcbiAgICBmb290ZXI6IHtcclxuICAgICAgYmFja2dyb3VuZENvbG9yOiB0aGVtZS5wYWxldHRlLmJhY2tncm91bmQucGFwZXIsXHJcbiAgICAgIHBhZGRpbmc6IHRoZW1lLnNwYWNpbmcoNiksXHJcbiAgICB9LFxyXG4gICAgVGV4dCA6IHtcclxuICAgICAgICBkaXNwbGF5IDogJ2Jsb2NrJ1xyXG4gICAgfVxyXG4gIH0pKTtcclxuXHJcblxyXG5jb25zdCBoYW5kbGVTdWJtaXQgPSBhc3luYyAoZSxwcm9wcyxzdGFydFRpbWUsc2NvcmUpID0+IHtcclxuICAgIGUucHJldmVudERlZmF1bHQoKVxyXG4gICAgc2NvcmUqPSAyXHJcbiAgICBsZXQgdGltZSA9IE1hdGgucm91bmQoKChEYXRlLm5vdygpIC0gc3RhcnRUaW1lKS8xMDAwKS82MClcclxuXHJcbiAgICBjb25zdCBhdXRoVG9rZW4gPSBzZXNzaW9uU3RvcmFnZS5nZXRJdGVtKCdhdXRoJylcclxuXHJcbiAgICB0cnkge1xyXG4gICAgICAgIGNvbnN0IHJlcyA9IGF3YWl0IGF4aW9zLnBhdGNoKCdodHRwOi8vMTI3LjAuMC4xOjgwMDAvYXBpL3YxL3N0dWRlbnQvbWwvcG9zdC8nK2F1dGhUb2tlbixcclxuICAgICAgICB7XHJcbiAgICAgICAgICBcIkRcIiA6IHNjb3JlLFxyXG4gICAgICAgICAgXCJEX1RcIiA6ICB0aW1lXHJcbiAgICAgICAgfSlcclxuICAgIFxyXG4gICAgICAgIGlmKHJlcy5zdGF0dXMgPT09IDIwMCkge1xyXG4gICAgICAgICAgY29uc29sZS5sb2coJ1N1Y2Nlc3NmdWxseSBQdXNoZWQgQWN0aXZpdHkgRGF0YScpXHJcbiAgICAgICAgfVxyXG4gICAgICAgIFxyXG4gICAgICAgIGVsc2Uge1xyXG4gICAgICAgICAgYWxlcnQoXCJQcm9ibGVtIFdoaWxlIFB1c2hpbmdcIik7XHJcbiAgICAgICAgfVxyXG4gICAgICB9IGNhdGNoKGVyciApe1xyXG4gICAgICAgIGFsZXJ0KGVycilcclxuICAgICAgfVxyXG5cclxuICAgIHRpbWUgPSB0aW1lID49IDkgPyA5IDogdGltZVxyXG4gICAgY29uc29sZS5sb2coXCJzY29yZVwiK3Njb3JlKVxyXG4gICAgY29uc29sZS5sb2coXCJ0aW1lXCIrdGltZSlcclxuXHJcbiAgICBwcm9wcy5oaXN0b3J5LnB1c2goICAnL2NvdXJzZS8nKyBwcm9wcy5tYXRjaC5wYXJhbXMuY291cnNlICsnL0FjdGl2aXR5JylcclxufVxyXG5cclxuZXhwb3J0IGRlZmF1bHQgZnVuY3Rpb24gRGVmaW5pdGlvbnMgKHByb3BzKSB7XHJcbiAgICBjb25zdCBjbGFzc2VzID0gdXNlU3R5bGVzKClcclxuXHJcblxyXG4gICAgY29uc3Qgc3RhcnRUaW1lID0gRGF0ZS5ub3coKVxyXG5cclxuICAgIGNvbnN0IFtqYXZhLHNldEphdmFdID0gdXNlU3RhdGUoZmFsc2UpXHJcblxyXG4gICAgY29uc3QgaGFuZGxlSmF2YSA9ICgpID0+IHtcclxuICAgICAgICBzZXRKYXZhKHRydWUpXHJcbiAgICB9XHJcblxyXG4gICAgY29uc3QgW2p2bSxzZXRKdm1dID0gdXNlU3RhdGUoZmFsc2UpXHJcblxyXG4gICAgY29uc3QgaGFuZGxlSnZtID0gKCkgPT4ge1xyXG4gICAgICAgIHNldEp2bSh0cnVlKVxyXG4gICAgfVxyXG5cclxuICAgIGNvbnN0IFtqZGssc2V0SmRrXSA9IHVzZVN0YXRlKGZhbHNlKVxyXG5cclxuICAgIGNvbnN0IGhhbmRsZUpkayA9ICgpID0+IHtcclxuICAgICAgICBzZXRKZGsodHJ1ZSlcclxuICAgIH1cclxuXHJcbiAgICBjb25zdCBbanJlLHNldEpyZV0gPSB1c2VTdGF0ZShmYWxzZSlcclxuXHJcbiAgICBjb25zdCBoYW5kbGVKcmUgPSAoKSA9PiB7XHJcbiAgICAgICAgc2V0SnJlKHRydWUpXHJcbiAgICB9XHJcblxyXG4gICAgY29uc3QgW2phcixzZXRKYXJdID0gdXNlU3RhdGUoZmFsc2UpXHJcblxyXG4gICAgY29uc3QgaGFuZGxlSmFyID0gKCkgPT4ge1xyXG4gICAgICAgIHNldEphcih0cnVlKVxyXG4gICAgfVxyXG5cclxuXHJcblxyXG4gICAgcmV0dXJuKFxyXG4gICAgICAgIDxDb250YWluZXIgbWF4V2lkdGg9J3NtJz5cclxuICAgICAgICAgICAgPGZvcm0gIGF1dG9Db21wbGV0ZT1cIm9mZlwiIG5vVmFsaWRhdGU+XHJcbiAgICAgICAgICAgICAgICA8TGlzdCA+XHJcbiAgICAgICAgICAgICAgICAgICAgPFBhcGVyIGNsYXNzTmFtZT17Y2xhc3Nlcy5oZXJvQnV0dG9uc30+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIDxMaXN0SXRlbSBvbkNsaWNrID0geyBoYW5kbGVKYXZhIH0gPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD0naDUnIGd1dHRlckJvdHRvbSA+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgSmF2YVxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPiBcclxuICAgICAgICAgICAgICAgICAgICAgICAgeyBqYXZhID8gKFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPFJlYWN0LkZyYWdtZW50PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD0nYm9keTEnIGd1dHRlckJvdHRvbT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIEphdmEgaXMgYSBoaWdoLWxldmVsIHByb2dyYW1taW5nIGxhbmd1YWdlIGRldmVsb3BlZCBieSBTdW4gTWljcm9zeXN0ZW1zLlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgSXQgd2FzIG9yaWdpbmFsbHkgZGVzaWduZWQgZm9yIGRldmVsb3BpbmcgcHJvZ3JhbXMgZm9yIHNldC10b3AgYm94ZXMgYW5kIGhhbmRoZWxkIGRldmljZXMsXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBidXQgbGF0ZXIgYmVjYW1lIGEgcG9wdWxhciBjaG9pY2UgZm9yIGNyZWF0aW5nIHdlYiBhcHBsaWNhdGlvbnMuXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD0nYm9keTEnIGd1dHRlckJvdHRvbT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFRoZSBKYXZhIHN5bnRheCBpcyBzaW1pbGFyIHRvIEMrKywgYnV0IGlzIHN0cmljdGx5IGFuIG9iamVjdC1vcmllbnRlZCBwcm9ncmFtbWluZyBsYW5ndWFnZS4gXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBGb3IgZXhhbXBsZSwgbW9zdCBKYXZhIHByb2dyYW1zIGNvbnRhaW4gY2xhc3Nlcywgd2hpY2ggYXJlIHVzZWQgdG8gZGVmaW5lIG9iamVjdHMsIGFuZCBtZXRob2RzLCBcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHdoaWNoIGFyZSBhc3NpZ25lZCB0byBpbmRpdmlkdWFsIGNsYXNzZXMuIEphdmEgaXMgYWxzbyBrbm93biBmb3IgYmVpbmcgbW9yZSBzdHJpY3QgdGhhbiBDKyssIFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgbWVhbmluZyB2YXJpYWJsZXMgYW5kIGZ1bmN0aW9ucyBtdXN0IGJlIGV4cGxpY2l0bHkgZGVmaW5lZC4gVGhpcyBtZWFucyBKYXZhIHNvdXJjZSBjb2RlIG1heSBwcm9kdWNlIFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgZXJyb3JzIG9yIFwiZXhjZXB0aW9uc1wiIG1vcmUgZWFzaWx5IHRoYW4gb3RoZXIgbGFuZ3VhZ2VzLCBidXQgaXQgYWxzbyBsaW1pdHMgb3RoZXIgdHlwZXMgb2YgZXJyb3JzIFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgdGhhdCBtYXkgYmUgY2F1c2VkIGJ5IHVuZGVmaW5lZCB2YXJpYWJsZXMgb3IgdW5hc3NpZ25lZCB0eXBlcy5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+IFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9SZWFjdC5GcmFnbWVudD4pXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA6IG51bGxcclxuICAgICAgICAgICAgICAgICAgICAgICAgfVxyXG4gICAgICAgICAgICAgICAgICAgIDwvUGFwZXI+XHJcbiAgICAgICAgICAgICAgICAgICAgPFBhcGVyIGNsYXNzTmFtZT17Y2xhc3Nlcy5oZXJvQnV0dG9uc30+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIDxMaXN0SXRlbSBvbkNsaWNrID0geyBoYW5kbGVKdm0gfT4gXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PSdoNSc+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgSlZNIFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPiBcclxuICAgICAgICAgICAgICAgICAgICAgICAgeyBqdm0gPyAoXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8UmVhY3QuRnJhZ21lbnQ+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PSdib2R5MSc+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBKVk0oSmF2YSBWaXJ0dWFsIE1hY2hpbmUpIGFjdHMgYXMgYSBydW4tdGltZSBlbmdpbmUgdG8gcnVuIEphdmEgYXBwbGljYXRpb25zLiBcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIEpWTSBpcyB0aGUgb25lIHRoYXQgYWN0dWFsbHkgY2FsbHMgdGhlIG1haW4gbWV0aG9kIHByZXNlbnQgaW4gYSBqYXZhIGNvZGUuIFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgSlZNIGlzIGEgcGFydCBvZiBKUkUoSmF2YSBSdW50aW1lIEVudmlyb25tZW50KS5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PSdib2R5MSc+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBKYXZhIGFwcGxpY2F0aW9ucyBhcmUgY2FsbGVkIFdPUkEgKFdyaXRlIE9uY2UgUnVuIEFueXdoZXJlKS4gXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBUaGlzIG1lYW5zIGEgcHJvZ3JhbW1lciBjYW4gZGV2ZWxvcCBKYXZhIGNvZGUgb24gb25lIHN5c3RlbSBhbmQgY2FuIGV4cGVjdCBpdCB0byBydW4gb24gYW55IG90aGVyIEphdmEgZW5hYmxlZCBzeXN0ZW0gd2l0aG91dCBhbnkgYWRqdXN0bWVudC4gXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBUaGlzIGlzIGFsbCBwb3NzaWJsZSBiZWNhdXNlIG9mIEpWTS5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PSdib2R5MSc+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBXaGVuIHdlIGNvbXBpbGUgYSAuamF2YSBmaWxlLCAuY2xhc3MgZmlsZXMoY29udGFpbnMgYnl0ZS1jb2RlKSB3aXRoIHRoZSBzYW1lIGNsYXNzIG5hbWVzIHByZXNlbnQgaW4gLmphdmEgZmlsZSBhcmUgZ2VuZXJhdGVkIGJ5IHRoZSBKYXZhIGNvbXBpbGVyLiBcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFRoaXMgLmNsYXNzIGZpbGUgZ29lcyBpbnRvIHZhcmlvdXMgc3RlcHMgd2hlbiB3ZSBydW4gaXQuIFRoZXNlIHN0ZXBzIHRvZ2V0aGVyIGRlc2NyaWJlIHRoZSB3aG9sZSBKVk0uICAgIFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvUmVhY3QuRnJhZ21lbnQ+ICkgOiBudWxsIH1cclxuICAgICAgICAgICAgICAgICAgICA8L1BhcGVyPlxyXG4gICAgICAgICAgICAgICAgICAgIDxQYXBlciBjbGFzc05hbWU9e2NsYXNzZXMuaGVyb0J1dHRvbnN9PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICA8TGlzdEl0ZW0gb25DbGljayA9IHsgaGFuZGxlSnJlIH0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PSdoNSc+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgSlJFIFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPiBcclxuICAgICAgICAgICAgICAgICAgICAgICAgeyBqcmUgPyAoXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8UmVhY3QuRnJhZ21lbnQ+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PSdib2R5MSc+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBKUkUgc3RhbmRzIGZvciDigJxKYXZhIFJ1bnRpbWUgRW52aXJvbm1lbnTigJ0gYW5kIG1heSBhbHNvIGJlIHdyaXR0ZW4gYXMg4oCcSmF2YSBSVEUu4oCdIFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgVGhlIEphdmEgUnVudGltZSBFbnZpcm9ubWVudCBwcm92aWRlcyB0aGUgbWluaW11bSByZXF1aXJlbWVudHMgZm9yIGV4ZWN1dGluZyBhIEphdmEgYXBwbGljYXRpb247IFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaXQgY29uc2lzdHMgb2YgdGhlIEphdmEgVmlydHVhbCBNYWNoaW5lIChKVk0pLCBjb3JlIGNsYXNzZXMsIGFuZCBzdXBwb3J0aW5nIGZpbGVzLlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9J2JvZHkxJz5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIEphdmEgUnVudGltZSBFbnZpcm9ubWVudCAodG8gc2F5IEpSRSkgaXMgYW4gaW5zdGFsbGF0aW9uIHBhY2thZ2Ugd2hpY2ggcHJvdmlkZXMgZW52aXJvbm1lbnQgdG8gb25seSBydW4obm90IGRldmVsb3ApIFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgdGhlIGphdmEgcHJvZ3JhbShvciBhcHBsaWNhdGlvbilvbnRvIHlvdXIgbWFjaGluZS4gSlJFIGlzIG9ubHkgdXNlZCBieSB0aGVtIHdobyBvbmx5IHdhbnRzIHRvIHJ1biB0aGUgSmF2YSBQcm9ncmFtcyBcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGkuZS4gZW5kIHVzZXJzIG9mIHlvdXIgc3lzdGVtLlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvUmVhY3QuRnJhZ21lbnQ+ICkgOiBudWxsIH1cclxuICAgICAgICAgICAgICAgICAgICA8L1BhcGVyPlxyXG4gICAgICAgICAgICAgICAgICAgIDxQYXBlciBjbGFzc05hbWU9e2NsYXNzZXMuaGVyb0J1dHRvbnN9PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICA8TGlzdEl0ZW0gb25DbGljayA9IHsgaGFuZGxlSmRrIH0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PSdoNSc+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgSkRLIFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPiBcclxuICAgICAgICAgICAgICAgICAgICAgICAgeyBqZGsgPyAoXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8UmVhY3QuRnJhZ21lbnQ+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PSdib2R5MSc+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBUaGUgSmF2YSBEZXZlbG9wbWVudCBLaXQgKEpESykgaXMgYSBzb2Z0d2FyZSBkZXZlbG9wbWVudCBlbnZpcm9ubWVudCB1c2VkIGZvciBkZXZlbG9waW5nIEphdmEgYXBwbGljYXRpb25zIGFuZCBhcHBsZXRzLiBcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIEl0IGluY2x1ZGVzIHRoZSBKYXZhIFJ1bnRpbWUgRW52aXJvbm1lbnQgKEpSRSksIGFuIGludGVycHJldGVyL2xvYWRlciAoSmF2YSksIGEgY29tcGlsZXIgKGphdmFjKSwgYW4gYXJjaGl2ZXIgKGphciksIFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYSBkb2N1bWVudGF0aW9uIGdlbmVyYXRvciAoSmF2YWRvYykgYW5kIG90aGVyIHRvb2xzIG5lZWRlZCBpbiBKYXZhIGRldmVsb3BtZW50LlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9J2JvZHkxJz5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIEphdmEgRGV2ZWxvcG1lbnQgS2l0IChpbiBzaG9ydCBKREspIGlzIEtpdCB3aGljaCBwcm92aWRlcyB0aGUgZW52aXJvbm1lbnQgdG8gZGV2ZWxvcCBhbmQgZXhlY3V0ZShydW4pIHRoZSBKYXZhIHByb2dyYW0uIEpESyBpcyBhIGtpdChvciBwYWNrYWdlKSB3aGljaCBpbmNsdWRlcyB0d28gdGhpbmdzXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBEZXZlbG9wbWVudCBUb29scyh0byBwcm92aWRlIGFuIGVudmlyb25tZW50IHRvIGRldmVsb3AgeW91ciBqYXZhIHByb2dyYW1zKVxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgSlJFICh0byBleGVjdXRlIHlvdXIgamF2YSBwcm9ncmFtKS4gYmVjYW1lIGEgcG9wdWxhciBjaG9pY2UgZm9yIGNyZWF0aW5nIHdlYiBhcHBsaWNhdGlvbnMuXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9SZWFjdC5GcmFnbWVudD4gKVxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgOiBudWxsIH1cclxuICAgICAgICAgICAgICAgICAgICA8L1BhcGVyPlxyXG4gICAgICAgICAgICAgICAgICAgIDxQYXBlciBjbGFzc05hbWU9e2NsYXNzZXMuaGVyb0J1dHRvbnN9PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICA8TGlzdEl0ZW0gb25DbGljayA9IHsgaGFuZGxlSmFyIH0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PSdoNSc+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgSkFSIFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPiBcclxuICAgICAgICAgICAgICAgICAgICAgICAgeyBqYXIgPyAoXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8UmVhY3QuRnJhZ21lbnQ+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PSdib2R5MSc+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBKYXZhIGlzIGEgaGlnaC1sZXZlbCBwcm9ncmFtbWluZyBsYW5ndWFnZSBkZXZlbG9wZWQgYnkgU3VuIE1pY3Jvc3lzdGVtcy5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIEl0IHdhcyBvcmlnaW5hbGx5IGRlc2lnbmVkIGZvciBkZXZlbG9waW5nIHByb2dyYW1zIGZvciBzZXQtdG9wIGJveGVzIGFuZCBoYW5kaGVsZCBkZXZpY2VzLFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYnV0IGxhdGVyIGJlY2FtZSBhIHBvcHVsYXIgY2hvaWNlIGZvciBjcmVhdGluZyB3ZWIgYXBwbGljYXRpb25zLlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9J2JvZHkxJz5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIEphdmEgaXMgYSBoaWdoLWxldmVsIHByb2dyYW1taW5nIGxhbmd1YWdlIGRldmVsb3BlZCBieSBTdW4gTWljcm9zeXN0ZW1zLlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgSXQgd2FzIG9yaWdpbmFsbHkgZGVzaWduZWQgZm9yIGRldmVsb3BpbmcgcHJvZ3JhbXMgZm9yIHNldC10b3AgYm94ZXMgYW5kIGhhbmRoZWxkIGRldmljZXMsXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBidXQgbGF0ZXIgYmVjYW1lIGEgcG9wdWxhciBjaG9pY2UgZm9yIGNyZWF0aW5nIHdlYiBhcHBsaWNhdGlvbnMuXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9SZWFjdC5GcmFnbWVudD4gKVxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgOiBudWxsXHJcbiAgICAgICAgICAgICAgICAgICAgICAgIH1cclxuICAgICAgICAgICAgICAgICAgICA8L1BhcGVyPlxyXG4gICAgICAgICAgICAgICAgICAgIDxEaXZpZGVyIHZhcmlhbnQ9XCJtaWRkbGVcIiAvPlxyXG4gICAgICAgICAgICAgICAgPC9MaXN0PlxyXG4gICAgICAgICAgICAgICAgPGJyLz5cclxuICAgICAgICAgICAgICAgIDxCdXR0b24gdmFyaWFudD1cImNvbnRhaW5lZFwiIGNvbG9yPVwicHJpbWFyeVwiIGNsYXNzTmFtZT17Y2xhc3Nlcy5oYW5kbGVCdXR0b259IG9uQ2xpY2s9eyhlKT0+eyBcclxuICAgICAgICAgICAgICAgICAgICBsZXQgc2NvcmUgPSAwO1xyXG4gICAgICAgICAgICAgICAgICAgIFxyXG4gICAgICAgICAgICAgICAgICAgIGphdmEgPyBzY29yZSsrOnNjb3JlXHJcbiAgICAgICAgICAgICAgICAgICAgamRrID8gc2NvcmUrKzpzY29yZVxyXG4gICAgICAgICAgICAgICAgICAgIGpyZSA/IHNjb3JlKys6c2NvcmVcclxuICAgICAgICAgICAgICAgICAgICBqYXIgPyBzY29yZSsrOnNjb3JlXHJcbiAgICAgICAgICAgICAgICAgICAganZtID8gc2NvcmUrKzpzY29yZVxyXG5cclxuICAgICAgICAgICAgICAgICAgICBoYW5kbGVTdWJtaXQoZSxwcm9wcyxzdGFydFRpbWUsc2NvcmUpIFxyXG4gICAgICAgICAgICAgICAgICAgIH19PlxyXG4gICAgICAgICAgICAgICAgTmV4dFxyXG4gICAgICAgICAgICAgICAgPC9CdXR0b24+XHJcbiAgICAgICAgICAgIDwvZm9ybT5cclxuICAgICAgICA8L0NvbnRhaW5lcj5cclxuICAgIClcclxufSJdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7OztBQUFBO0FBQ0E7QUFDQTtBQVFBO0FBR0E7QUFDQTtBQUNBO0FBREE7QUFHQTtBQUNBO0FBREE7QUFHQTtBQUNBO0FBQ0E7QUFGQTtBQUlBO0FBQ0E7QUFDQTtBQUZBO0FBSUE7QUFDQTtBQURBO0FBSUE7QUFDQTtBQUNBO0FBRkE7QUFJQTtBQUNBO0FBQ0E7QUFDQTtBQUhBO0FBS0E7QUFDQTtBQUNBO0FBRkE7QUFHQTtBQUNBO0FBREE7QUFHQTtBQUNBO0FBQ0E7QUFGQTtBQUlBO0FBQ0E7QUFEQTtBQXRDQTtBQUNBO0FBMkNBO0FBQUE7QUFDQTtBQUNBO0FBQ0E7QUFFQTtBQUNBO0FBQ0E7QUFDQTtBQUVBO0FBQ0E7QUFGQTtBQUNBO0FBSUE7QUFDQTtBQUNBO0FBR0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBRUE7QUFDQTtBQUNBO0FBL0JBO0FBQUE7QUFBQTtBQUFBO0FBQ0E7QUErQkE7QUFDQTtBQUdBO0FBRUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBR0E7QUFDQTtBQUFBO0FBQ0E7QUFBQTtBQUFBO0FBRUE7QUFBQTtBQUNBO0FBQUE7QUFDQTtBQUFBO0FBQUE7QUFPQTtBQUFBO0FBQUE7QUFPQTtBQUFBO0FBQUE7QUFhQTtBQUFBO0FBQ0E7QUFBQTtBQUNBO0FBQUE7QUFPQTtBQUFBO0FBT0E7QUFBQTtBQU9BO0FBQUE7QUFPQTtBQUFBO0FBQ0E7QUFBQTtBQUNBO0FBQUE7QUFPQTtBQUFBO0FBT0E7QUFBQTtBQVFBO0FBQUE7QUFDQTtBQUFBO0FBQ0E7QUFBQTtBQU9BO0FBQUE7QUFPQTtBQUFBO0FBU0E7QUFBQTtBQUNBO0FBQUE7QUFDQTtBQUFBO0FBT0E7QUFBQTtBQU9BO0FBQUE7QUFVQTtBQUFBO0FBR0E7QUFBQTtBQUFBO0FBQUE7QUFDQTtBQUVBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFFQTtBQUNBO0FBVkE7QUFnQkEiLCJzb3VyY2VSb290IjoiIn0=\n//# sourceURL=webpack-internal:///./React/Shared/Components/Course/GeneralMaterials/Definitions.js\n");
 
 /***/ }),
 
@@ -1398,198 +253,7 @@ function Definitions(props) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Overview; });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core */ "@material-ui/core");
-/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! axios */ "axios");
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_2__);
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
-
-
-
-
-var useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["makeStyles"])(theme => ({
-  icon: {
-    marginRight: theme.spacing(2)
-  },
-  link: {
-    textDecoration: 'none'
-  },
-  handleButton: {
-    margin: theme.spacing(4),
-    float: 'right'
-  },
-  heroContent: {
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(8, 0, 6)
-  },
-  heroButtons: {
-    margin: theme.spacing(4)
-  },
-  cardGrid: {
-    paddingTop: theme.spacing(8),
-    paddingBottom: theme.spacing(8)
-  },
-  card: {
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column'
-  },
-  cardMedia: {
-    paddingTop: '56.25%' // 16:9
-
-  },
-  cardContent: {
-    flexGrow: 1
-  },
-  footer: {
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(6)
-  },
-  Text: {
-    display: 'block'
-  }
-}));
-
-var handleSubmit = /*#__PURE__*/function () {
-  var _ref = _asyncToGenerator(function* (e, props, startTime, score) {
-    e.preventDefault();
-    score *= 2;
-    var time = Math.round((Date.now() - startTime) / 1000 / 60);
-    time = time >= 9 ? 9 : time;
-    var authToken = sessionStorage.getItem('auth');
-
-    try {
-      var res = yield axios__WEBPACK_IMPORTED_MODULE_2___default.a.patch('http://127.0.0.1:8000/api/v1/student/ml/post/' + authToken, {
-        "ABC": score,
-        "ABC_T": time
-      });
-
-      if (res.status === 200) {
-        console.log('Successfully Pushed Activity Data');
-      } else {
-        alert("Problem While Pushing");
-      }
-    } catch (err) {
-      alert(err);
-    }
-
-    console.log("score" + score);
-    console.log("time" + time);
-    props.history.push('/course/' + props.match.params.course + '/Definitons');
-  });
-
-  return function handleSubmit(_x, _x2, _x3, _x4) {
-    return _ref.apply(this, arguments);
-  };
-}();
-
-function Overview(props) {
-  var classes = useStyles();
-  var startTime = Date.now();
-  var [intro, setIntro] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false);
-
-  var handleIntro = () => {
-    setIntro(true);
-  };
-
-  var [basics, setBasics] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false);
-
-  var handleBasics = () => {
-    setBasics(true);
-  };
-
-  var [inter, setInter] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false);
-
-  var handleInter = () => {
-    setInter(true);
-  };
-
-  var [oops, setOops] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false);
-
-  var handleOops = () => {
-    setOops(true);
-  };
-
-  var [adv, setAdv] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false);
-
-  var handleAdv = () => {
-    setAdv(true);
-  };
-
-  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Container"], {
-    maxWidth: "sm"
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("form", {
-    autoComplete: "off",
-    noValidate: true
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["List"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Paper"], {
-    className: classes.heroButtons
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], {
-    onClick: handleIntro
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "h5",
-    gutterBottom: true
-  }, "Introduction")), intro ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1",
-    gutterBottom: true
-  }, "In this section we learn the basic & fundamental things about Java"))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Paper"], {
-    className: classes.heroButtons
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], {
-    onClick: handleBasics
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "h5"
-  }, "Basics")), basics ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "Basic programming concepts like contditional statements and loop statements and variables and thier syntax will be covered here."))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Paper"], {
-    className: classes.heroButtons
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], {
-    onClick: handleInter
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "h5"
-  }, "Intermediatory")), inter ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "concepts like packages classes functions access modifiers will be covered here."))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Paper"], {
-    className: classes.heroButtons
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], {
-    onClick: handleOops
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "h5"
-  }, "Object Oriented  Programming With Java")), oops ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "Object Oriented concepts like inheritence and abstracting will be covered here.")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "Java Interface concepts also will take importance phase in this chapter"))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Paper"], {
-    className: classes.heroButtons
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], {
-    onClick: handleAdv
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "h5"
-  }, "Advanced Java")), adv ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "Advanced java concepts like threads and streams and lamda kinda things will take dominance here.")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "Networking in java also is an important concept to learn."))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Divider"], {
-    variant: "middle"
-  })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Button"], {
-    variant: "contained",
-    color: "primary",
-    className: classes.handleButton,
-    onClick: e => {
-      var score = 0;
-      intro ? score++ : score;
-      inter ? score++ : score;
-      oops ? score++ : score;
-      adv ? score++ : score;
-      basics ? score++ : score;
-      handleSubmit(e, props, startTime, score);
-    }
-  }, "Next")));
-}
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"default\", function() { return Overview; });\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ \"react\");\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core */ \"@material-ui/core\");\n/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__);\n/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! axios */ \"axios\");\n/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_2__);\nfunction asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }\n\nfunction _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"next\", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"throw\", err); } _next(undefined); }); }; }\n\n\n\n\nvar useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"makeStyles\"])(theme => ({\n  icon: {\n    marginRight: theme.spacing(2)\n  },\n  link: {\n    textDecoration: 'none'\n  },\n  handleButton: {\n    margin: theme.spacing(4),\n    float: 'right'\n  },\n  heroContent: {\n    backgroundColor: theme.palette.background.paper,\n    padding: theme.spacing(8, 0, 6)\n  },\n  heroButtons: {\n    margin: theme.spacing(4)\n  },\n  cardGrid: {\n    paddingTop: theme.spacing(8),\n    paddingBottom: theme.spacing(8)\n  },\n  card: {\n    height: '100%',\n    display: 'flex',\n    flexDirection: 'column'\n  },\n  cardMedia: {\n    paddingTop: '56.25%' // 16:9\n\n  },\n  cardContent: {\n    flexGrow: 1\n  },\n  footer: {\n    backgroundColor: theme.palette.background.paper,\n    padding: theme.spacing(6)\n  },\n  Text: {\n    display: 'block'\n  }\n}));\n\nvar handleSubmit = /*#__PURE__*/function () {\n  var _ref = _asyncToGenerator(function* (e, props, startTime, score) {\n    e.preventDefault();\n    score *= 2;\n    var time = Math.round((Date.now() - startTime) / 1000 / 60);\n    time = time >= 9 ? 9 : time;\n    var authToken = sessionStorage.getItem('auth');\n\n    try {\n      var res = yield axios__WEBPACK_IMPORTED_MODULE_2___default.a.patch('http://127.0.0.1:8000/api/v1/student/ml/post/' + authToken, {\n        \"ABC\": score,\n        \"ABC_T\": time\n      });\n\n      if (res.status === 200) {\n        console.log('Successfully Pushed Activity Data');\n      } else {\n        alert(\"Problem While Pushing\");\n      }\n    } catch (err) {\n      alert(err);\n    }\n\n    console.log(\"score\" + score);\n    console.log(\"time\" + time);\n    props.history.push('/course/' + props.match.params.course + '/Definitons');\n  });\n\n  return function handleSubmit(_x, _x2, _x3, _x4) {\n    return _ref.apply(this, arguments);\n  };\n}();\n\nfunction Overview(props) {\n  var classes = useStyles();\n  var startTime = Date.now();\n  var [intro, setIntro] = Object(react__WEBPACK_IMPORTED_MODULE_0__[\"useState\"])(false);\n\n  var handleIntro = () => {\n    setIntro(true);\n  };\n\n  var [basics, setBasics] = Object(react__WEBPACK_IMPORTED_MODULE_0__[\"useState\"])(false);\n\n  var handleBasics = () => {\n    setBasics(true);\n  };\n\n  var [inter, setInter] = Object(react__WEBPACK_IMPORTED_MODULE_0__[\"useState\"])(false);\n\n  var handleInter = () => {\n    setInter(true);\n  };\n\n  var [oops, setOops] = Object(react__WEBPACK_IMPORTED_MODULE_0__[\"useState\"])(false);\n\n  var handleOops = () => {\n    setOops(true);\n  };\n\n  var [adv, setAdv] = Object(react__WEBPACK_IMPORTED_MODULE_0__[\"useState\"])(false);\n\n  var handleAdv = () => {\n    setAdv(true);\n  };\n\n  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Container\"], {\n    maxWidth: \"sm\"\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(\"form\", {\n    autoComplete: \"off\",\n    noValidate: true\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"List\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Paper\"], {\n    className: classes.heroButtons\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], {\n    onClick: handleIntro\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h5\",\n    gutterBottom: true\n  }, \"Introduction\")), intro ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\",\n    gutterBottom: true\n  }, \"In this section we learn the basic & fundamental things about Java\"))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Paper\"], {\n    className: classes.heroButtons\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], {\n    onClick: handleBasics\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h5\"\n  }, \"Basics\")), basics ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Basic programming concepts like contditional statements and loop statements and variables and thier syntax will be covered here.\"))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Paper\"], {\n    className: classes.heroButtons\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], {\n    onClick: handleInter\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h5\"\n  }, \"Intermediatory\")), inter ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"concepts like packages classes functions access modifiers will be covered here.\"))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Paper\"], {\n    className: classes.heroButtons\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], {\n    onClick: handleOops\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h5\"\n  }, \"Object Oriented  Programming With Java\")), oops ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Object Oriented concepts like inheritence and abstracting will be covered here.\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Java Interface concepts also will take importance phase in this chapter\"))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Paper\"], {\n    className: classes.heroButtons\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], {\n    onClick: handleAdv\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h5\"\n  }, \"Advanced Java\")), adv ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Advanced java concepts like threads and streams and lamda kinda things will take dominance here.\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Networking in java also is an important concept to learn.\"))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Divider\"], {\n    variant: \"middle\"\n  })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(\"br\", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Button\"], {\n    variant: \"contained\",\n    color: \"primary\",\n    className: classes.handleButton,\n    onClick: e => {\n      var score = 0;\n      intro ? score++ : score;\n      inter ? score++ : score;\n      oops ? score++ : score;\n      adv ? score++ : score;\n      basics ? score++ : score;\n      handleSubmit(e, props, startTime, score);\n    }\n  }, \"Next\")));\n}//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9Db3Vyc2UvR2VuZXJhbE1hdGVyaWFscy9PdmVydmlldy5qcy5qcyIsInNvdXJjZXMiOlsid2VicGFjazovLy8uL1JlYWN0L1NoYXJlZC9Db21wb25lbnRzL0NvdXJzZS9HZW5lcmFsTWF0ZXJpYWxzL092ZXJ2aWV3LmpzP2ZhMjEiXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IFJlYWN0LCB7dXNlU3RhdGUsIHVzZUVmZmVjdH0gZnJvbSAncmVhY3QnXHJcbmltcG9ydCB7IFR5cG9ncmFwaHksIFxyXG4gICAgUGFwZXIsIFxyXG4gICAgbWFrZVN0eWxlcywgXHJcbiAgICBCdXR0b24sXHJcbiAgICBMaXN0LFxyXG4gICAgTGlzdEl0ZW0sXHJcbiAgICBEaXZpZGVyLFxyXG4gICAgQ29udGFpbmVyfSBmcm9tICdAbWF0ZXJpYWwtdWkvY29yZSdcclxuaW1wb3J0IGF4aW9zIGZyb20gJ2F4aW9zJyAgICBcclxuXHJcblxyXG5jb25zdCB1c2VTdHlsZXMgPSBtYWtlU3R5bGVzKHRoZW1lID0+ICh7XHJcbiAgICBpY29uOiB7XHJcbiAgICAgIG1hcmdpblJpZ2h0OiB0aGVtZS5zcGFjaW5nKDIpLFxyXG4gICAgfSxcclxuICAgIGxpbmsgOiB7XHJcbiAgICAgIHRleHREZWNvcmF0aW9uIDogJ25vbmUnLFxyXG4gICAgfSxcclxuICAgIGhhbmRsZUJ1dHRvbiA6e1xyXG4gICAgICAgIG1hcmdpbjogdGhlbWUuc3BhY2luZyg0KSxcclxuICAgICAgICBmbG9hdDoncmlnaHQnXHJcbiAgICB9LFxyXG4gICAgaGVyb0NvbnRlbnQ6IHtcclxuICAgICAgYmFja2dyb3VuZENvbG9yOiB0aGVtZS5wYWxldHRlLmJhY2tncm91bmQucGFwZXIsXHJcbiAgICAgIHBhZGRpbmc6IHRoZW1lLnNwYWNpbmcoOCwgMCwgNiksXHJcbiAgICB9LFxyXG4gICAgaGVyb0J1dHRvbnM6IHtcclxuICAgICAgbWFyZ2luOiB0aGVtZS5zcGFjaW5nKDQpLFxyXG4gICAgfSxcclxuICAgIGNhcmRHcmlkOiB7XHJcbiAgICAgIHBhZGRpbmdUb3A6IHRoZW1lLnNwYWNpbmcoOCksXHJcbiAgICAgIHBhZGRpbmdCb3R0b206IHRoZW1lLnNwYWNpbmcoOCksXHJcbiAgICB9LFxyXG4gICAgY2FyZDoge1xyXG4gICAgICBoZWlnaHQ6ICcxMDAlJyxcclxuICAgICAgZGlzcGxheTogJ2ZsZXgnLFxyXG4gICAgICBmbGV4RGlyZWN0aW9uOiAnY29sdW1uJyxcclxuICAgIH0sXHJcbiAgICBjYXJkTWVkaWE6IHtcclxuICAgICAgcGFkZGluZ1RvcDogJzU2LjI1JScsIC8vIDE2OjlcclxuICAgIH0sXHJcbiAgICBjYXJkQ29udGVudDoge1xyXG4gICAgICBmbGV4R3JvdzogMSxcclxuICAgIH0sXHJcbiAgICBmb290ZXI6IHtcclxuICAgICAgYmFja2dyb3VuZENvbG9yOiB0aGVtZS5wYWxldHRlLmJhY2tncm91bmQucGFwZXIsXHJcbiAgICAgIHBhZGRpbmc6IHRoZW1lLnNwYWNpbmcoNiksXHJcbiAgICB9LFxyXG4gICAgVGV4dCA6IHtcclxuICAgICAgICBkaXNwbGF5IDogJ2Jsb2NrJ1xyXG4gICAgfVxyXG4gIH0pKTtcclxuXHJcblxyXG5jb25zdCBoYW5kbGVTdWJtaXQgPSBhc3luYyAoZSxwcm9wcyxzdGFydFRpbWUsc2NvcmUpID0+IHtcclxuICAgIGUucHJldmVudERlZmF1bHQoKVxyXG4gICAgc2NvcmUqPSAyXHJcbiAgICBsZXQgdGltZSA9IE1hdGgucm91bmQoKChEYXRlLm5vdygpIC0gc3RhcnRUaW1lKS8xMDAwKS82MClcclxuICAgIHRpbWUgPSB0aW1lID49IDkgPyA5IDogdGltZVxyXG5cclxuXHJcbiAgICBjb25zdCBhdXRoVG9rZW4gPSBzZXNzaW9uU3RvcmFnZS5nZXRJdGVtKCdhdXRoJylcclxuXHJcbiAgICB0cnkge1xyXG4gICAgICAgIGNvbnN0IHJlcyA9IGF3YWl0IGF4aW9zLnBhdGNoKCdodHRwOi8vMTI3LjAuMC4xOjgwMDAvYXBpL3YxL3N0dWRlbnQvbWwvcG9zdC8nK2F1dGhUb2tlbixcclxuICAgICAgICB7XHJcbiAgICAgICAgICBcIkFCQ1wiIDogc2NvcmUsXHJcbiAgICAgICAgICBcIkFCQ19UXCIgOiAgdGltZVxyXG4gICAgICAgIH0pXHJcbiAgICBcclxuICAgICAgICBpZihyZXMuc3RhdHVzID09PSAyMDApIHtcclxuICAgICAgICAgIGNvbnNvbGUubG9nKCdTdWNjZXNzZnVsbHkgUHVzaGVkIEFjdGl2aXR5IERhdGEnKVxyXG4gICAgICAgIH1cclxuICAgICAgICBcclxuICAgICAgICBlbHNlIHtcclxuICAgICAgICAgIGFsZXJ0KFwiUHJvYmxlbSBXaGlsZSBQdXNoaW5nXCIpO1xyXG4gICAgICAgIH1cclxuICAgICAgfSBjYXRjaChlcnIgKXtcclxuICAgICAgICBhbGVydChlcnIpXHJcbiAgICAgIH1cclxuXHJcbiAgICBjb25zb2xlLmxvZyhcInNjb3JlXCIrc2NvcmUpXHJcbiAgICBjb25zb2xlLmxvZyhcInRpbWVcIit0aW1lKVxyXG5cclxuICAgIHByb3BzLmhpc3RvcnkucHVzaCggJy9jb3Vyc2UvJysgcHJvcHMubWF0Y2gucGFyYW1zLmNvdXJzZSArJy9EZWZpbml0b25zJylcclxufVxyXG5cclxuZXhwb3J0IGRlZmF1bHQgZnVuY3Rpb24gT3ZlcnZpZXcgKHByb3BzKSB7XHJcbiAgICBjb25zdCBjbGFzc2VzID0gdXNlU3R5bGVzKClcclxuXHJcblxyXG4gICAgY29uc3Qgc3RhcnRUaW1lID0gRGF0ZS5ub3coKVxyXG5cclxuICAgIGNvbnN0IFtpbnRybyxzZXRJbnRyb10gPSB1c2VTdGF0ZShmYWxzZSlcclxuXHJcbiAgICBjb25zdCBoYW5kbGVJbnRybyA9ICgpID0+IHtcclxuICAgICAgICBzZXRJbnRybyh0cnVlKVxyXG4gICAgfVxyXG5cclxuICAgIGNvbnN0IFtiYXNpY3Msc2V0QmFzaWNzXSA9IHVzZVN0YXRlKGZhbHNlKVxyXG5cclxuICAgIGNvbnN0IGhhbmRsZUJhc2ljcyA9ICgpID0+IHtcclxuICAgICAgICBzZXRCYXNpY3ModHJ1ZSlcclxuICAgIH1cclxuXHJcbiAgICBjb25zdCBbaW50ZXIsc2V0SW50ZXJdID0gdXNlU3RhdGUoZmFsc2UpXHJcblxyXG4gICAgY29uc3QgaGFuZGxlSW50ZXIgPSAoKSA9PiB7XHJcbiAgICAgICAgc2V0SW50ZXIodHJ1ZSlcclxuICAgIH1cclxuXHJcbiAgICBjb25zdCBbb29wcyxzZXRPb3BzXSA9IHVzZVN0YXRlKGZhbHNlKVxyXG5cclxuICAgIGNvbnN0IGhhbmRsZU9vcHMgPSAoKSA9PiB7XHJcbiAgICAgICAgc2V0T29wcyh0cnVlKVxyXG4gICAgfVxyXG5cclxuICAgIGNvbnN0IFthZHYsc2V0QWR2XSA9IHVzZVN0YXRlKGZhbHNlKVxyXG5cclxuICAgIGNvbnN0IGhhbmRsZUFkdiA9ICgpID0+IHtcclxuICAgICAgICBzZXRBZHYodHJ1ZSlcclxuICAgIH1cclxuXHJcblxyXG5cclxuICAgIHJldHVybihcclxuICAgICAgICA8Q29udGFpbmVyIG1heFdpZHRoPSdzbSc+XHJcbiAgICAgICAgICAgIDxmb3JtICBhdXRvQ29tcGxldGU9XCJvZmZcIiBub1ZhbGlkYXRlPlxyXG4gICAgICAgICAgICAgICAgPExpc3QgPlxyXG4gICAgICAgICAgICAgICAgICAgIDxQYXBlciBjbGFzc05hbWU9e2NsYXNzZXMuaGVyb0J1dHRvbnN9PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICA8TGlzdEl0ZW0gb25DbGljayA9IHsgaGFuZGxlSW50cm8gfSA+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PSdoNScgZ3V0dGVyQm90dG9tID5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBJbnRyb2R1Y3Rpb25cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgPC9MaXN0SXRlbT4gXHJcbiAgICAgICAgICAgICAgICAgICAgICAgIHsgIGludHJvID8gKFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPFJlYWN0LkZyYWdtZW50PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD0nYm9keTEnIGd1dHRlckJvdHRvbT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIEluIHRoaXMgc2VjdGlvbiB3ZSBsZWFybiB0aGUgYmFzaWMgJiBmdW5kYW1lbnRhbCB0aGluZ3MgYWJvdXQgSmF2YVxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvUmVhY3QuRnJhZ21lbnQ+KVxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgOiBudWxsXHJcbiAgICAgICAgICAgICAgICAgICAgICAgIH1cclxuICAgICAgICAgICAgICAgICAgICA8L1BhcGVyPlxyXG4gICAgICAgICAgICAgICAgICAgIDxQYXBlciBjbGFzc05hbWU9e2NsYXNzZXMuaGVyb0J1dHRvbnN9PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICA8TGlzdEl0ZW0gb25DbGljayA9IHsgaGFuZGxlQmFzaWNzIH0+IFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD0naDUnPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIEJhc2ljc1xyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPiBcclxuICAgICAgICAgICAgICAgICAgICAgICAgeyBiYXNpY3MgPyAoXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8UmVhY3QuRnJhZ21lbnQ+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PSdib2R5MSc+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIEJhc2ljIHByb2dyYW1taW5nIGNvbmNlcHRzIGxpa2UgY29udGRpdGlvbmFsIHN0YXRlbWVudHMgYW5kIGxvb3Agc3RhdGVtZW50cyBhbmQgdmFyaWFibGVzIGFuZCB0aGllciBzeW50YXggd2lsbCBiZSBjb3ZlcmVkIGhlcmUuXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9SZWFjdC5GcmFnbWVudD4gKSA6IG51bGwgfVxyXG4gICAgICAgICAgICAgICAgICAgIDwvUGFwZXI+XHJcbiAgICAgICAgICAgICAgICAgICAgPFBhcGVyIGNsYXNzTmFtZT17Y2xhc3Nlcy5oZXJvQnV0dG9uc30+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIDxMaXN0SXRlbSBvbkNsaWNrID0geyBoYW5kbGVJbnRlciB9PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD0naDUnPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIEludGVybWVkaWF0b3J5IFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPiBcclxuICAgICAgICAgICAgICAgICAgICAgICAgeyBpbnRlciA/IChcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxSZWFjdC5GcmFnbWVudD5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9J2JvZHkxJz5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgY29uY2VwdHMgbGlrZSBwYWNrYWdlcyBjbGFzc2VzIGZ1bmN0aW9ucyBhY2Nlc3MgbW9kaWZpZXJzIHdpbGwgYmUgY292ZXJlZCBoZXJlLlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvUmVhY3QuRnJhZ21lbnQ+ICkgOiBudWxsIH1cclxuICAgICAgICAgICAgICAgICAgICA8L1BhcGVyPlxyXG4gICAgICAgICAgICAgICAgICAgIDxQYXBlciBjbGFzc05hbWU9e2NsYXNzZXMuaGVyb0J1dHRvbnN9PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICA8TGlzdEl0ZW0gb25DbGljayA9IHsgaGFuZGxlT29wcyB9PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD0naDUnPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIE9iamVjdCBPcmllbnRlZCAgUHJvZ3JhbW1pbmcgV2l0aCBKYXZhIFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPiBcclxuICAgICAgICAgICAgICAgICAgICAgICAgeyBvb3BzID8gKFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPFJlYWN0LkZyYWdtZW50PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD0nYm9keTEnPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBPYmplY3QgT3JpZW50ZWQgY29uY2VwdHMgbGlrZSBpbmhlcml0ZW5jZSBhbmQgYWJzdHJhY3Rpbmcgd2lsbCBiZSBjb3ZlcmVkIGhlcmUuXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD0nYm9keTEnPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgSmF2YSBJbnRlcmZhY2UgY29uY2VwdHMgYWxzbyB3aWxsIHRha2UgaW1wb3J0YW5jZSBwaGFzZSBpbiB0aGlzIGNoYXB0ZXJcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L1JlYWN0LkZyYWdtZW50PiApXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA6IG51bGwgfVxyXG4gICAgICAgICAgICAgICAgICAgIDwvUGFwZXI+XHJcbiAgICAgICAgICAgICAgICAgICAgPFBhcGVyIGNsYXNzTmFtZT17Y2xhc3Nlcy5oZXJvQnV0dG9uc30+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIDxMaXN0SXRlbSBvbkNsaWNrID0geyBoYW5kbGVBZHYgfT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9J2g1Jz5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBBZHZhbmNlZCBKYXZhXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+IFxyXG4gICAgICAgICAgICAgICAgICAgICAgICB7IGFkdiA/IChcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxSZWFjdC5GcmFnbWVudD5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9J2JvZHkxJz5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIEFkdmFuY2VkIGphdmEgY29uY2VwdHMgbGlrZSB0aHJlYWRzIGFuZCBzdHJlYW1zIGFuZCBsYW1kYSBraW5kYSB0aGluZ3Mgd2lsbCB0YWtlIGRvbWluYW5jZSBoZXJlLiBcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PSdib2R5MSc+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBOZXR3b3JraW5nIGluIGphdmEgYWxzbyBpcyBhbiBpbXBvcnRhbnQgY29uY2VwdCB0byBsZWFybi5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L1JlYWN0LkZyYWdtZW50PiApXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA6IG51bGxcclxuICAgICAgICAgICAgICAgICAgICAgICAgfVxyXG4gICAgICAgICAgICAgICAgICAgIDwvUGFwZXI+XHJcbiAgICAgICAgICAgICAgICAgICAgPERpdmlkZXIgdmFyaWFudD1cIm1pZGRsZVwiIC8+XHJcbiAgICAgICAgICAgICAgICA8L0xpc3Q+XHJcbiAgICAgICAgICAgICAgICA8YnIvPlxyXG4gICAgICAgICAgICAgICAgPEJ1dHRvbiB2YXJpYW50PVwiY29udGFpbmVkXCIgY29sb3I9XCJwcmltYXJ5XCIgY2xhc3NOYW1lPXtjbGFzc2VzLmhhbmRsZUJ1dHRvbn0gb25DbGljaz17KGUpPT57IFxyXG4gICAgICAgICAgICAgICAgICAgIGxldCBzY29yZSA9IDA7XHJcbiAgICAgICAgICAgICAgICAgICAgXHJcbiAgICAgICAgICAgICAgICAgICAgaW50cm8gPyBzY29yZSsrOnNjb3JlXHJcbiAgICAgICAgICAgICAgICAgICAgaW50ZXIgPyBzY29yZSsrOnNjb3JlXHJcbiAgICAgICAgICAgICAgICAgICAgb29wcyA/IHNjb3JlKys6c2NvcmVcclxuICAgICAgICAgICAgICAgICAgICBhZHYgPyBzY29yZSsrOnNjb3JlXHJcbiAgICAgICAgICAgICAgICAgICAgYmFzaWNzID8gc2NvcmUrKzpzY29yZVxyXG5cclxuICAgICAgICAgICAgICAgICAgICBoYW5kbGVTdWJtaXQoZSxwcm9wcyxzdGFydFRpbWUsc2NvcmUpIFxyXG4gICAgICAgICAgICAgICAgICAgIH19PlxyXG4gICAgICAgICAgICAgICAgTmV4dFxyXG4gICAgICAgICAgICAgICAgPC9CdXR0b24+XHJcbiAgICAgICAgICAgIDwvZm9ybT5cclxuICAgICAgICA8L0NvbnRhaW5lcj5cclxuICAgIClcclxufSJdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7O0FBQUE7QUFDQTtBQVFBO0FBR0E7QUFDQTtBQUNBO0FBREE7QUFHQTtBQUNBO0FBREE7QUFHQTtBQUNBO0FBQ0E7QUFGQTtBQUlBO0FBQ0E7QUFDQTtBQUZBO0FBSUE7QUFDQTtBQURBO0FBR0E7QUFDQTtBQUNBO0FBRkE7QUFJQTtBQUNBO0FBQ0E7QUFDQTtBQUhBO0FBS0E7QUFDQTtBQUNBO0FBRkE7QUFHQTtBQUNBO0FBREE7QUFHQTtBQUNBO0FBQ0E7QUFGQTtBQUlBO0FBQ0E7QUFEQTtBQXJDQTtBQUNBO0FBMENBO0FBQUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUdBO0FBQ0E7QUFDQTtBQUNBO0FBRUE7QUFDQTtBQUZBO0FBQ0E7QUFJQTtBQUNBO0FBQ0E7QUFHQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBRUE7QUFDQTtBQUNBO0FBaENBO0FBQUE7QUFBQTtBQUFBO0FBQ0E7QUFnQ0E7QUFDQTtBQUdBO0FBRUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBR0E7QUFDQTtBQUFBO0FBQ0E7QUFBQTtBQUFBO0FBRUE7QUFBQTtBQUNBO0FBQUE7QUFDQTtBQUFBO0FBQUE7QUFPQTtBQUFBO0FBQUE7QUFRQTtBQUFBO0FBQ0E7QUFBQTtBQUNBO0FBQUE7QUFPQTtBQUFBO0FBTUE7QUFBQTtBQUNBO0FBQUE7QUFDQTtBQUFBO0FBT0E7QUFBQTtBQU1BO0FBQUE7QUFDQTtBQUFBO0FBQ0E7QUFBQTtBQU9BO0FBQUE7QUFLQTtBQUFBO0FBT0E7QUFBQTtBQUNBO0FBQUE7QUFDQTtBQUFBO0FBT0E7QUFBQTtBQUtBO0FBQUE7QUFRQTtBQUFBO0FBR0E7QUFBQTtBQUFBO0FBQUE7QUFDQTtBQUVBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFFQTtBQUNBO0FBVkE7QUFnQkEiLCJzb3VyY2VSb290IjoiIn0=\n//# sourceURL=webpack-internal:///./React/Shared/Components/Course/GeneralMaterials/Overview.js\n");
 
 /***/ }),
 
@@ -1601,210 +265,7 @@ function Overview(props) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Summary; });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core */ "@material-ui/core");
-/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! axios */ "axios");
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_2__);
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
-
-
-
-
-var useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["makeStyles"])(theme => ({
-  icon: {
-    marginRight: theme.spacing(2)
-  },
-  link: {
-    textDecoration: 'none'
-  },
-  heroContent: {
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(8, 0, 6)
-  },
-  heroButtons: {
-    margin: theme.spacing(4)
-  },
-  cardGrid: {
-    paddingTop: theme.spacing(8),
-    paddingBottom: theme.spacing(8)
-  },
-  handleButton: {
-    margin: theme.spacing(4),
-    float: 'right'
-  },
-  card: {
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column'
-  },
-  cardMedia: {
-    paddingTop: '56.25%' // 16:9
-
-  },
-  cardContent: {
-    flexGrow: 1
-  },
-  footer: {
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(6)
-  },
-  Text: {
-    display: 'block'
-  }
-}));
-
-var handleSubmit = /*#__PURE__*/function () {
-  var _ref = _asyncToGenerator(function* (e, props, startTime, score) {
-    e.preventDefault();
-    score *= 2;
-    var time = Math.round((Date.now() - startTime) / 1000 / 60);
-    time = time >= 9 ? 9 : time;
-    var authToken = sessionStorage.getItem('auth');
-    console.log("score" + score);
-    console.log("time" + time);
-
-    try {
-      var res = yield axios__WEBPACK_IMPORTED_MODULE_2___default.a.patch('http://127.0.0.1:8000/api/v1/student/ml/post/' + authToken, {
-        "AAC": score,
-        "AAC_T": time
-      });
-
-      if (res.status === 200) {
-        console.log('Successfully Pushed Activity Data');
-      } else {
-        alert("Problem While Pushing");
-      }
-    } catch (err) {
-      alert(err);
-    }
-
-    var learnningStyle = '';
-
-    try {
-      var _res = yield axios__WEBPACK_IMPORTED_MODULE_2___default.a.get('http://127.0.0.1:8000/api/v1/student/ml/get/' + authToken);
-
-      if (_res.status === 200) {
-        console.log('Successfully fetched Activity Data');
-        learnningStyle = _res.data;
-      } else {
-        alert("Problem While Fetching");
-      }
-    } catch (err) {
-      alert(err);
-    }
-
-    var coursName = props.match.params.course;
-    props.history.push('/course/' + coursName + '/ls' + learnningStyle);
-  });
-
-  return function handleSubmit(_x, _x2, _x3, _x4) {
-    return _ref.apply(this, arguments);
-  };
-}();
-
-function Summary(props) {
-  var classes = useStyles();
-  var startTime = Date.now();
-  var [java, setJava] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false);
-
-  var handleJava = () => {
-    setJava(true);
-  };
-
-  var [basics, setBasics] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false);
-
-  var handleBasics = () => {
-    setBasics(true);
-  };
-
-  var [inter, setInter] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false);
-
-  var handleInter = () => {
-    setInter(true);
-  };
-
-  var [oops, setOops] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false);
-
-  var handleOops = () => {
-    setOops(true);
-  };
-
-  var [adv, setAdv] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false);
-
-  var handleAdv = () => {
-    setAdv(true);
-  };
-
-  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Container"], {
-    maxWidth: "sm"
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("form", {
-    autoComplete: "off",
-    noValidate: true
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["List"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Paper"], {
-    className: classes.heroButtons
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], {
-    onClick: handleJava
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "h5",
-    gutterBottom: true
-  }, "Java - Summary")), java ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1",
-    gutterBottom: true
-  }, "Java is a high-level programming language developed by Sun Microsystems. It was originally designed for developing programs for set-top boxes and handheld devices, but later became a popular choice for creating web applications."))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Paper"], {
-    className: classes.heroButtons
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], {
-    onClick: handleBasics
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "h5"
-  }, "Java Basics - Summary")), basics ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "So, the basic concepts of java are, just like any other programming languages, contional statements, loop statements, variables etc."))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Paper"], {
-    className: classes.heroButtons
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], {
-    onClick: handleInter
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "h5"
-  }, "Concepts In Java - Summary")), inter ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "Popular concepts that are used in java are Classes, Interfaces, Packages thess will get u started in Java."))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Paper"], {
-    className: classes.heroButtons
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], {
-    onClick: handleOops
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "h5"
-  }, "Object Oriented  Programming With Java")), oops ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "Object oriented concepts are mandatory things you should learn if you wanna use java. It will enable you to work with teams that means you will learn making loosely coupled applications using these concepts"))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Paper"], {
-    className: classes.heroButtons
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], {
-    onClick: handleAdv
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "h5"
-  }, "Advanced Java - Summary")), adv ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "Concepts like Threads and streams enables you to use Java effectively. With that you could build enterprice applications and applicatoons that runs in network. Also, Networking in java will help you build networking modules such as Gateways."))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Divider"], {
-    variant: "middle"
-  })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Button"], {
-    variant: "contained",
-    color: "primary",
-    className: classes.handleButton,
-    onClick: e => {
-      var score = 0;
-      java ? score++ : score;
-      inter ? score++ : score;
-      oops ? score++ : score;
-      adv ? score++ : score;
-      basics ? score++ : score;
-      handleSubmit(e, props, startTime, score);
-    }
-  }, "Finish")));
-}
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"default\", function() { return Summary; });\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ \"react\");\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core */ \"@material-ui/core\");\n/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__);\n/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! axios */ \"axios\");\n/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_2__);\nfunction asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }\n\nfunction _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"next\", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"throw\", err); } _next(undefined); }); }; }\n\n\n\n\nvar useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"makeStyles\"])(theme => ({\n  icon: {\n    marginRight: theme.spacing(2)\n  },\n  link: {\n    textDecoration: 'none'\n  },\n  heroContent: {\n    backgroundColor: theme.palette.background.paper,\n    padding: theme.spacing(8, 0, 6)\n  },\n  heroButtons: {\n    margin: theme.spacing(4)\n  },\n  cardGrid: {\n    paddingTop: theme.spacing(8),\n    paddingBottom: theme.spacing(8)\n  },\n  handleButton: {\n    margin: theme.spacing(4),\n    float: 'right'\n  },\n  card: {\n    height: '100%',\n    display: 'flex',\n    flexDirection: 'column'\n  },\n  cardMedia: {\n    paddingTop: '56.25%' // 16:9\n\n  },\n  cardContent: {\n    flexGrow: 1\n  },\n  footer: {\n    backgroundColor: theme.palette.background.paper,\n    padding: theme.spacing(6)\n  },\n  Text: {\n    display: 'block'\n  }\n}));\n\nvar handleSubmit = /*#__PURE__*/function () {\n  var _ref = _asyncToGenerator(function* (e, props, startTime, score) {\n    e.preventDefault();\n    score *= 2;\n    var time = Math.round((Date.now() - startTime) / 1000 / 60);\n    time = time >= 9 ? 9 : time;\n    var authToken = sessionStorage.getItem('auth');\n    console.log(\"score\" + score);\n    console.log(\"time\" + time);\n\n    try {\n      var res = yield axios__WEBPACK_IMPORTED_MODULE_2___default.a.patch('http://127.0.0.1:8000/api/v1/student/ml/post/' + authToken, {\n        \"AAC\": score,\n        \"AAC_T\": time\n      });\n\n      if (res.status === 200) {\n        console.log('Successfully Pushed Activity Data');\n      } else {\n        alert(\"Problem While Pushing\");\n      }\n    } catch (err) {\n      alert(err);\n    }\n\n    var learnningStyle = '';\n\n    try {\n      var _res = yield axios__WEBPACK_IMPORTED_MODULE_2___default.a.get('http://127.0.0.1:8000/api/v1/student/ml/get/' + authToken);\n\n      if (_res.status === 200) {\n        console.log('Successfully fetched Activity Data');\n        learnningStyle = _res.data;\n      } else {\n        alert(\"Problem While Fetching\");\n      }\n    } catch (err) {\n      alert(err);\n    }\n\n    var coursName = props.match.params.course;\n    props.history.push('/course/' + coursName + '/ls' + learnningStyle);\n  });\n\n  return function handleSubmit(_x, _x2, _x3, _x4) {\n    return _ref.apply(this, arguments);\n  };\n}();\n\nfunction Summary(props) {\n  var classes = useStyles();\n  var startTime = Date.now();\n  var [java, setJava] = Object(react__WEBPACK_IMPORTED_MODULE_0__[\"useState\"])(false);\n\n  var handleJava = () => {\n    setJava(true);\n  };\n\n  var [basics, setBasics] = Object(react__WEBPACK_IMPORTED_MODULE_0__[\"useState\"])(false);\n\n  var handleBasics = () => {\n    setBasics(true);\n  };\n\n  var [inter, setInter] = Object(react__WEBPACK_IMPORTED_MODULE_0__[\"useState\"])(false);\n\n  var handleInter = () => {\n    setInter(true);\n  };\n\n  var [oops, setOops] = Object(react__WEBPACK_IMPORTED_MODULE_0__[\"useState\"])(false);\n\n  var handleOops = () => {\n    setOops(true);\n  };\n\n  var [adv, setAdv] = Object(react__WEBPACK_IMPORTED_MODULE_0__[\"useState\"])(false);\n\n  var handleAdv = () => {\n    setAdv(true);\n  };\n\n  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Container\"], {\n    maxWidth: \"sm\"\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(\"form\", {\n    autoComplete: \"off\",\n    noValidate: true\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"List\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Paper\"], {\n    className: classes.heroButtons\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], {\n    onClick: handleJava\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h5\",\n    gutterBottom: true\n  }, \"Java - Summary\")), java ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\",\n    gutterBottom: true\n  }, \"Java is a high-level programming language developed by Sun Microsystems. It was originally designed for developing programs for set-top boxes and handheld devices, but later became a popular choice for creating web applications.\"))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Paper\"], {\n    className: classes.heroButtons\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], {\n    onClick: handleBasics\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h5\"\n  }, \"Java Basics - Summary\")), basics ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"So, the basic concepts of java are, just like any other programming languages, contional statements, loop statements, variables etc.\"))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Paper\"], {\n    className: classes.heroButtons\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], {\n    onClick: handleInter\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h5\"\n  }, \"Concepts In Java - Summary\")), inter ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Popular concepts that are used in java are Classes, Interfaces, Packages thess will get u started in Java.\"))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Paper\"], {\n    className: classes.heroButtons\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], {\n    onClick: handleOops\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h5\"\n  }, \"Object Oriented  Programming With Java\")), oops ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Object oriented concepts are mandatory things you should learn if you wanna use java. It will enable you to work with teams that means you will learn making loosely coupled applications using these concepts\"))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Paper\"], {\n    className: classes.heroButtons\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], {\n    onClick: handleAdv\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h5\"\n  }, \"Advanced Java - Summary\")), adv ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Concepts like Threads and streams enables you to use Java effectively. With that you could build enterprice applications and applicatoons that runs in network. Also, Networking in java will help you build networking modules such as Gateways.\"))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Divider\"], {\n    variant: \"middle\"\n  })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(\"br\", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Button\"], {\n    variant: \"contained\",\n    color: \"primary\",\n    className: classes.handleButton,\n    onClick: e => {\n      var score = 0;\n      java ? score++ : score;\n      inter ? score++ : score;\n      oops ? score++ : score;\n      adv ? score++ : score;\n      basics ? score++ : score;\n      handleSubmit(e, props, startTime, score);\n    }\n  }, \"Finish\")));\n}//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9Db3Vyc2UvR2VuZXJhbE1hdGVyaWFscy9TdW1tYXJ5LmpzLmpzIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vLy4vUmVhY3QvU2hhcmVkL0NvbXBvbmVudHMvQ291cnNlL0dlbmVyYWxNYXRlcmlhbHMvU3VtbWFyeS5qcz9mMjljIl0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCBSZWFjdCwge3VzZVN0YXRlLCB1c2VFZmZlY3R9IGZyb20gJ3JlYWN0J1xyXG5pbXBvcnQgeyBUeXBvZ3JhcGh5LCBcclxuICAgIFBhcGVyLCBcclxuICAgIG1ha2VTdHlsZXMsIFxyXG4gICAgQnV0dG9uLFxyXG4gICAgTGlzdCxcclxuICAgIExpc3RJdGVtLFxyXG4gICAgRGl2aWRlcixcclxuICAgIENvbnRhaW5lcn0gZnJvbSAnQG1hdGVyaWFsLXVpL2NvcmUnXHJcbmltcG9ydCBheGlvcyBmcm9tICdheGlvcycgICAgXHJcblxyXG5jb25zdCB1c2VTdHlsZXMgPSBtYWtlU3R5bGVzKHRoZW1lID0+ICh7XHJcbiAgICBpY29uOiB7XHJcbiAgICAgIG1hcmdpblJpZ2h0OiB0aGVtZS5zcGFjaW5nKDIpLFxyXG4gICAgfSxcclxuICAgIGxpbmsgOiB7XHJcbiAgICAgIHRleHREZWNvcmF0aW9uIDogJ25vbmUnLFxyXG4gICAgfSxcclxuICAgIGhlcm9Db250ZW50OiB7XHJcbiAgICAgIGJhY2tncm91bmRDb2xvcjogdGhlbWUucGFsZXR0ZS5iYWNrZ3JvdW5kLnBhcGVyLFxyXG4gICAgICBwYWRkaW5nOiB0aGVtZS5zcGFjaW5nKDgsIDAsIDYpLFxyXG4gICAgfSxcclxuICAgIGhlcm9CdXR0b25zOiB7XHJcbiAgICAgIG1hcmdpbjogdGhlbWUuc3BhY2luZyg0KSxcclxuICAgIH0sXHJcbiAgICBjYXJkR3JpZDoge1xyXG4gICAgICBwYWRkaW5nVG9wOiB0aGVtZS5zcGFjaW5nKDgpLFxyXG4gICAgICBwYWRkaW5nQm90dG9tOiB0aGVtZS5zcGFjaW5nKDgpLFxyXG4gICAgfSxcclxuICAgIGhhbmRsZUJ1dHRvbiA6e1xyXG4gICAgICAgIG1hcmdpbjogdGhlbWUuc3BhY2luZyg0KSxcclxuICAgICAgICBmbG9hdDoncmlnaHQnXHJcbiAgICB9LFxyXG4gICAgY2FyZDoge1xyXG4gICAgICBoZWlnaHQ6ICcxMDAlJyxcclxuICAgICAgZGlzcGxheTogJ2ZsZXgnLFxyXG4gICAgICBmbGV4RGlyZWN0aW9uOiAnY29sdW1uJyxcclxuICAgIH0sXHJcbiAgICBjYXJkTWVkaWE6IHtcclxuICAgICAgcGFkZGluZ1RvcDogJzU2LjI1JScsIC8vIDE2OjlcclxuICAgIH0sXHJcbiAgICBjYXJkQ29udGVudDoge1xyXG4gICAgICBmbGV4R3JvdzogMSxcclxuICAgIH0sXHJcbiAgICBmb290ZXI6IHtcclxuICAgICAgYmFja2dyb3VuZENvbG9yOiB0aGVtZS5wYWxldHRlLmJhY2tncm91bmQucGFwZXIsXHJcbiAgICAgIHBhZGRpbmc6IHRoZW1lLnNwYWNpbmcoNiksXHJcbiAgICB9LFxyXG4gICAgVGV4dCA6IHtcclxuICAgICAgICBkaXNwbGF5IDogJ2Jsb2NrJ1xyXG4gICAgfVxyXG4gIH0pKTtcclxuXHJcblxyXG5jb25zdCBoYW5kbGVTdWJtaXQgPSBhc3luYyAoZSxwcm9wcyxzdGFydFRpbWUsc2NvcmUpID0+IHtcclxuICAgIGUucHJldmVudERlZmF1bHQoKVxyXG4gICAgc2NvcmUqPSAyXHJcbiAgICBsZXQgdGltZSA9IE1hdGgucm91bmQoKChEYXRlLm5vdygpIC0gc3RhcnRUaW1lKS8xMDAwKS82MClcclxuICAgIHRpbWUgPSB0aW1lID49IDkgPyA5IDogdGltZVxyXG5cclxuICAgIGNvbnN0IGF1dGhUb2tlbiA9IHNlc3Npb25TdG9yYWdlLmdldEl0ZW0oJ2F1dGgnKVxyXG4gICAgXHJcbiAgICBjb25zb2xlLmxvZyhcInNjb3JlXCIrc2NvcmUpXHJcbiAgICBjb25zb2xlLmxvZyhcInRpbWVcIit0aW1lKVxyXG5cclxuICAgIHRyeSB7XHJcbiAgICAgICAgY29uc3QgcmVzID0gYXdhaXQgYXhpb3MucGF0Y2goJ2h0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hcGkvdjEvc3R1ZGVudC9tbC9wb3N0LycrYXV0aFRva2VuLFxyXG4gICAgICAgIHtcclxuICAgICAgICAgIFwiQUFDXCIgOiBzY29yZSxcclxuICAgICAgICAgIFwiQUFDX1RcIiA6ICB0aW1lXHJcbiAgICAgICAgfSlcclxuICAgIFxyXG4gICAgICAgIGlmKHJlcy5zdGF0dXMgPT09IDIwMCkge1xyXG4gICAgICAgICAgY29uc29sZS5sb2coJ1N1Y2Nlc3NmdWxseSBQdXNoZWQgQWN0aXZpdHkgRGF0YScpXHJcbiAgICAgICAgfVxyXG4gICAgICAgIFxyXG4gICAgICAgIGVsc2Uge1xyXG4gICAgICAgICAgYWxlcnQoXCJQcm9ibGVtIFdoaWxlIFB1c2hpbmdcIik7XHJcbiAgICAgICAgfVxyXG4gICAgICB9IGNhdGNoKGVyciApe1xyXG4gICAgICAgIGFsZXJ0KGVycilcclxuXHJcbiAgICB9XHJcblxyXG4gICAgbGV0IGxlYXJubmluZ1N0eWxlID0nJ1xyXG5cclxuICAgIHRyeSB7XHJcbiAgICAgICAgY29uc3QgcmVzID0gYXdhaXQgYXhpb3MuZ2V0KCdodHRwOi8vMTI3LjAuMC4xOjgwMDAvYXBpL3YxL3N0dWRlbnQvbWwvZ2V0LycrYXV0aFRva2VuKVxyXG4gICAgXHJcbiAgICAgICAgaWYocmVzLnN0YXR1cyA9PT0gMjAwKSB7XHJcbiAgICAgICAgICAgIGNvbnNvbGUubG9nKCdTdWNjZXNzZnVsbHkgZmV0Y2hlZCBBY3Rpdml0eSBEYXRhJylcclxuICAgICAgICAgICAgbGVhcm5uaW5nU3R5bGUgPSByZXMuZGF0YVxyXG4gICAgICAgIH1cclxuICAgICAgICBcclxuICAgICAgICBlbHNlIHtcclxuICAgICAgICBhbGVydChcIlByb2JsZW0gV2hpbGUgRmV0Y2hpbmdcIik7XHJcbiAgICAgICAgfVxyXG4gICAgfSBjYXRjaChlcnIgKXtcclxuICAgICAgICBhbGVydChlcnIpXHJcbiAgICB9XHJcblxyXG4gICAgY29uc3QgY291cnNOYW1lID0gcHJvcHMubWF0Y2gucGFyYW1zLmNvdXJzZVxyXG5cclxuICAgIHByb3BzLmhpc3RvcnkucHVzaCggJy9jb3Vyc2UvJytjb3Vyc05hbWUrJy9scycrbGVhcm5uaW5nU3R5bGUpXHJcbn1cclxuXHJcbmV4cG9ydCBkZWZhdWx0IGZ1bmN0aW9uIFN1bW1hcnkgKHByb3BzKSB7XHJcbiAgICBjb25zdCBjbGFzc2VzID0gdXNlU3R5bGVzKClcclxuXHJcbiAgICBjb25zdCBzdGFydFRpbWUgPSBEYXRlLm5vdygpXHJcblxyXG4gICAgY29uc3QgW2phdmEsc2V0SmF2YV0gPSB1c2VTdGF0ZShmYWxzZSlcclxuXHJcbiAgICBjb25zdCBoYW5kbGVKYXZhID0gKCkgPT4ge1xyXG4gICAgICAgIHNldEphdmEodHJ1ZSlcclxuICAgIH1cclxuXHJcbiAgICBjb25zdCBbYmFzaWNzLHNldEJhc2ljc10gPSB1c2VTdGF0ZShmYWxzZSlcclxuXHJcbiAgICBjb25zdCBoYW5kbGVCYXNpY3MgPSAoKSA9PiB7XHJcbiAgICAgICAgc2V0QmFzaWNzKHRydWUpXHJcbiAgICB9XHJcblxyXG4gICAgY29uc3QgW2ludGVyLHNldEludGVyXSA9IHVzZVN0YXRlKGZhbHNlKVxyXG5cclxuICAgIGNvbnN0IGhhbmRsZUludGVyID0gKCkgPT4ge1xyXG4gICAgICAgIHNldEludGVyKHRydWUpXHJcbiAgICB9XHJcblxyXG4gICAgY29uc3QgW29vcHMsc2V0T29wc10gPSB1c2VTdGF0ZShmYWxzZSlcclxuXHJcbiAgICBjb25zdCBoYW5kbGVPb3BzID0gKCkgPT4ge1xyXG4gICAgICAgIHNldE9vcHModHJ1ZSlcclxuICAgIH1cclxuXHJcbiAgICBjb25zdCBbYWR2LHNldEFkdl0gPSB1c2VTdGF0ZShmYWxzZSlcclxuXHJcbiAgICBjb25zdCBoYW5kbGVBZHYgPSAoKSA9PiB7XHJcbiAgICAgICAgc2V0QWR2KHRydWUpXHJcbiAgICB9XHJcblxyXG4gICAgcmV0dXJuKFxyXG4gICAgICAgIDxDb250YWluZXIgbWF4V2lkdGg9J3NtJz5cclxuICAgICAgICAgICAgPGZvcm0gIGF1dG9Db21wbGV0ZT1cIm9mZlwiIG5vVmFsaWRhdGU+XHJcbiAgICAgICAgICAgICAgICA8TGlzdCA+XHJcbiAgICAgICAgICAgICAgICAgICAgPFBhcGVyIGNsYXNzTmFtZT17Y2xhc3Nlcy5oZXJvQnV0dG9uc30+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIDxMaXN0SXRlbSBvbkNsaWNrID0geyBoYW5kbGVKYXZhIH0gPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD0naDUnIGd1dHRlckJvdHRvbSA+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgSmF2YSAtIFN1bW1hcnlcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgPC9MaXN0SXRlbT4gXHJcbiAgICAgICAgICAgICAgICAgICAgICAgIHsgIGphdmEgPyAoXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8UmVhY3QuRnJhZ21lbnQ+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PSdib2R5MScgZ3V0dGVyQm90dG9tPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIEphdmEgaXMgYSBoaWdoLWxldmVsIHByb2dyYW1taW5nIGxhbmd1YWdlIGRldmVsb3BlZCBieSBTdW4gTWljcm9zeXN0ZW1zLlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIEl0IHdhcyBvcmlnaW5hbGx5IGRlc2lnbmVkIGZvciBkZXZlbG9waW5nIHByb2dyYW1zIGZvciBzZXQtdG9wIGJveGVzIGFuZCBoYW5kaGVsZCBkZXZpY2VzLFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGJ1dCBsYXRlciBiZWNhbWUgYSBwb3B1bGFyIGNob2ljZSBmb3IgY3JlYXRpbmcgd2ViIGFwcGxpY2F0aW9ucy5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L1JlYWN0LkZyYWdtZW50PilcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDogbnVsbFxyXG4gICAgICAgICAgICAgICAgICAgICAgICB9XHJcbiAgICAgICAgICAgICAgICAgICAgPC9QYXBlcj5cclxuICAgICAgICAgICAgICAgICAgICA8UGFwZXIgY2xhc3NOYW1lPXtjbGFzc2VzLmhlcm9CdXR0b25zfT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgPExpc3RJdGVtIG9uQ2xpY2sgPSB7IGhhbmRsZUJhc2ljcyB9PiBcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9J2g1Jz5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBKYXZhIEJhc2ljcyAtIFN1bW1hcnlcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgPC9MaXN0SXRlbT4gXHJcbiAgICAgICAgICAgICAgICAgICAgICAgIHsgYmFzaWNzID8gKFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPFJlYWN0LkZyYWdtZW50PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD0nYm9keTEnPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBTbywgdGhlIGJhc2ljIGNvbmNlcHRzIG9mIGphdmEgYXJlLCBqdXN0IGxpa2UgYW55IG90aGVyIHByb2dyYW1taW5nIGxhbmd1YWdlcywgY29udGlvbmFsIHN0YXRlbWVudHMsIGxvb3Agc3RhdGVtZW50cywgdmFyaWFibGVzIGV0Yy5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L1JlYWN0LkZyYWdtZW50PiApIDogbnVsbCB9XHJcbiAgICAgICAgICAgICAgICAgICAgPC9QYXBlcj5cclxuICAgICAgICAgICAgICAgICAgICA8UGFwZXIgY2xhc3NOYW1lPXtjbGFzc2VzLmhlcm9CdXR0b25zfT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgPExpc3RJdGVtIG9uQ2xpY2sgPSB7IGhhbmRsZUludGVyIH0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PSdoNSc+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgQ29uY2VwdHMgSW4gSmF2YSAtIFN1bW1hcnlcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgPC9MaXN0SXRlbT4gXHJcbiAgICAgICAgICAgICAgICAgICAgICAgIHsgaW50ZXIgPyAoXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8UmVhY3QuRnJhZ21lbnQ+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PSdib2R5MSc+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgUG9wdWxhciBjb25jZXB0cyB0aGF0IGFyZSB1c2VkIGluIGphdmEgYXJlIENsYXNzZXMsIEludGVyZmFjZXMsIFBhY2thZ2VzIHRoZXNzIHdpbGwgZ2V0IHUgc3RhcnRlZCBpbiBKYXZhLlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvUmVhY3QuRnJhZ21lbnQ+ICkgOiBudWxsIH1cclxuICAgICAgICAgICAgICAgICAgICA8L1BhcGVyPlxyXG4gICAgICAgICAgICAgICAgICAgIDxQYXBlciBjbGFzc05hbWU9e2NsYXNzZXMuaGVyb0J1dHRvbnN9PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICA8TGlzdEl0ZW0gb25DbGljayA9IHsgaGFuZGxlT29wcyB9PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD0naDUnPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIE9iamVjdCBPcmllbnRlZCAgUHJvZ3JhbW1pbmcgV2l0aCBKYXZhIFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPiBcclxuICAgICAgICAgICAgICAgICAgICAgICAgeyBvb3BzID8gKFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPFJlYWN0LkZyYWdtZW50PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD0nYm9keTEnPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBPYmplY3Qgb3JpZW50ZWQgY29uY2VwdHMgYXJlIG1hbmRhdG9yeSB0aGluZ3MgeW91IHNob3VsZCBsZWFybiBpZiB5b3Ugd2FubmEgdXNlIGphdmEuIEl0IHdpbGwgZW5hYmxlIHlvdSB0byB3b3JrIHdpdGggdGVhbXMgdGhhdCBtZWFucyB5b3Ugd2lsbCBsZWFybiBtYWtpbmcgbG9vc2VseSBjb3VwbGVkIGFwcGxpY2F0aW9ucyB1c2luZyB0aGVzZSBjb25jZXB0c1xyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvUmVhY3QuRnJhZ21lbnQ+IClcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDogbnVsbCB9XHJcbiAgICAgICAgICAgICAgICAgICAgPC9QYXBlcj5cclxuICAgICAgICAgICAgICAgICAgICA8UGFwZXIgY2xhc3NOYW1lPXtjbGFzc2VzLmhlcm9CdXR0b25zfT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgPExpc3RJdGVtIG9uQ2xpY2sgPSB7IGhhbmRsZUFkdiB9PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD0naDUnPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIEFkdmFuY2VkIEphdmEgLSBTdW1tYXJ5XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+IFxyXG4gICAgICAgICAgICAgICAgICAgICAgICB7IGFkdiA/IChcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxSZWFjdC5GcmFnbWVudD5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9J2JvZHkxJz5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIENvbmNlcHRzIGxpa2UgVGhyZWFkcyBhbmQgc3RyZWFtcyBlbmFibGVzIHlvdSB0byB1c2UgSmF2YSBlZmZlY3RpdmVseS4gV2l0aCB0aGF0IHlvdSBjb3VsZCBidWlsZCBlbnRlcnByaWNlIGFwcGxpY2F0aW9ucyBhbmQgYXBwbGljYXRvb25zIHRoYXQgcnVucyBpbiBuZXR3b3JrLiBBbHNvLCBOZXR3b3JraW5nIGluIGphdmEgd2lsbCBoZWxwIHlvdSBidWlsZCBuZXR3b3JraW5nIG1vZHVsZXMgc3VjaCBhcyBHYXRld2F5cy5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L1JlYWN0LkZyYWdtZW50PiApXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA6IG51bGxcclxuICAgICAgICAgICAgICAgICAgICAgICAgfVxyXG4gICAgICAgICAgICAgICAgICAgIDwvUGFwZXI+XHJcbiAgICAgICAgICAgICAgICAgICAgPERpdmlkZXIgdmFyaWFudD1cIm1pZGRsZVwiIC8+XHJcbiAgICAgICAgICAgICAgICA8L0xpc3Q+XHJcbiAgICAgICAgICAgICAgICA8YnIvPlxyXG4gICAgICAgICAgICAgICAgPEJ1dHRvbiB2YXJpYW50PVwiY29udGFpbmVkXCIgY29sb3I9XCJwcmltYXJ5XCIgY2xhc3NOYW1lPXtjbGFzc2VzLmhhbmRsZUJ1dHRvbn0gb25DbGljaz17KGUpPT57IFxyXG4gICAgICAgICAgICAgICAgICAgIGxldCBzY29yZSA9IDA7XHJcbiAgICAgICAgICAgICAgICAgICAgXHJcbiAgICAgICAgICAgICAgICAgICAgamF2YSA/IHNjb3JlKys6c2NvcmVcclxuICAgICAgICAgICAgICAgICAgICBpbnRlciA/IHNjb3JlKys6c2NvcmVcclxuICAgICAgICAgICAgICAgICAgICBvb3BzID8gc2NvcmUrKzpzY29yZVxyXG4gICAgICAgICAgICAgICAgICAgIGFkdiA/IHNjb3JlKys6c2NvcmVcclxuICAgICAgICAgICAgICAgICAgICBiYXNpY3MgPyBzY29yZSsrOnNjb3JlXHJcblxyXG4gICAgICAgICAgICAgICAgICAgIGhhbmRsZVN1Ym1pdChlLHByb3BzLHN0YXJ0VGltZSxzY29yZSkgXHJcbiAgICAgICAgICAgICAgICAgICAgfX0+XHJcbiAgICAgICAgICAgICAgICAgICAgRmluaXNoXHJcbiAgICAgICAgICAgICAgICA8L0J1dHRvbj5cclxuICAgICAgICAgICAgPC9mb3JtPlxyXG4gICAgICAgIDwvQ29udGFpbmVyPlxyXG4gICAgKVxyXG59Il0sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7QUFBQTtBQUNBO0FBUUE7QUFFQTtBQUNBO0FBQ0E7QUFEQTtBQUdBO0FBQ0E7QUFEQTtBQUdBO0FBQ0E7QUFDQTtBQUZBO0FBSUE7QUFDQTtBQURBO0FBR0E7QUFDQTtBQUNBO0FBRkE7QUFJQTtBQUNBO0FBQ0E7QUFGQTtBQUlBO0FBQ0E7QUFDQTtBQUNBO0FBSEE7QUFLQTtBQUNBO0FBQ0E7QUFGQTtBQUdBO0FBQ0E7QUFEQTtBQUdBO0FBQ0E7QUFDQTtBQUZBO0FBSUE7QUFDQTtBQURBO0FBckNBO0FBQ0E7QUEwQ0E7QUFBQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBRUE7QUFFQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBRUE7QUFDQTtBQUZBO0FBQ0E7QUFJQTtBQUNBO0FBQ0E7QUFHQTtBQUNBO0FBQ0E7QUFDQTtBQUVBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFHQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUVBO0FBQ0E7QUFDQTtBQW5EQTtBQUFBO0FBQUE7QUFBQTtBQUNBO0FBbURBO0FBQ0E7QUFFQTtBQUVBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFBQTtBQUNBO0FBQUE7QUFBQTtBQUVBO0FBQUE7QUFDQTtBQUFBO0FBQ0E7QUFBQTtBQUFBO0FBT0E7QUFBQTtBQUFBO0FBVUE7QUFBQTtBQUNBO0FBQUE7QUFDQTtBQUFBO0FBT0E7QUFBQTtBQU1BO0FBQUE7QUFDQTtBQUFBO0FBQ0E7QUFBQTtBQU9BO0FBQUE7QUFNQTtBQUFBO0FBQ0E7QUFBQTtBQUNBO0FBQUE7QUFPQTtBQUFBO0FBT0E7QUFBQTtBQUNBO0FBQUE7QUFDQTtBQUFBO0FBT0E7QUFBQTtBQVFBO0FBQUE7QUFHQTtBQUFBO0FBQUE7QUFBQTtBQUNBO0FBRUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUVBO0FBQ0E7QUFWQTtBQWdCQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///./React/Shared/Components/Course/GeneralMaterials/Summary.js\n");
 
 /***/ }),
 
@@ -1816,265 +277,7 @@ function Summary(props) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Visual; });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core */ "@material-ui/core");
-/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _material_ui_icons_CheckCircleSharp__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @material-ui/icons/CheckCircleSharp */ "@material-ui/icons/CheckCircleSharp");
-/* harmony import */ var _material_ui_icons_CheckCircleSharp__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_material_ui_icons_CheckCircleSharp__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! axios */ "axios");
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_3__);
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
-
-
-
-
-
-var useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["makeStyles"])(theme => ({
-  icon: {
-    marginRight: theme.spacing(2)
-  },
-  link: {
-    textDecoration: 'none'
-  },
-  heroContent: {
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(8, 0, 6)
-  },
-  heroButtons: {
-    margin: theme.spacing(4)
-  },
-  handleButton: {
-    margin: theme.spacing(4),
-    float: 'right'
-  },
-  cardGrid: {
-    paddingTop: theme.spacing(8),
-    paddingBottom: theme.spacing(8)
-  },
-  card: {
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column'
-  },
-  cardMedia: {
-    paddingTop: '56.25%' // 16:9
-
-  },
-  cardContent: {
-    flexGrow: 1
-  },
-  footer: {
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(6)
-  }
-}));
-
-var handleSubmit = /*#__PURE__*/function () {
-  var _ref = _asyncToGenerator(function* (e, props, startTime, score) {
-    e.preventDefault();
-    var time = (Date.now() - startTime) / 1000 / 60;
-    score *= 2;
-    score = score >= 9 ? 9 : score;
-    time = time >= 9 ? 9 : time;
-    time = Math.round(time);
-    var authToken = sessionStorage.getItem('auth');
-
-    try {
-      var res = yield axios__WEBPACK_IMPORTED_MODULE_3___default.a.patch('http://127.0.0.1:8000/api/v1/student/ml/post/' + authToken, {
-        "V": score // "V_T" :  time
-
-      });
-
-      if (res.status === 200) {
-        console.log('Successfully Pushed Activity Data');
-      } else {
-        alert("Problem While Pushing");
-      }
-    } catch (err) {
-      alert(err);
-    }
-
-    console.log("score" + score);
-    console.log("time" + time);
-    props.history.push('/course/' + props.match.params.course + '/Summary');
-  });
-
-  return function handleSubmit(_x, _x2, _x3, _x4) {
-    return _ref.apply(this, arguments);
-  };
-}();
-
-function Visual(props) {
-  var classes = useStyles();
-  var startTime = Date.now();
-  var [inheritance, setInheritance] = react__WEBPACK_IMPORTED_MODULE_0___default.a.useState(true);
-  var [single, setSingle] = react__WEBPACK_IMPORTED_MODULE_0___default.a.useState(true);
-  var [multi, setMulti] = react__WEBPACK_IMPORTED_MODULE_0___default.a.useState(true);
-  var [hybrid, setHybrid] = react__WEBPACK_IMPORTED_MODULE_0___default.a.useState(true);
-  var [hierarchical, setHierarchical] = react__WEBPACK_IMPORTED_MODULE_0___default.a.useState(true);
-
-  var handleInheritance = () => {
-    setInheritance(false);
-  };
-
-  var handleSingle = () => {
-    setSingle(false);
-  };
-
-  var handleMulti = () => {
-    setMulti(false);
-  };
-
-  var handleHybrid = () => {
-    setHybrid(false);
-  };
-
-  var handleHierarchical = () => {
-    setHierarchical(false);
-  };
-
-  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Container"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("form", {
-    autoComplete: "off",
-    noValidate: true
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["List"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "h5"
-  }, "Inheritance")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Card"], {
-    className: classes.root,
-    raised: inheritance
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["CardActionArea"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["CardMedia"], {
-    component: "img",
-    alt: "Contemplative Reptile" // height="250"
-    ,
-    image: "https://d1jnx9ba8s6j9r.cloudfront.net/blog/wp-content/uploads/2017/04/Inheritance-types-java.png",
-    title: "Inheritance"
-  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["CardContent"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    gutterBottom: true,
-    variant: "h5",
-    component: "h2"
-  }, "Inheritance"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body2",
-    color: "textSecondary",
-    component: "p"
-  }, "Inheritance is a widely used OOPs concept which is used to implemet abstraction and coupling in our application. Also, it will be used full if we work with a team or a group of people."))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["CardActions"], {
-    className: classes.handleButton
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Button"], {
-    size: "small",
-    color: inheritance ? 'secondary' : 'primary',
-    onClick: handleInheritance
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_CheckCircleSharp__WEBPACK_IMPORTED_MODULE_2___default.a, null))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Card"], {
-    className: classes.root,
-    raised: single
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["CardActionArea"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["CardMedia"], {
-    component: "img",
-    alt: "Contemplative Reptile",
-    height: "500",
-    image: "https://d1jnx9ba8s6j9r.cloudfront.net/blog/wp-content/uploads/2017/04/Single-Inheritance-144x180.png",
-    title: "Single Inheritance"
-  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["CardContent"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    gutterBottom: true,
-    variant: "h5",
-    component: "h2"
-  }, "Single Inheritance"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body2",
-    color: "textSecondary",
-    component: "p"
-  }, "In single inheritance, one class inherits the properties of another. It enables a derived class to inherit the properties and behavior from a single parent class. This will in turn enable code reusability as well as add new features to the existing code. Here, Class A is your parent class and Class B is your child class which inherits the properties and behavior of the parent class."))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["CardActions"], {
-    className: classes.handleButton
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Button"], {
-    size: "small",
-    color: single ? 'secondary' : 'primary',
-    onClick: handleSingle
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_CheckCircleSharp__WEBPACK_IMPORTED_MODULE_2___default.a, null))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Card"], {
-    className: classes.root,
-    raised: multi
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["CardActionArea"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["CardMedia"], {
-    component: "img",
-    alt: "Contemplative Reptile",
-    height: "500",
-    image: "https://d1jnx9ba8s6j9r.cloudfront.net/blog/wp-content/uploads/2017/04/Multilevel-Inheritance-204x300.png",
-    title: " Multilevel Inheritance"
-  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["CardContent"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    gutterBottom: true,
-    variant: "h5",
-    component: "h2"
-  }, "Multilevel Inheritance"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body2",
-    color: "textSecondary",
-    component: "p"
-  }, "When a class is derived from a class which is also derived from another class, i.e. a class having more than one parent class but at different levels, such type of inheritance is called Multilevel Inheritance. If we talk about the flowchart, class B inherits the properties and behavior of class A and class C inherits the properties of class B. Here A is the parent class for B and class B is the parent class for C. So in this case class C implicitly inherits the properties and methods of class A along with Class B. That\u2019s what is multilevel inheritance."))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["CardActions"], {
-    className: classes.handleButton
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Button"], {
-    size: "small",
-    color: multi ? 'secondary' : 'primary',
-    onClick: handleMulti
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_CheckCircleSharp__WEBPACK_IMPORTED_MODULE_2___default.a, null)))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Card"], {
-    className: classes.root,
-    raised: hybrid
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["CardActionArea"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["CardMedia"], {
-    component: "img",
-    alt: "Contemplative Reptile" // height="500"
-    ,
-    image: "https://d1jnx9ba8s6j9r.cloudfront.net/blog/wp-content/uploads/2017/04/Hybrid-Inheritance-186x180.png",
-    title: "Hybrid Inheritance"
-  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["CardContent"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    gutterBottom: true,
-    variant: "h5",
-    component: "h2"
-  }, "Hybrid Inheritance"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body2",
-    color: "textSecondary",
-    component: "p"
-  }, "Hybrid inheritance is a combination of multiple inheritance and multilevel inheritance. Since multiple inheritance is not supported in Java as it leads to ambiguity, so this type of inheritance can only be achieved through the use of the interfaces. If we talk about the flowchart, class A is a parent class for class B and C, whereas Class B and C are the parent class of D which is the only child class"))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["CardActions"], {
-    className: classes.handleButton
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Button"], {
-    size: "small",
-    color: hybrid ? 'secondary' : 'primary',
-    onClick: handleHybrid
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_CheckCircleSharp__WEBPACK_IMPORTED_MODULE_2___default.a, null))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Card"], {
-    className: classes.root,
-    raised: hierarchical
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["CardActionArea"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["CardMedia"], {
-    component: "img",
-    alt: "Contemplative Reptile" // height="500"
-    ,
-    image: "https://d1jnx9ba8s6j9r.cloudfront.net/blog/wp-content/uploads/2017/04/Hierarchical-Inheritance-300x178.png",
-    title: "Hierarchical  Inheritance"
-  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["CardContent"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    gutterBottom: true,
-    variant: "h5",
-    component: "h2"
-  }, "Hierarchical  Inheritance"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body2",
-    color: "textSecondary",
-    component: "p"
-  }, "When a class has more than one child classes (sub classes) o r in other words, more than one child classes have the same parent class, then such kind of inheritance is known as hierarchical. If we talk about the flowchart, Class B and C are the child classes which are inheriting from the parent class i.e Class A. Let\u2019s see the syntax for hierarchical inheritance in Java:"))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["CardActions"], {
-    className: classes.handleButton
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Button"], {
-    size: "small",
-    color: hierarchical ? 'secondary' : 'primary',
-    onClick: handleHierarchical
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_CheckCircleSharp__WEBPACK_IMPORTED_MODULE_2___default.a, null)))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Divider"], {
-    variant: "middle"
-  })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Button"], {
-    variant: "contained",
-    color: "primary",
-    className: classes.handleButton,
-    onClick: e => {
-      var score = 0;
-      inheritance ? score : score++;
-      single ? score : score++;
-      multi ? score : score++;
-      hybrid ? score : score++;
-      hierarchical ? score : score++;
-      handleSubmit(e, props, startTime, score);
-    }
-  }, "Next")));
-}
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"default\", function() { return Visual; });\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ \"react\");\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core */ \"@material-ui/core\");\n/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__);\n/* harmony import */ var _material_ui_icons_CheckCircleSharp__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @material-ui/icons/CheckCircleSharp */ \"@material-ui/icons/CheckCircleSharp\");\n/* harmony import */ var _material_ui_icons_CheckCircleSharp__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_material_ui_icons_CheckCircleSharp__WEBPACK_IMPORTED_MODULE_2__);\n/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! axios */ \"axios\");\n/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_3__);\nfunction asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }\n\nfunction _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"next\", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"throw\", err); } _next(undefined); }); }; }\n\n\n\n\n\nvar useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"makeStyles\"])(theme => ({\n  icon: {\n    marginRight: theme.spacing(2)\n  },\n  link: {\n    textDecoration: 'none'\n  },\n  heroContent: {\n    backgroundColor: theme.palette.background.paper,\n    padding: theme.spacing(8, 0, 6)\n  },\n  heroButtons: {\n    margin: theme.spacing(4)\n  },\n  handleButton: {\n    margin: theme.spacing(4),\n    float: 'right'\n  },\n  cardGrid: {\n    paddingTop: theme.spacing(8),\n    paddingBottom: theme.spacing(8)\n  },\n  card: {\n    height: '100%',\n    display: 'flex',\n    flexDirection: 'column'\n  },\n  cardMedia: {\n    paddingTop: '56.25%' // 16:9\n\n  },\n  cardContent: {\n    flexGrow: 1\n  },\n  footer: {\n    backgroundColor: theme.palette.background.paper,\n    padding: theme.spacing(6)\n  }\n}));\n\nvar handleSubmit = /*#__PURE__*/function () {\n  var _ref = _asyncToGenerator(function* (e, props, startTime, score) {\n    e.preventDefault();\n    var time = (Date.now() - startTime) / 1000 / 60;\n    score *= 2;\n    score = score >= 9 ? 9 : score;\n    time = time >= 9 ? 9 : time;\n    time = Math.round(time);\n    var authToken = sessionStorage.getItem('auth');\n\n    try {\n      var res = yield axios__WEBPACK_IMPORTED_MODULE_3___default.a.patch('http://127.0.0.1:8000/api/v1/student/ml/post/' + authToken, {\n        \"V\": score // \"V_T\" :  time\n\n      });\n\n      if (res.status === 200) {\n        console.log('Successfully Pushed Activity Data');\n      } else {\n        alert(\"Problem While Pushing\");\n      }\n    } catch (err) {\n      alert(err);\n    }\n\n    console.log(\"score\" + score);\n    console.log(\"time\" + time);\n    props.history.push('/course/' + props.match.params.course + '/Summary');\n  });\n\n  return function handleSubmit(_x, _x2, _x3, _x4) {\n    return _ref.apply(this, arguments);\n  };\n}();\n\nfunction Visual(props) {\n  var classes = useStyles();\n  var startTime = Date.now();\n  var [inheritance, setInheritance] = react__WEBPACK_IMPORTED_MODULE_0___default.a.useState(true);\n  var [single, setSingle] = react__WEBPACK_IMPORTED_MODULE_0___default.a.useState(true);\n  var [multi, setMulti] = react__WEBPACK_IMPORTED_MODULE_0___default.a.useState(true);\n  var [hybrid, setHybrid] = react__WEBPACK_IMPORTED_MODULE_0___default.a.useState(true);\n  var [hierarchical, setHierarchical] = react__WEBPACK_IMPORTED_MODULE_0___default.a.useState(true);\n\n  var handleInheritance = () => {\n    setInheritance(false);\n  };\n\n  var handleSingle = () => {\n    setSingle(false);\n  };\n\n  var handleMulti = () => {\n    setMulti(false);\n  };\n\n  var handleHybrid = () => {\n    setHybrid(false);\n  };\n\n  var handleHierarchical = () => {\n    setHierarchical(false);\n  };\n\n  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Container\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(\"form\", {\n    autoComplete: \"off\",\n    noValidate: true\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"List\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h5\"\n  }, \"Inheritance\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Card\"], {\n    className: classes.root,\n    raised: inheritance\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"CardActionArea\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"CardMedia\"], {\n    component: \"img\",\n    alt: \"Contemplative Reptile\" // height=\"250\"\n    ,\n    image: \"https://d1jnx9ba8s6j9r.cloudfront.net/blog/wp-content/uploads/2017/04/Inheritance-types-java.png\",\n    title: \"Inheritance\"\n  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"CardContent\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    gutterBottom: true,\n    variant: \"h5\",\n    component: \"h2\"\n  }, \"Inheritance\"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body2\",\n    color: \"textSecondary\",\n    component: \"p\"\n  }, \"Inheritance is a widely used OOPs concept which is used to implemet abstraction and coupling in our application. Also, it will be used full if we work with a team or a group of people.\"))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"CardActions\"], {\n    className: classes.handleButton\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Button\"], {\n    size: \"small\",\n    color: inheritance ? 'secondary' : 'primary',\n    onClick: handleInheritance\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_CheckCircleSharp__WEBPACK_IMPORTED_MODULE_2___default.a, null))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Card\"], {\n    className: classes.root,\n    raised: single\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"CardActionArea\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"CardMedia\"], {\n    component: \"img\",\n    alt: \"Contemplative Reptile\",\n    height: \"500\",\n    image: \"https://d1jnx9ba8s6j9r.cloudfront.net/blog/wp-content/uploads/2017/04/Single-Inheritance-144x180.png\",\n    title: \"Single Inheritance\"\n  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"CardContent\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    gutterBottom: true,\n    variant: \"h5\",\n    component: \"h2\"\n  }, \"Single Inheritance\"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body2\",\n    color: \"textSecondary\",\n    component: \"p\"\n  }, \"In single inheritance, one class inherits the properties of another. It enables a derived class to inherit the properties and behavior from a single parent class. This will in turn enable code reusability as well as add new features to the existing code. Here, Class A is your parent class and Class B is your child class which inherits the properties and behavior of the parent class.\"))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"CardActions\"], {\n    className: classes.handleButton\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Button\"], {\n    size: \"small\",\n    color: single ? 'secondary' : 'primary',\n    onClick: handleSingle\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_CheckCircleSharp__WEBPACK_IMPORTED_MODULE_2___default.a, null))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Card\"], {\n    className: classes.root,\n    raised: multi\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"CardActionArea\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"CardMedia\"], {\n    component: \"img\",\n    alt: \"Contemplative Reptile\",\n    height: \"500\",\n    image: \"https://d1jnx9ba8s6j9r.cloudfront.net/blog/wp-content/uploads/2017/04/Multilevel-Inheritance-204x300.png\",\n    title: \" Multilevel Inheritance\"\n  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"CardContent\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    gutterBottom: true,\n    variant: \"h5\",\n    component: \"h2\"\n  }, \"Multilevel Inheritance\"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body2\",\n    color: \"textSecondary\",\n    component: \"p\"\n  }, \"When a class is derived from a class which is also derived from another class, i.e. a class having more than one parent class but at different levels, such type of inheritance is called Multilevel Inheritance. If we talk about the flowchart, class B inherits the properties and behavior of class A and class C inherits the properties of class B. Here A is the parent class for B and class B is the parent class for C. So in this case class C implicitly inherits the properties and methods of class A along with Class B. That\\u2019s what is multilevel inheritance.\"))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"CardActions\"], {\n    className: classes.handleButton\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Button\"], {\n    size: \"small\",\n    color: multi ? 'secondary' : 'primary',\n    onClick: handleMulti\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_CheckCircleSharp__WEBPACK_IMPORTED_MODULE_2___default.a, null)))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Card\"], {\n    className: classes.root,\n    raised: hybrid\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"CardActionArea\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"CardMedia\"], {\n    component: \"img\",\n    alt: \"Contemplative Reptile\" // height=\"500\"\n    ,\n    image: \"https://d1jnx9ba8s6j9r.cloudfront.net/blog/wp-content/uploads/2017/04/Hybrid-Inheritance-186x180.png\",\n    title: \"Hybrid Inheritance\"\n  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"CardContent\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    gutterBottom: true,\n    variant: \"h5\",\n    component: \"h2\"\n  }, \"Hybrid Inheritance\"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body2\",\n    color: \"textSecondary\",\n    component: \"p\"\n  }, \"Hybrid inheritance is a combination of multiple inheritance and multilevel inheritance. Since multiple inheritance is not supported in Java as it leads to ambiguity, so this type of inheritance can only be achieved through the use of the interfaces. If we talk about the flowchart, class A is a parent class for class B and C, whereas Class B and C are the parent class of D which is the only child class\"))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"CardActions\"], {\n    className: classes.handleButton\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Button\"], {\n    size: \"small\",\n    color: hybrid ? 'secondary' : 'primary',\n    onClick: handleHybrid\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_CheckCircleSharp__WEBPACK_IMPORTED_MODULE_2___default.a, null))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Card\"], {\n    className: classes.root,\n    raised: hierarchical\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"CardActionArea\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"CardMedia\"], {\n    component: \"img\",\n    alt: \"Contemplative Reptile\" // height=\"500\"\n    ,\n    image: \"https://d1jnx9ba8s6j9r.cloudfront.net/blog/wp-content/uploads/2017/04/Hierarchical-Inheritance-300x178.png\",\n    title: \"Hierarchical  Inheritance\"\n  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"CardContent\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    gutterBottom: true,\n    variant: \"h5\",\n    component: \"h2\"\n  }, \"Hierarchical  Inheritance\"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body2\",\n    color: \"textSecondary\",\n    component: \"p\"\n  }, \"When a class has more than one child classes (sub classes) o r in other words, more than one child classes have the same parent class, then such kind of inheritance is known as hierarchical. If we talk about the flowchart, Class B and C are the child classes which are inheriting from the parent class i.e Class A. Let\\u2019s see the syntax for hierarchical inheritance in Java:\"))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"CardActions\"], {\n    className: classes.handleButton\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Button\"], {\n    size: \"small\",\n    color: hierarchical ? 'secondary' : 'primary',\n    onClick: handleHierarchical\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_CheckCircleSharp__WEBPACK_IMPORTED_MODULE_2___default.a, null)))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Divider\"], {\n    variant: \"middle\"\n  })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(\"br\", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Button\"], {\n    variant: \"contained\",\n    color: \"primary\",\n    className: classes.handleButton,\n    onClick: e => {\n      var score = 0;\n      inheritance ? score : score++;\n      single ? score : score++;\n      multi ? score : score++;\n      hybrid ? score : score++;\n      hierarchical ? score : score++;\n      handleSubmit(e, props, startTime, score);\n    }\n  }, \"Next\")));\n}//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9Db3Vyc2UvR2VuZXJhbE1hdGVyaWFscy9WaXN1YWwuanMuanMiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9Db3Vyc2UvR2VuZXJhbE1hdGVyaWFscy9WaXN1YWwuanM/ZmZhNyJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgUmVhY3QsIHt1c2VTdGF0ZSwgdXNlRWZmZWN0fSBmcm9tICdyZWFjdCdcclxuaW1wb3J0IHsgVHlwb2dyYXBoeSwgXHJcbiAgICBtYWtlU3R5bGVzLCBcclxuICAgIEJ1dHRvbixcclxuICAgIENhcmRDb250ZW50LCBcclxuICAgIENhcmRNZWRpYSwgXHJcbiAgICBDYXJkLFxyXG4gICAgTGlzdCxcclxuICAgIExpc3RJdGVtLFxyXG4gICAgQ2FyZEFjdGlvbkFyZWEsXHJcbiAgICBDYXJkQWN0aW9ucyxcclxuICAgIERpdmlkZXIsXHJcbiAgIENvbnRhaW5lciB9IGZyb20gJ0BtYXRlcmlhbC11aS9jb3JlJ1xyXG5pbXBvcnQgQ2hlY2tDaXJjbGVTaGFycEljb24gZnJvbSAnQG1hdGVyaWFsLXVpL2ljb25zL0NoZWNrQ2lyY2xlU2hhcnAnO1xyXG5pbXBvcnQgYXhpb3MgZnJvbSAnYXhpb3MnXHJcblxyXG5jb25zdCB1c2VTdHlsZXMgPSBtYWtlU3R5bGVzKHRoZW1lID0+ICh7XHJcbiAgICBpY29uOiB7XHJcbiAgICAgIG1hcmdpblJpZ2h0OiB0aGVtZS5zcGFjaW5nKDIpLFxyXG4gICAgfSxcclxuICAgIGxpbmsgOiB7XHJcbiAgICAgIHRleHREZWNvcmF0aW9uIDogJ25vbmUnLFxyXG4gICAgfSxcclxuICAgIGhlcm9Db250ZW50OiB7XHJcbiAgICAgIGJhY2tncm91bmRDb2xvcjogdGhlbWUucGFsZXR0ZS5iYWNrZ3JvdW5kLnBhcGVyLFxyXG4gICAgICBwYWRkaW5nOiB0aGVtZS5zcGFjaW5nKDgsIDAsIDYpLFxyXG4gICAgfSxcclxuICAgIGhlcm9CdXR0b25zOiB7XHJcbiAgICAgIG1hcmdpbjogdGhlbWUuc3BhY2luZyg0KSxcclxuICAgIH0sXHJcbiAgICBoYW5kbGVCdXR0b24gOntcclxuICAgICAgbWFyZ2luOiB0aGVtZS5zcGFjaW5nKDQpLFxyXG4gICAgICBmbG9hdDoncmlnaHQnXHJcbiAgICB9LFxyXG4gICAgY2FyZEdyaWQ6IHtcclxuICAgICAgcGFkZGluZ1RvcDogdGhlbWUuc3BhY2luZyg4KSxcclxuICAgICAgcGFkZGluZ0JvdHRvbTogdGhlbWUuc3BhY2luZyg4KSxcclxuICAgIH0sXHJcbiAgICBjYXJkOiB7XHJcbiAgICAgIGhlaWdodDogJzEwMCUnLFxyXG4gICAgICBkaXNwbGF5OiAnZmxleCcsXHJcbiAgICAgIGZsZXhEaXJlY3Rpb246ICdjb2x1bW4nLFxyXG4gICAgfSxcclxuICAgIGNhcmRNZWRpYToge1xyXG4gICAgICBwYWRkaW5nVG9wOiAnNTYuMjUlJywgLy8gMTY6OVxyXG4gICAgfSxcclxuICAgIGNhcmRDb250ZW50OiB7XHJcbiAgICAgIGZsZXhHcm93OiAxLFxyXG4gICAgfSxcclxuICAgIGZvb3Rlcjoge1xyXG4gICAgICBiYWNrZ3JvdW5kQ29sb3I6IHRoZW1lLnBhbGV0dGUuYmFja2dyb3VuZC5wYXBlcixcclxuICAgICAgcGFkZGluZzogdGhlbWUuc3BhY2luZyg2KSxcclxuICAgIH0sXHJcbiAgfSkpO1xyXG5cclxuXHJcbmNvbnN0IGhhbmRsZVN1Ym1pdCA9IGFzeW5jIChlLHByb3BzLHN0YXJ0VGltZSxzY29yZSkgPT4ge1xyXG4gICAgZS5wcmV2ZW50RGVmYXVsdCgpXHJcbiAgICBsZXQgdGltZSA9ICgoRGF0ZS5ub3coKSAtIHN0YXJ0VGltZSkvMTAwMCkvNjBcclxuXHJcbiAgICBzY29yZSo9MlxyXG4gICAgc2NvcmUgPSBzY29yZSA+PSA5ID8gOSA6IHNjb3JlXHJcbiAgICB0aW1lID0gdGltZSA+PSA5ID8gOSA6IHRpbWVcclxuICAgIHRpbWUgPSBNYXRoLnJvdW5kKHRpbWUpXHJcblxyXG4gICAgY29uc3QgYXV0aFRva2VuID0gc2Vzc2lvblN0b3JhZ2UuZ2V0SXRlbSgnYXV0aCcpXHJcblxyXG4gICAgdHJ5IHtcclxuICAgICAgICBjb25zdCByZXMgPSBhd2FpdCBheGlvcy5wYXRjaCgnaHR0cDovLzEyNy4wLjAuMTo4MDAwL2FwaS92MS9zdHVkZW50L21sL3Bvc3QvJythdXRoVG9rZW4sXHJcbiAgICAgICAge1xyXG4gICAgICAgICAgXCJWXCIgOiBzY29yZVxyXG4gICAgICAgICAgLy8gXCJWX1RcIiA6ICB0aW1lXHJcbiAgICAgICAgfSlcclxuICAgIFxyXG4gICAgICAgIGlmKHJlcy5zdGF0dXMgPT09IDIwMCkge1xyXG4gICAgICAgICAgY29uc29sZS5sb2coJ1N1Y2Nlc3NmdWxseSBQdXNoZWQgQWN0aXZpdHkgRGF0YScpXHJcbiAgICAgICAgfVxyXG4gICAgICAgIFxyXG4gICAgICAgIGVsc2Uge1xyXG4gICAgICAgICAgYWxlcnQoXCJQcm9ibGVtIFdoaWxlIFB1c2hpbmdcIik7XHJcbiAgICAgICAgfVxyXG4gICAgICB9IGNhdGNoKGVyciApe1xyXG4gICAgICAgIGFsZXJ0KGVycilcclxuICAgICAgfVxyXG5cclxuICAgIGNvbnNvbGUubG9nKFwic2NvcmVcIitzY29yZSlcclxuICAgIGNvbnNvbGUubG9nKFwidGltZVwiK3RpbWUpXHJcbiAgICBwcm9wcy5oaXN0b3J5LnB1c2goICAnL2NvdXJzZS8nKyBwcm9wcy5tYXRjaC5wYXJhbXMuY291cnNlICsnL1N1bW1hcnknKVxyXG59XHJcblxyXG5leHBvcnQgZGVmYXVsdCBmdW5jdGlvbiBWaXN1YWwgKHByb3BzKSB7XHJcbiAgICAgICAgY29uc3QgY2xhc3NlcyA9IHVzZVN0eWxlcygpXHJcblxyXG4gICAgICAgIGNvbnN0IHN0YXJ0VGltZSA9IERhdGUubm93KClcclxuXHJcbiAgICAgICAgY29uc3QgW2luaGVyaXRhbmNlLCBzZXRJbmhlcml0YW5jZV0gPSBSZWFjdC51c2VTdGF0ZSh0cnVlKVxyXG4gICAgICAgIGNvbnN0IFtzaW5nbGUsIHNldFNpbmdsZV0gPSBSZWFjdC51c2VTdGF0ZSh0cnVlKVxyXG4gICAgICAgIGNvbnN0IFttdWx0aSwgc2V0TXVsdGldID0gUmVhY3QudXNlU3RhdGUodHJ1ZSlcclxuICAgICAgICBjb25zdCBbaHlicmlkLCBzZXRIeWJyaWRdID0gUmVhY3QudXNlU3RhdGUodHJ1ZSlcclxuICAgICAgICBjb25zdCBbaGllcmFyY2hpY2FsLCBzZXRIaWVyYXJjaGljYWxdID0gUmVhY3QudXNlU3RhdGUodHJ1ZSlcclxuXHJcbiAgICAgICAgY29uc3QgaGFuZGxlSW5oZXJpdGFuY2UgPSAoKSA9PiB7XHJcbiAgICAgICAgICBzZXRJbmhlcml0YW5jZShmYWxzZSlcclxuICAgICAgICB9XHJcblxyXG4gICAgICAgIGNvbnN0IGhhbmRsZVNpbmdsZSA9ICgpID0+IHtcclxuICAgICAgICAgIHNldFNpbmdsZShmYWxzZSlcclxuICAgICAgICB9XHJcblxyXG4gICAgICAgIGNvbnN0IGhhbmRsZU11bHRpID0gKCkgPT4ge1xyXG4gICAgICAgICAgc2V0TXVsdGkoZmFsc2UpXHJcbiAgICAgICAgfVxyXG5cclxuICAgICAgICBjb25zdCBoYW5kbGVIeWJyaWQgPSAoKSA9PiB7XHJcbiAgICAgICAgICBzZXRIeWJyaWQoZmFsc2UpXHJcbiAgICAgICAgfVxyXG5cclxuICAgICAgICBjb25zdCBoYW5kbGVIaWVyYXJjaGljYWwgPSAoKSA9PiB7XHJcbiAgICAgICAgICBzZXRIaWVyYXJjaGljYWwoZmFsc2UpXHJcbiAgICAgICAgfVxyXG5cclxuICAgICAgICByZXR1cm4oXHJcbiAgICAgICAgPENvbnRhaW5lcj5cclxuICAgICAgICA8Zm9ybSAgYXV0b0NvbXBsZXRlPVwib2ZmXCIgbm9WYWxpZGF0ZT5cclxuICAgICAgICAgICAgPExpc3QgPlxyXG4gICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9J2g1Jz5cclxuICAgICAgICAgICAgICAgICAgICAgICAgSW5oZXJpdGFuY2VcclxuICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPiBcclxuICAgICAgICAgICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgICAgPENhcmQgY2xhc3NOYW1lPXtjbGFzc2VzLnJvb3R9IHJhaXNlZD17aW5oZXJpdGFuY2V9PlxyXG4gICAgICAgICAgICAgICAgICAgIDxDYXJkQWN0aW9uQXJlYT5cclxuICAgICAgICAgICAgICAgICAgICAgIDxDYXJkTWVkaWFcclxuICAgICAgICAgICAgICAgICAgICAgICAgY29tcG9uZW50PVwiaW1nXCJcclxuICAgICAgICAgICAgICAgICAgICAgICAgYWx0PVwiQ29udGVtcGxhdGl2ZSBSZXB0aWxlXCJcclxuICAgICAgICAgICAgICAgICAgICAgICAgLy8gaGVpZ2h0PVwiMjUwXCJcclxuICAgICAgICAgICAgICAgICAgICAgICAgaW1hZ2U9XCJodHRwczovL2Qxam54OWJhOHM2ajlyLmNsb3VkZnJvbnQubmV0L2Jsb2cvd3AtY29udGVudC91cGxvYWRzLzIwMTcvMDQvSW5oZXJpdGFuY2UtdHlwZXMtamF2YS5wbmdcIlxyXG4gICAgICAgICAgICAgICAgICAgICAgICB0aXRsZT1cIkluaGVyaXRhbmNlXCJcclxuICAgICAgICAgICAgICAgICAgICAgIC8+XHJcbiAgICAgICAgICAgICAgICAgICAgICA8Q2FyZENvbnRlbnQ+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IGd1dHRlckJvdHRvbSB2YXJpYW50PVwiaDVcIiBjb21wb25lbnQ9XCJoMlwiPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgIEluaGVyaXRhbmNlXHJcbiAgICAgICAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImJvZHkyXCIgY29sb3I9XCJ0ZXh0U2Vjb25kYXJ5XCIgY29tcG9uZW50PVwicFwiPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgIEluaGVyaXRhbmNlIGlzIGEgd2lkZWx5IHVzZWQgT09QcyBjb25jZXB0IHdoaWNoIGlzIHVzZWQgdG8gaW1wbGVtZXQgYWJzdHJhY3Rpb24gYW5kIGNvdXBsaW5nIGluIG91ciBhcHBsaWNhdGlvbi4gQWxzbywgaXQgd2lsbCBiZSB1c2VkIGZ1bGwgaWYgd2Ugd29yayB3aXRoIGEgdGVhbSBvciBhIGdyb3VwIG9mIHBlb3BsZS5cclxuICAgICAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgICAgICAgPC9DYXJkQ29udGVudD5cclxuICAgICAgICAgICAgICAgICAgICA8L0NhcmRBY3Rpb25BcmVhPlxyXG4gICAgICAgICAgICAgICAgICAgIDxDYXJkQWN0aW9ucyBjbGFzc05hbWU9e2NsYXNzZXMuaGFuZGxlQnV0dG9ufSA+XHJcbiAgICAgICAgICAgICAgICAgICAgICA8QnV0dG9uIHNpemU9XCJzbWFsbFwiIGNvbG9yPXtpbmhlcml0YW5jZSA/ICdzZWNvbmRhcnknOidwcmltYXJ5J30gb25DbGljaz17aGFuZGxlSW5oZXJpdGFuY2UgfT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgPENoZWNrQ2lyY2xlU2hhcnBJY29uLz5cclxuICAgICAgICAgICAgICAgICAgICAgIDwvQnV0dG9uPlxyXG4gICAgICAgICAgICAgICAgICAgIDwvQ2FyZEFjdGlvbnM+XHJcbiAgICAgICAgICAgICAgICAgIDwvQ2FyZD5cclxuICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+IFxyXG4gICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgPENhcmQgY2xhc3NOYW1lPXtjbGFzc2VzLnJvb3R9IHJhaXNlZD17c2luZ2xlfT5cclxuICAgICAgICAgICAgICAgICAgICAgIDxDYXJkQWN0aW9uQXJlYT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgPENhcmRNZWRpYVxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgIGNvbXBvbmVudD1cImltZ1wiXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgYWx0PVwiQ29udGVtcGxhdGl2ZSBSZXB0aWxlXCJcclxuICAgICAgICAgICAgICAgICAgICAgICAgICBoZWlnaHQ9XCI1MDBcIlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgIGltYWdlPVwiaHR0cHM6Ly9kMWpueDliYThzNmo5ci5jbG91ZGZyb250Lm5ldC9ibG9nL3dwLWNvbnRlbnQvdXBsb2Fkcy8yMDE3LzA0L1NpbmdsZS1Jbmhlcml0YW5jZS0xNDR4MTgwLnBuZ1wiXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgdGl0bGU9XCJTaW5nbGUgSW5oZXJpdGFuY2VcIlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAvPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICA8Q2FyZENvbnRlbnQ+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgZ3V0dGVyQm90dG9tIHZhcmlhbnQ9XCJoNVwiIGNvbXBvbmVudD1cImgyXCI+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICBTaW5nbGUgSW5oZXJpdGFuY2VcclxuICAgICAgICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImJvZHkyXCIgY29sb3I9XCJ0ZXh0U2Vjb25kYXJ5XCIgY29tcG9uZW50PVwicFwiPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgIEluIHNpbmdsZSBpbmhlcml0YW5jZSwgb25lIGNsYXNzIGluaGVyaXRzIHRoZSBwcm9wZXJ0aWVzIG9mIGFub3RoZXIuIEl0IGVuYWJsZXMgYSBkZXJpdmVkIGNsYXNzIHRvIGluaGVyaXQgdGhlIHByb3BlcnRpZXMgYW5kIGJlaGF2aW9yIGZyb20gYSBzaW5nbGUgcGFyZW50IGNsYXNzLiBUaGlzIHdpbGwgaW4gdHVybiBlbmFibGUgY29kZSByZXVzYWJpbGl0eSBhcyB3ZWxsIGFzIGFkZCBuZXcgZmVhdHVyZXMgdG8gdGhlIGV4aXN0aW5nIGNvZGUuXHJcblxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgIEhlcmUsIENsYXNzIEEgaXMgeW91ciBwYXJlbnQgY2xhc3MgYW5kIENsYXNzIEIgaXMgeW91ciBjaGlsZCBjbGFzcyB3aGljaCBpbmhlcml0cyB0aGUgcHJvcGVydGllcyBhbmQgYmVoYXZpb3Igb2YgdGhlIHBhcmVudCBjbGFzcy5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIDwvQ2FyZENvbnRlbnQ+XHJcbiAgICAgICAgICAgICAgICAgICAgICA8L0NhcmRBY3Rpb25BcmVhPlxyXG4gICAgICAgICAgICAgICAgICAgICAgPENhcmRBY3Rpb25zIGNsYXNzTmFtZT17Y2xhc3Nlcy5oYW5kbGVCdXR0b259ID5cclxuICAgICAgICAgICAgICAgICAgICAgIDxCdXR0b24gc2l6ZT1cInNtYWxsXCIgY29sb3I9e3NpbmdsZSA/ICdzZWNvbmRhcnknOidwcmltYXJ5J30gb25DbGljaz17aGFuZGxlU2luZ2xlIH0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIDxDaGVja0NpcmNsZVNoYXJwSWNvbi8+XHJcbiAgICAgICAgICAgICAgICAgICAgICA8L0J1dHRvbj5cclxuICAgICAgICAgICAgICAgICAgICA8L0NhcmRBY3Rpb25zPlxyXG4gICAgICAgICAgICAgICAgICAgIDwvQ2FyZD5cclxuICAgICAgICAgICAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgIDxDYXJkIGNsYXNzTmFtZT17Y2xhc3Nlcy5yb290fSByYWlzZWQ9e211bHRpfT5cclxuICAgICAgICAgICAgICAgICAgICAgIDxDYXJkQWN0aW9uQXJlYT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgPENhcmRNZWRpYVxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgIGNvbXBvbmVudD1cImltZ1wiXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgYWx0PVwiQ29udGVtcGxhdGl2ZSBSZXB0aWxlXCJcclxuICAgICAgICAgICAgICAgICAgICAgICAgICBoZWlnaHQ9XCI1MDBcIlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgIGltYWdlPVwiaHR0cHM6Ly9kMWpueDliYThzNmo5ci5jbG91ZGZyb250Lm5ldC9ibG9nL3dwLWNvbnRlbnQvdXBsb2Fkcy8yMDE3LzA0L011bHRpbGV2ZWwtSW5oZXJpdGFuY2UtMjA0eDMwMC5wbmdcIlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgIHRpdGxlPVwiIE11bHRpbGV2ZWwgSW5oZXJpdGFuY2VcIlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAvPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICA8Q2FyZENvbnRlbnQ+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgZ3V0dGVyQm90dG9tIHZhcmlhbnQ9XCJoNVwiIGNvbXBvbmVudD1cImgyXCI+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICBNdWx0aWxldmVsIEluaGVyaXRhbmNlXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJib2R5MlwiIGNvbG9yPVwidGV4dFNlY29uZGFyeVwiIGNvbXBvbmVudD1cInBcIj5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIFdoZW4gYSBjbGFzcyBpcyBkZXJpdmVkIGZyb20gYSBjbGFzcyB3aGljaCBpcyBhbHNvIGRlcml2ZWQgZnJvbSBhbm90aGVyIGNsYXNzLCBpLmUuIGEgY2xhc3MgaGF2aW5nIG1vcmUgdGhhbiBvbmUgcGFyZW50IGNsYXNzIGJ1dCBhdCBkaWZmZXJlbnQgbGV2ZWxzLCBzdWNoIHR5cGUgb2YgaW5oZXJpdGFuY2UgaXMgY2FsbGVkIE11bHRpbGV2ZWwgSW5oZXJpdGFuY2UuXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICBJZiB3ZSB0YWxrIGFib3V0IHRoZSBmbG93Y2hhcnQsIGNsYXNzIEIgaW5oZXJpdHMgdGhlIHByb3BlcnRpZXMgYW5kIGJlaGF2aW9yIG9mIGNsYXNzIEEgYW5kIGNsYXNzIEMgaW5oZXJpdHMgdGhlIHByb3BlcnRpZXMgb2YgY2xhc3MgQi4gSGVyZSBBIGlzIHRoZSBwYXJlbnQgY2xhc3MgZm9yIEIgYW5kIGNsYXNzIEIgaXMgdGhlIHBhcmVudCBjbGFzcyBmb3IgQy4gU28gaW4gdGhpcyBjYXNlIGNsYXNzIEMgaW1wbGljaXRseSBpbmhlcml0cyB0aGUgcHJvcGVydGllcyBhbmQgbWV0aG9kcyBvZiBjbGFzcyBBIGFsb25nIHdpdGggQ2xhc3MgQi4gVGhhdOKAmXMgd2hhdCBpcyBtdWx0aWxldmVsIGluaGVyaXRhbmNlLlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgPC9DYXJkQ29udGVudD5cclxuICAgICAgICAgICAgICAgICAgICAgIDwvQ2FyZEFjdGlvbkFyZWE+XHJcbiAgICAgICAgICAgICAgICAgICAgICA8Q2FyZEFjdGlvbnMgY2xhc3NOYW1lPXtjbGFzc2VzLmhhbmRsZUJ1dHRvbn0gPlxyXG4gICAgICAgICAgICAgICAgICAgICAgPEJ1dHRvbiBzaXplPVwic21hbGxcIiBjb2xvcj17bXVsdGkgPyAnc2Vjb25kYXJ5JzoncHJpbWFyeSd9IG9uQ2xpY2s9e2hhbmRsZU11bHRpIH0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIDxDaGVja0NpcmNsZVNoYXJwSWNvbi8+XHJcbiAgICAgICAgICAgICAgICAgICAgICA8L0J1dHRvbj5cclxuICAgICAgICAgICAgICAgICAgICA8L0NhcmRBY3Rpb25zPlxyXG4gICAgICAgICAgICAgICAgICAgIDwvQ2FyZD5cclxuICAgICAgICAgICAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgPENhcmQgY2xhc3NOYW1lPXtjbGFzc2VzLnJvb3R9IHJhaXNlZD17aHlicmlkfT5cclxuICAgICAgICAgICAgICAgICAgICAgIDxDYXJkQWN0aW9uQXJlYT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgPENhcmRNZWRpYVxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgIGNvbXBvbmVudD1cImltZ1wiXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgYWx0PVwiQ29udGVtcGxhdGl2ZSBSZXB0aWxlXCJcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAvLyBoZWlnaHQ9XCI1MDBcIlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgIGltYWdlPVwiaHR0cHM6Ly9kMWpueDliYThzNmo5ci5jbG91ZGZyb250Lm5ldC9ibG9nL3dwLWNvbnRlbnQvdXBsb2Fkcy8yMDE3LzA0L0h5YnJpZC1Jbmhlcml0YW5jZS0xODZ4MTgwLnBuZ1wiXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgdGl0bGU9XCJIeWJyaWQgSW5oZXJpdGFuY2VcIlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAvPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICA8Q2FyZENvbnRlbnQ+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgZ3V0dGVyQm90dG9tIHZhcmlhbnQ9XCJoNVwiIGNvbXBvbmVudD1cImgyXCI+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICBIeWJyaWQgSW5oZXJpdGFuY2VcclxuICAgICAgICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImJvZHkyXCIgY29sb3I9XCJ0ZXh0U2Vjb25kYXJ5XCIgY29tcG9uZW50PVwicFwiPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgSHlicmlkIGluaGVyaXRhbmNlIGlzIGEgY29tYmluYXRpb24gb2YgbXVsdGlwbGUgaW5oZXJpdGFuY2UgYW5kIG11bHRpbGV2ZWwgaW5oZXJpdGFuY2UuIFNpbmNlIG11bHRpcGxlIGluaGVyaXRhbmNlIGlzIG5vdCBzdXBwb3J0ZWQgaW4gSmF2YSBhcyBpdCBsZWFkcyB0byBhbWJpZ3VpdHksIHNvIHRoaXMgdHlwZSBvZiBpbmhlcml0YW5jZSBjYW4gb25seSBiZSBhY2hpZXZlZCB0aHJvdWdoIHRoZSB1c2Ugb2YgdGhlIGludGVyZmFjZXMuIFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgSWYgd2UgdGFsayBhYm91dCB0aGUgZmxvd2NoYXJ0LCBjbGFzcyBBIGlzIGEgcGFyZW50IGNsYXNzIGZvciBjbGFzcyBCIGFuZCBDLCB3aGVyZWFzIENsYXNzIEIgYW5kIEMgYXJlIHRoZSBwYXJlbnQgY2xhc3Mgb2YgRCB3aGljaCBpcyB0aGUgb25seSBjaGlsZCBjbGFzc1xyXG4gICAgICAgICAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgPC9DYXJkQ29udGVudD5cclxuICAgICAgICAgICAgICAgICAgICAgIDwvQ2FyZEFjdGlvbkFyZWE+XHJcbiAgICAgICAgICAgICAgICAgICAgICA8Q2FyZEFjdGlvbnMgY2xhc3NOYW1lPXtjbGFzc2VzLmhhbmRsZUJ1dHRvbn0gPlxyXG4gICAgICAgICAgICAgICAgICAgICAgPEJ1dHRvbiBzaXplPVwic21hbGxcIiBjb2xvcj17aHlicmlkID8gJ3NlY29uZGFyeSc6J3ByaW1hcnknfSBvbkNsaWNrPXtoYW5kbGVIeWJyaWQgfT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgPENoZWNrQ2lyY2xlU2hhcnBJY29uLz5cclxuICAgICAgICAgICAgICAgICAgICAgIDwvQnV0dG9uPlxyXG4gICAgICAgICAgICAgICAgICAgIDwvQ2FyZEFjdGlvbnM+XHJcbiAgICAgICAgICAgICAgICAgICAgPC9DYXJkPlxyXG4gICAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICA8TGlzdEl0ZW0gPlxyXG4gICAgICAgICAgICAgICAgICAgIDxDYXJkIGNsYXNzTmFtZT17Y2xhc3Nlcy5yb290fSByYWlzZWQ9e2hpZXJhcmNoaWNhbH0+XHJcbiAgICAgICAgICAgICAgICAgICAgICA8Q2FyZEFjdGlvbkFyZWE+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIDxDYXJkTWVkaWFcclxuICAgICAgICAgICAgICAgICAgICAgICAgICBjb21wb25lbnQ9XCJpbWdcIlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgIGFsdD1cIkNvbnRlbXBsYXRpdmUgUmVwdGlsZVwiXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgLy8gaGVpZ2h0PVwiNTAwXCJcclxuICAgICAgICAgICAgICAgICAgICAgICAgICBpbWFnZT1cImh0dHBzOi8vZDFqbng5YmE4czZqOXIuY2xvdWRmcm9udC5uZXQvYmxvZy93cC1jb250ZW50L3VwbG9hZHMvMjAxNy8wNC9IaWVyYXJjaGljYWwtSW5oZXJpdGFuY2UtMzAweDE3OC5wbmdcIlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgIHRpdGxlPVwiSGllcmFyY2hpY2FsICBJbmhlcml0YW5jZVwiXHJcbiAgICAgICAgICAgICAgICAgICAgICAgIC8+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIDxDYXJkQ29udGVudD5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICA8VHlwb2dyYXBoeSBndXR0ZXJCb3R0b20gdmFyaWFudD1cImg1XCIgY29tcG9uZW50PVwiaDJcIj5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIEhpZXJhcmNoaWNhbCAgSW5oZXJpdGFuY2VcclxuICAgICAgICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImJvZHkyXCIgY29sb3I9XCJ0ZXh0U2Vjb25kYXJ5XCIgY29tcG9uZW50PVwicFwiPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgV2hlbiBhIGNsYXNzIGhhcyBtb3JlIHRoYW4gb25lIGNoaWxkIGNsYXNzZXMgKHN1YiBjbGFzc2VzKSBvIHIgaW4gb3RoZXIgd29yZHMsIG1vcmUgdGhhbiBvbmUgY2hpbGQgY2xhc3NlcyBoYXZlIHRoZSBzYW1lIHBhcmVudCBjbGFzcywgdGhlbiBzdWNoIGtpbmQgb2YgaW5oZXJpdGFuY2UgaXMga25vd24gYXMgaGllcmFyY2hpY2FsLlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgSWYgd2UgdGFsayBhYm91dCB0aGUgZmxvd2NoYXJ0LCBDbGFzcyBCIGFuZCBDIGFyZSB0aGUgY2hpbGQgY2xhc3NlcyB3aGljaCBhcmUgaW5oZXJpdGluZyBmcm9tIHRoZSBwYXJlbnQgY2xhc3MgaS5lIENsYXNzIEEuXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICBMZXTigJlzIHNlZSB0aGUgc3ludGF4IGZvciBoaWVyYXJjaGljYWwgaW5oZXJpdGFuY2UgaW4gSmF2YTpcclxuICAgICAgICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIDwvQ2FyZENvbnRlbnQ+XHJcbiAgICAgICAgICAgICAgICAgICAgICA8L0NhcmRBY3Rpb25BcmVhPlxyXG4gICAgICAgICAgICAgICAgICAgICAgPENhcmRBY3Rpb25zIGNsYXNzTmFtZT17Y2xhc3Nlcy5oYW5kbGVCdXR0b259ID5cclxuICAgICAgICAgICAgICAgICAgICAgIDxCdXR0b24gc2l6ZT1cInNtYWxsXCIgY29sb3I9e2hpZXJhcmNoaWNhbCA/ICdzZWNvbmRhcnknOidwcmltYXJ5J30gb25DbGljaz17aGFuZGxlSGllcmFyY2hpY2FsIH0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIDxDaGVja0NpcmNsZVNoYXJwSWNvbi8+XHJcbiAgICAgICAgICAgICAgICAgICAgICA8L0J1dHRvbj5cclxuICAgICAgICAgICAgICAgICAgICA8L0NhcmRBY3Rpb25zPlxyXG4gICAgICAgICAgICAgICAgICAgIDwvQ2FyZD5cclxuICAgICAgICAgICAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICA8RGl2aWRlciB2YXJpYW50PVwibWlkZGxlXCIgLz5cclxuICAgICAgICAgICAgPC9MaXN0PlxyXG4gICAgICAgICAgICA8YnIvPlxyXG4gICAgICAgICAgICA8QnV0dG9uIHZhcmlhbnQ9XCJjb250YWluZWRcIiBjb2xvcj1cInByaW1hcnlcIiBjbGFzc05hbWU9e2NsYXNzZXMuaGFuZGxlQnV0dG9ufSAgb25DbGljaz17KGUpPT57IFxyXG4gICAgICAgICAgICAgICAgbGV0IHNjb3JlID0gMDtcclxuXHJcbiAgICAgICAgICAgICAgICBpbmhlcml0YW5jZSA/IHNjb3JlIDogc2NvcmUrK1xyXG4gICAgICAgICAgICAgICAgc2luZ2xlID8gc2NvcmUgOiBzY29yZSsrXHJcbiAgICAgICAgICAgICAgICBtdWx0aSA/IHNjb3JlIDogc2NvcmUrK1xyXG4gICAgICAgICAgICAgICAgaHlicmlkID8gc2NvcmUgOiBzY29yZSsrXHJcbiAgICAgICAgICAgICAgICBoaWVyYXJjaGljYWwgPyBzY29yZSA6IHNjb3JlKytcclxuXHJcbiAgICAgICAgICAgICAgIFxyXG4gICAgICAgICAgICAgICAgaGFuZGxlU3VibWl0KGUscHJvcHMsc3RhcnRUaW1lLHNjb3JlKSBcclxuICAgICAgICAgICAgICAgIH19IFxyXG5cclxuICAgICAgICAgICAgPlxyXG4gICAgICAgICAgICAgICAgTmV4dFxyXG4gICAgICAgICAgICA8L0J1dHRvbj5cclxuICAgICAgICA8L2Zvcm0+XHJcbiAgICAgICAgPC9Db250YWluZXI+XHJcbiAgICApXHJcbn1cclxuIl0sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7OztBQUFBO0FBQ0E7QUFZQTtBQUNBO0FBRUE7QUFDQTtBQUNBO0FBREE7QUFHQTtBQUNBO0FBREE7QUFHQTtBQUNBO0FBQ0E7QUFGQTtBQUlBO0FBQ0E7QUFEQTtBQUdBO0FBQ0E7QUFDQTtBQUZBO0FBSUE7QUFDQTtBQUNBO0FBRkE7QUFJQTtBQUNBO0FBQ0E7QUFDQTtBQUhBO0FBS0E7QUFDQTtBQUNBO0FBRkE7QUFHQTtBQUNBO0FBREE7QUFHQTtBQUNBO0FBQ0E7QUFGQTtBQWpDQTtBQUNBO0FBdUNBO0FBQUE7QUFDQTtBQUNBO0FBRUE7QUFDQTtBQUNBO0FBQ0E7QUFFQTtBQUNBO0FBQ0E7QUFDQTtBQUVBO0FBQ0E7QUFGQTtBQUNBO0FBSUE7QUFDQTtBQUNBO0FBR0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQWpDQTtBQUFBO0FBQUE7QUFBQTtBQUNBO0FBaUNBO0FBQ0E7QUFFQTtBQUVBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUVBO0FBQUE7QUFBQTtBQUdBO0FBQUE7QUFLQTtBQUFBO0FBQUE7QUFHQTtBQUNBO0FBRkE7QUFJQTtBQUNBO0FBTEE7QUFRQTtBQUFBO0FBQUE7QUFBQTtBQUdBO0FBQUE7QUFBQTtBQUFBO0FBS0E7QUFBQTtBQUNBO0FBQUE7QUFBQTtBQUFBO0FBUUE7QUFBQTtBQUFBO0FBR0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUxBO0FBUUE7QUFBQTtBQUFBO0FBQUE7QUFHQTtBQUFBO0FBQUE7QUFBQTtBQU9BO0FBQUE7QUFDQTtBQUFBO0FBQUE7QUFBQTtBQU9BO0FBQUE7QUFBQTtBQUdBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFMQTtBQVFBO0FBQUE7QUFBQTtBQUFBO0FBR0E7QUFBQTtBQUFBO0FBQUE7QUFNQTtBQUFBO0FBQ0E7QUFBQTtBQUFBO0FBQUE7QUFTQTtBQUFBO0FBQUE7QUFHQTtBQUNBO0FBRkE7QUFJQTtBQUNBO0FBTEE7QUFRQTtBQUFBO0FBQUE7QUFBQTtBQUdBO0FBQUE7QUFBQTtBQUFBO0FBTUE7QUFBQTtBQUNBO0FBQUE7QUFBQTtBQUFBO0FBT0E7QUFBQTtBQUFBO0FBR0E7QUFDQTtBQUZBO0FBSUE7QUFDQTtBQUxBO0FBUUE7QUFBQTtBQUFBO0FBQUE7QUFHQTtBQUFBO0FBQUE7QUFBQTtBQU9BO0FBQUE7QUFDQTtBQUFBO0FBQUE7QUFBQTtBQU9BO0FBQUE7QUFHQTtBQUFBO0FBQUE7QUFBQTtBQUNBO0FBRUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUdBO0FBQ0E7QUFYQTtBQW1CQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///./React/Shared/Components/Course/GeneralMaterials/Visual.js\n");
 
 /***/ }),
 
@@ -2086,223 +289,7 @@ function Visual(props) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Home; });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _material_ui_core_AppBar__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core/AppBar */ "@material-ui/core/AppBar");
-/* harmony import */ var _material_ui_core_AppBar__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_AppBar__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _material_ui_core_Card__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @material-ui/core/Card */ "@material-ui/core/Card");
-/* harmony import */ var _material_ui_core_Card__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Card__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _material_ui_core_CardContent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @material-ui/core/CardContent */ "@material-ui/core/CardContent");
-/* harmony import */ var _material_ui_core_CardContent__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_CardContent__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _material_ui_core_CardMedia__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @material-ui/core/CardMedia */ "@material-ui/core/CardMedia");
-/* harmony import */ var _material_ui_core_CardMedia__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_CardMedia__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @material-ui/core/CssBaseline */ "@material-ui/core/CssBaseline");
-/* harmony import */ var _material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_5__);
-/* harmony import */ var _material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @material-ui/core/Grid */ "@material-ui/core/Grid");
-/* harmony import */ var _material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_6__);
-/* harmony import */ var _material_ui_core_Toolbar__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @material-ui/core/Toolbar */ "@material-ui/core/Toolbar");
-/* harmony import */ var _material_ui_core_Toolbar__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Toolbar__WEBPACK_IMPORTED_MODULE_7__);
-/* harmony import */ var _material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @material-ui/core/Typography */ "@material-ui/core/Typography");
-/* harmony import */ var _material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_8__);
-/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @material-ui/core */ "@material-ui/core");
-/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_9__);
-/* harmony import */ var _material_ui_core_Container__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @material-ui/core/Container */ "@material-ui/core/Container");
-/* harmony import */ var _material_ui_core_Container__WEBPACK_IMPORTED_MODULE_10___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Container__WEBPACK_IMPORTED_MODULE_10__);
-/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! react-router-dom */ "react-router-dom");
-/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_11___default = /*#__PURE__*/__webpack_require__.n(react_router_dom__WEBPACK_IMPORTED_MODULE_11__);
-/* harmony import */ var _Data_courses__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../Data/courses */ "./React/Shared/Data/courses.js");
-/* harmony import */ var _Shared_Data_learningStyles__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../../Shared/Data/learningStyles */ "./React/Shared/Data/learningStyles.js");
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! axios */ "axios");
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_14___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_14__);
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function Copyright() {
-  var classes = useStyles();
-  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_8___default.a, {
-    variant: "body2",
-    color: "textSecondary",
-    align: "center"
-  }, 'Copyright © ', react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_11__["Link"], {
-    to: "/",
-    className: classes.link
-  }, "Chill Studies"), ' ', new Date().getFullYear(), '.');
-}
-
-var useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_9__["makeStyles"])(theme => ({
-  icon: {
-    marginRight: theme.spacing(2)
-  },
-  link: {
-    textDecoration: 'none'
-  },
-  heroContent: {
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(8, 0, 6)
-  },
-  heroButtons: {
-    marginTop: theme.spacing(4)
-  },
-  cardGrid: {
-    paddingTop: theme.spacing(8),
-    paddingBottom: theme.spacing(8)
-  },
-  HomeButton: {
-    float: 'right'
-  },
-  handleButton: {
-    margin: theme.spacing(4),
-    float: 'left'
-  },
-  title: {
-    flexGrow: 1
-  },
-  card: {
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column'
-  },
-  cardMedia: {
-    paddingTop: '56.25%' // 16:9
-
-  },
-  cardContent: {
-    flexGrow: 1
-  },
-  footer: {
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(6)
-  }
-}));
-
-var handleRoute = /*#__PURE__*/function () {
-  var _ref = _asyncToGenerator(function* (props, card, course) {
-    var path = props.history.location.pathname + '';
-    var to = '';
-    var lsType = (yield path.includes('/home')) ? (yield axios__WEBPACK_IMPORTED_MODULE_14___default.a.get('http://127.0.0.1:8000/api/v1/student/ml/get/' + sessionStorage.getItem('auth'))).data : null;
-    to = path === '/dashboard' ? "/course/".concat(card.name, "/home") : to = path.includes('/ls') ? "/course/".concat(course.name, "/ls/").concat(lsType, "/").concat(card) : to = path.includes('/home') ? card.includes('1') ? "/course/".concat(course.name) : "/course/".concat(course.name, "/ls/").concat(lsType) : to = "/course/".concat(course.name, "/").concat(card);
-    props.history.push(to);
-  });
-
-  return function handleRoute(_x, _x2, _x3) {
-    return _ref.apply(this, arguments);
-  };
-}();
-
-function Home(props) {
-  var classes = useStyles();
-  var path = props.history.location.pathname + '';
-  var chapters = ['Chapter-1', 'Chapter-2'];
-  var cards = path.startsWith('/dashboard') ? _Data_courses__WEBPACK_IMPORTED_MODULE_12__["default"] : // its dhashboard
-  path.includes('/home') ? chapters : // Its Course Home that includes Chapters
-  path.includes('/ls') ? _Shared_Data_learningStyles__WEBPACK_IMPORTED_MODULE_13__["default"].find(style => props.match.params.ls_type === style.type).contents : // Its the LS Predicted Course Chapter Home  
-  ['Overview', 'Definitons', 'Activity', 'Content', 'Visual', 'Summary']; // Its the default Course Chapter Home
-
-  var course = path === '/dashboard' ? 'valid' : _Data_courses__WEBPACK_IMPORTED_MODULE_12__["default"].find(course => props.match.params.course === course.name);
-  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, course ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_5___default.a, null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_AppBar__WEBPACK_IMPORTED_MODULE_1___default.a, {
-    position: "relative"
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Toolbar__WEBPACK_IMPORTED_MODULE_7___default.a, null, path === '/dashboard' ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_8___default.a, {
-    variant: "h6",
-    color: "inherit",
-    noWrap: true,
-    className: classes.title
-  }, "Dashboard") : react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_8___default.a, {
-    variant: "h6",
-    color: "inherit",
-    noWrap: true,
-    className: classes.title
-  }, course.name), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_9__["IconButton"], {
-    edge: "start",
-    className: classes.HomeButton,
-    color: "inherit",
-    "aria-label": "home",
-    onClick: e => {
-      e.preventDefault();
-      props.history.push('/dashboard');
-    }
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_8___default.a, {
-    gutterBottom: true,
-    variant: "body1"
-  }, "Dashboard"))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("main", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-    className: classes.heroContent
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Container__WEBPACK_IMPORTED_MODULE_10___default.a, {
-    maxWidth: "sm"
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_8___default.a, {
-    component: "h1",
-    variant: "h2",
-    align: "center",
-    color: "textPrimary",
-    gutterBottom: true
-  }, path === '/dashboard' ? "Welcome to your Dashboard !" : "Welcome to ".concat(course.name, "!")), path === '/dashboard' ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_8___default.a, {
-    variant: "h5",
-    align: "center",
-    color: "textSecondary",
-    paragraph: true
-  }, "You can find your subscribed courses below.") : null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_8___default.a, {
-    variant: "h5",
-    align: "center",
-    color: "textSecondary",
-    paragraph: true
-  }, "Happy Learning"))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Container__WEBPACK_IMPORTED_MODULE_10___default.a, {
-    className: classes.cardGrid,
-    maxWidth: "md"
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_6___default.a, {
-    container: true,
-    spacing: 2
-  }, cards.map((card, i) => react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_6___default.a, {
-    item: true,
-    key: card,
-    xs: 12,
-    sm: 6,
-    md: path.includes('/ls') || path.includes('/home') ? 6 : 4
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-    onClick: e => {
-      handleRoute(props, card, course);
-    }
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Card__WEBPACK_IMPORTED_MODULE_2___default.a, {
-    className: classes.card
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_CardMedia__WEBPACK_IMPORTED_MODULE_4___default.a, {
-    className: classes.cardMedia,
-    image: path === '/dashboard' ? card.image : course.image,
-    title: path === '/dashboard' ? card.name : "".concat(course.name, " ").concat(card)
-  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_CardContent__WEBPACK_IMPORTED_MODULE_3___default.a, {
-    className: classes.cardContent
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_8___default.a, {
-    gutterBottom: true,
-    variant: "h5",
-    component: "h2"
-  }, path === '/dashboard' ? card.name : card), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_8___default.a, null, path === '/dashboard' ? card.desc : course.desc))))))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("footer", {
-    className: classes.footer
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_8___default.a, {
-    variant: "h6",
-    align: "center",
-    gutterBottom: true
-  }, "\u201CStudy hard what interests you the most in the most undisciplined, irreverent and original manner possible.\u201D"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_8___default.a, {
-    variant: "subtitle1",
-    align: "center",
-    color: "textSecondary",
-    component: "p"
-  }, "Richard P. Feynman"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Copyright, null))) : react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, " 404 Error "));
-}
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"default\", function() { return Home; });\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ \"react\");\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var _material_ui_core_AppBar__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core/AppBar */ \"@material-ui/core/AppBar\");\n/* harmony import */ var _material_ui_core_AppBar__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_AppBar__WEBPACK_IMPORTED_MODULE_1__);\n/* harmony import */ var _material_ui_core_Card__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @material-ui/core/Card */ \"@material-ui/core/Card\");\n/* harmony import */ var _material_ui_core_Card__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Card__WEBPACK_IMPORTED_MODULE_2__);\n/* harmony import */ var _material_ui_core_CardContent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @material-ui/core/CardContent */ \"@material-ui/core/CardContent\");\n/* harmony import */ var _material_ui_core_CardContent__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_CardContent__WEBPACK_IMPORTED_MODULE_3__);\n/* harmony import */ var _material_ui_core_CardMedia__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @material-ui/core/CardMedia */ \"@material-ui/core/CardMedia\");\n/* harmony import */ var _material_ui_core_CardMedia__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_CardMedia__WEBPACK_IMPORTED_MODULE_4__);\n/* harmony import */ var _material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @material-ui/core/CssBaseline */ \"@material-ui/core/CssBaseline\");\n/* harmony import */ var _material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_5__);\n/* harmony import */ var _material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @material-ui/core/Grid */ \"@material-ui/core/Grid\");\n/* harmony import */ var _material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_6__);\n/* harmony import */ var _material_ui_core_Toolbar__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @material-ui/core/Toolbar */ \"@material-ui/core/Toolbar\");\n/* harmony import */ var _material_ui_core_Toolbar__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Toolbar__WEBPACK_IMPORTED_MODULE_7__);\n/* harmony import */ var _material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @material-ui/core/Typography */ \"@material-ui/core/Typography\");\n/* harmony import */ var _material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_8__);\n/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @material-ui/core */ \"@material-ui/core\");\n/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_9__);\n/* harmony import */ var _material_ui_core_Container__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @material-ui/core/Container */ \"@material-ui/core/Container\");\n/* harmony import */ var _material_ui_core_Container__WEBPACK_IMPORTED_MODULE_10___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Container__WEBPACK_IMPORTED_MODULE_10__);\n/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! react-router-dom */ \"react-router-dom\");\n/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_11___default = /*#__PURE__*/__webpack_require__.n(react_router_dom__WEBPACK_IMPORTED_MODULE_11__);\n/* harmony import */ var _Data_courses__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../Data/courses */ \"./React/Shared/Data/courses.js\");\n/* harmony import */ var _Shared_Data_learningStyles__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../../Shared/Data/learningStyles */ \"./React/Shared/Data/learningStyles.js\");\n/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! axios */ \"axios\");\n/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_14___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_14__);\nfunction asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }\n\nfunction _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"next\", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"throw\", err); } _next(undefined); }); }; }\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nfunction Copyright() {\n  var classes = useStyles();\n  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_8___default.a, {\n    variant: \"body2\",\n    color: \"textSecondary\",\n    align: \"center\"\n  }, 'Copyright © ', react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_11__[\"Link\"], {\n    to: \"/\",\n    className: classes.link\n  }, \"Chill Studies\"), ' ', new Date().getFullYear(), '.');\n}\n\nvar useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_9__[\"makeStyles\"])(theme => ({\n  icon: {\n    marginRight: theme.spacing(2)\n  },\n  link: {\n    textDecoration: 'none'\n  },\n  heroContent: {\n    backgroundColor: theme.palette.background.paper,\n    padding: theme.spacing(8, 0, 6)\n  },\n  heroButtons: {\n    marginTop: theme.spacing(4)\n  },\n  cardGrid: {\n    paddingTop: theme.spacing(8),\n    paddingBottom: theme.spacing(8)\n  },\n  HomeButton: {\n    float: 'right'\n  },\n  handleButton: {\n    margin: theme.spacing(4),\n    float: 'left'\n  },\n  title: {\n    flexGrow: 1\n  },\n  card: {\n    height: '100%',\n    display: 'flex',\n    flexDirection: 'column'\n  },\n  cardMedia: {\n    paddingTop: '56.25%' // 16:9\n\n  },\n  cardContent: {\n    flexGrow: 1\n  },\n  footer: {\n    backgroundColor: theme.palette.background.paper,\n    padding: theme.spacing(6)\n  }\n}));\n\nvar handleRoute = /*#__PURE__*/function () {\n  var _ref = _asyncToGenerator(function* (props, card, course) {\n    var path = props.history.location.pathname + '';\n    var to = '';\n    var lsType = (yield path.includes('/home')) ? (yield axios__WEBPACK_IMPORTED_MODULE_14___default.a.get('http://127.0.0.1:8000/api/v1/student/ml/get/' + sessionStorage.getItem('auth'))).data : null;\n    to = path === '/dashboard' ? \"/course/\".concat(card.name, \"/home\") : to = path.includes('/ls') ? \"/course/\".concat(course.name, \"/ls/\").concat(lsType, \"/\").concat(card) : to = path.includes('/home') ? card.includes('1') ? \"/course/\".concat(course.name) : \"/course/\".concat(course.name, \"/ls/\").concat(lsType) : to = \"/course/\".concat(course.name, \"/\").concat(card);\n    props.history.push(to);\n  });\n\n  return function handleRoute(_x, _x2, _x3) {\n    return _ref.apply(this, arguments);\n  };\n}();\n\nfunction Home(props) {\n  var classes = useStyles();\n  var path = props.history.location.pathname + '';\n  var chapters = ['Chapter-1', 'Chapter-2'];\n  var cards = path.startsWith('/dashboard') ? _Data_courses__WEBPACK_IMPORTED_MODULE_12__[\"default\"] : // its dhashboard\n  path.includes('/home') ? chapters : // Its Course Home that includes Chapters\n  path.includes('/ls') ? _Shared_Data_learningStyles__WEBPACK_IMPORTED_MODULE_13__[\"default\"].find(style => props.match.params.ls_type === style.type).contents : // Its the LS Predicted Course Chapter Home  \n  ['Overview', 'Definitons', 'Activity', 'Content', 'Visual', 'Summary']; // Its the default Course Chapter Home\n\n  var course = path === '/dashboard' ? 'valid' : _Data_courses__WEBPACK_IMPORTED_MODULE_12__[\"default\"].find(course => props.match.params.course === course.name);\n  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, course ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_5___default.a, null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_AppBar__WEBPACK_IMPORTED_MODULE_1___default.a, {\n    position: \"relative\"\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Toolbar__WEBPACK_IMPORTED_MODULE_7___default.a, null, path === '/dashboard' ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_8___default.a, {\n    variant: \"h6\",\n    color: \"inherit\",\n    noWrap: true,\n    className: classes.title\n  }, \"Dashboard\") : react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_8___default.a, {\n    variant: \"h6\",\n    color: \"inherit\",\n    noWrap: true,\n    className: classes.title\n  }, course.name), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_9__[\"IconButton\"], {\n    edge: \"start\",\n    className: classes.HomeButton,\n    color: \"inherit\",\n    \"aria-label\": \"home\",\n    onClick: e => {\n      e.preventDefault();\n      props.history.push('/dashboard');\n    }\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_8___default.a, {\n    gutterBottom: true,\n    variant: \"body1\"\n  }, \"Dashboard\"))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(\"main\", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(\"div\", {\n    className: classes.heroContent\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Container__WEBPACK_IMPORTED_MODULE_10___default.a, {\n    maxWidth: \"sm\"\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_8___default.a, {\n    component: \"h1\",\n    variant: \"h2\",\n    align: \"center\",\n    color: \"textPrimary\",\n    gutterBottom: true\n  }, path === '/dashboard' ? \"Welcome to your Dashboard !\" : \"Welcome to \".concat(course.name, \"!\")), path === '/dashboard' ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_8___default.a, {\n    variant: \"h5\",\n    align: \"center\",\n    color: \"textSecondary\",\n    paragraph: true\n  }, \"You can find your subscribed courses below.\") : null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_8___default.a, {\n    variant: \"h5\",\n    align: \"center\",\n    color: \"textSecondary\",\n    paragraph: true\n  }, \"Happy Learning\"))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Container__WEBPACK_IMPORTED_MODULE_10___default.a, {\n    className: classes.cardGrid,\n    maxWidth: \"md\"\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_6___default.a, {\n    container: true,\n    spacing: 2\n  }, cards.map((card, i) => react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_6___default.a, {\n    item: true,\n    key: card,\n    xs: 12,\n    sm: 6,\n    md: path.includes('/ls') || path.includes('/home') ? 6 : 4\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(\"div\", {\n    onClick: e => {\n      handleRoute(props, card, course);\n    }\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Card__WEBPACK_IMPORTED_MODULE_2___default.a, {\n    className: classes.card\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_CardMedia__WEBPACK_IMPORTED_MODULE_4___default.a, {\n    className: classes.cardMedia,\n    image: path === '/dashboard' ? card.image : course.image,\n    title: path === '/dashboard' ? card.name : \"\".concat(course.name, \" \").concat(card)\n  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_CardContent__WEBPACK_IMPORTED_MODULE_3___default.a, {\n    className: classes.cardContent\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_8___default.a, {\n    gutterBottom: true,\n    variant: \"h5\",\n    component: \"h2\"\n  }, path === '/dashboard' ? card.name : card), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_8___default.a, null, path === '/dashboard' ? card.desc : course.desc))))))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(\"footer\", {\n    className: classes.footer\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_8___default.a, {\n    variant: \"h6\",\n    align: \"center\",\n    gutterBottom: true\n  }, \"\\u201CStudy hard what interests you the most in the most undisciplined, irreverent and original manner possible.\\u201D\"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_8___default.a, {\n    variant: \"subtitle1\",\n    align: \"center\",\n    color: \"textSecondary\",\n    component: \"p\"\n  }, \"Richard P. Feynman\"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Copyright, null))) : react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(\"h1\", null, \" 404 Error \"));\n}//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9Db3Vyc2UvSG9tZS5qcy5qcyIsInNvdXJjZXMiOlsid2VicGFjazovLy8uL1JlYWN0L1NoYXJlZC9Db21wb25lbnRzL0NvdXJzZS9Ib21lLmpzP2E4OGMiXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IFJlYWN0IGZyb20gJ3JlYWN0JztcclxuaW1wb3J0IEFwcEJhciBmcm9tICdAbWF0ZXJpYWwtdWkvY29yZS9BcHBCYXInO1xyXG5pbXBvcnQgQ2FyZCBmcm9tICdAbWF0ZXJpYWwtdWkvY29yZS9DYXJkJztcclxuaW1wb3J0IENhcmRDb250ZW50IGZyb20gJ0BtYXRlcmlhbC11aS9jb3JlL0NhcmRDb250ZW50JztcclxuaW1wb3J0IENhcmRNZWRpYSBmcm9tICdAbWF0ZXJpYWwtdWkvY29yZS9DYXJkTWVkaWEnO1xyXG5pbXBvcnQgQ3NzQmFzZWxpbmUgZnJvbSAnQG1hdGVyaWFsLXVpL2NvcmUvQ3NzQmFzZWxpbmUnO1xyXG5pbXBvcnQgR3JpZCBmcm9tICdAbWF0ZXJpYWwtdWkvY29yZS9HcmlkJztcclxuaW1wb3J0IFRvb2xiYXIgZnJvbSAnQG1hdGVyaWFsLXVpL2NvcmUvVG9vbGJhcic7XHJcbmltcG9ydCBUeXBvZ3JhcGh5IGZyb20gJ0BtYXRlcmlhbC11aS9jb3JlL1R5cG9ncmFwaHknO1xyXG5pbXBvcnQgeyBtYWtlU3R5bGVzLCBJY29uQnV0dG9uIH0gZnJvbSAnQG1hdGVyaWFsLXVpL2NvcmUnO1xyXG5pbXBvcnQgQ29udGFpbmVyIGZyb20gJ0BtYXRlcmlhbC11aS9jb3JlL0NvbnRhaW5lcic7XHJcbmltcG9ydCB7IExpbmsgYXMgTGlua3RvIH0gZnJvbSAncmVhY3Qtcm91dGVyLWRvbSdcclxuaW1wb3J0IGNvdXJzZXMgZnJvbSAnLi4vLi4vRGF0YS9jb3Vyc2VzJ1xyXG5pbXBvcnQgbGVhcm5pbmdTdHlsZXMgZnJvbSAnLi4vLi4vLi4vU2hhcmVkL0RhdGEvbGVhcm5pbmdTdHlsZXMnXHJcbmltcG9ydCBheGlvcyBmcm9tICdheGlvcyc7XHJcblxyXG5mdW5jdGlvbiBDb3B5cmlnaHQoKSB7XHJcbiAgY29uc3QgY2xhc3NlcyA9IHVzZVN0eWxlcygpO1xyXG4gIHJldHVybiAoXHJcbiAgICA8VHlwb2dyYXBoeSB2YXJpYW50PVwiYm9keTJcIiBjb2xvcj1cInRleHRTZWNvbmRhcnlcIiBhbGlnbj1cImNlbnRlclwiPlxyXG4gICAgICB7J0NvcHlyaWdodCDCqSAnfVxyXG4gICAgICAgIDxMaW5rdG8gdG89Jy8nIGNsYXNzTmFtZT17Y2xhc3Nlcy5saW5rfT5cclxuICAgICAgICAgICAgQ2hpbGwgU3R1ZGllc1xyXG4gICAgICAgIDwvTGlua3RvPlxyXG4gICAgICB7JyAnfVxyXG4gICAgICB7bmV3IERhdGUoKS5nZXRGdWxsWWVhcigpfVxyXG4gICAgICB7Jy4nfVxyXG4gICAgPC9UeXBvZ3JhcGh5PlxyXG4gICk7XHJcbn1cclxuXHJcblxyXG5jb25zdCB1c2VTdHlsZXMgPSBtYWtlU3R5bGVzKHRoZW1lID0+ICh7XHJcbiAgaWNvbjoge1xyXG4gICAgbWFyZ2luUmlnaHQ6IHRoZW1lLnNwYWNpbmcoMiksXHJcbiAgfSxcclxuICBsaW5rIDoge1xyXG4gICAgdGV4dERlY29yYXRpb24gOiAnbm9uZScsXHJcbiAgfSxcclxuICBoZXJvQ29udGVudDoge1xyXG4gICAgYmFja2dyb3VuZENvbG9yOiB0aGVtZS5wYWxldHRlLmJhY2tncm91bmQucGFwZXIsXHJcbiAgICBwYWRkaW5nOiB0aGVtZS5zcGFjaW5nKDgsIDAsIDYpLFxyXG4gIH0sXHJcbiAgaGVyb0J1dHRvbnM6IHtcclxuICAgIG1hcmdpblRvcDogdGhlbWUuc3BhY2luZyg0KSxcclxuICB9LFxyXG4gIGNhcmRHcmlkOiB7XHJcbiAgICBwYWRkaW5nVG9wOiB0aGVtZS5zcGFjaW5nKDgpLFxyXG4gICAgcGFkZGluZ0JvdHRvbTogdGhlbWUuc3BhY2luZyg4KSxcclxuICB9LFxyXG4gIEhvbWVCdXR0b24gOiB7XHJcbiAgICBmbG9hdCA6ICdyaWdodCdcclxuICB9LFxyXG4gIGhhbmRsZUJ1dHRvbiA6e1xyXG4gICAgbWFyZ2luOiB0aGVtZS5zcGFjaW5nKDQpLFxyXG4gICAgZmxvYXQ6J2xlZnQnXHJcbiAgfSxcclxuICB0aXRsZToge1xyXG4gICAgZmxleEdyb3c6IDEsXHJcbiAgfSxcclxuICBjYXJkOiB7XHJcbiAgICBoZWlnaHQ6ICcxMDAlJyxcclxuICAgIGRpc3BsYXk6ICdmbGV4JyxcclxuICAgIGZsZXhEaXJlY3Rpb246ICdjb2x1bW4nLFxyXG4gIH0sXHJcbiAgY2FyZE1lZGlhOiB7XHJcbiAgICBwYWRkaW5nVG9wOiAnNTYuMjUlJywgLy8gMTY6OVxyXG4gIH0sXHJcbiAgY2FyZENvbnRlbnQ6IHtcclxuICAgIGZsZXhHcm93OiAxLFxyXG4gIH0sXHJcbiAgZm9vdGVyOiB7XHJcbiAgICBiYWNrZ3JvdW5kQ29sb3I6IHRoZW1lLnBhbGV0dGUuYmFja2dyb3VuZC5wYXBlcixcclxuICAgIHBhZGRpbmc6IHRoZW1lLnNwYWNpbmcoNiksXHJcbiAgfSxcclxufSkpO1xyXG5cclxuY29uc3QgaGFuZGxlUm91dGUgPSBhc3luYyAocHJvcHMsY2FyZCxjb3Vyc2UpID0+IHtcclxuXHJcbiAgY29uc3QgcGF0aCA9IHByb3BzLmhpc3RvcnkubG9jYXRpb24ucGF0aG5hbWUrJydcclxuXHJcbiAgbGV0IHRvID0gJydcclxuXHJcbiAgY29uc3QgbHNUeXBlID0gYXdhaXQgcGF0aC5pbmNsdWRlcygnL2hvbWUnKSA/IChhd2FpdCBheGlvcy5nZXQoJ2h0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hcGkvdjEvc3R1ZGVudC9tbC9nZXQvJytzZXNzaW9uU3RvcmFnZS5nZXRJdGVtKCdhdXRoJykpKS5kYXRhIDogbnVsbFxyXG5cclxuICB0byA9IHBhdGggPT09Jy9kYXNoYm9hcmQnID8gYC9jb3Vyc2UvJHtjYXJkLm5hbWV9L2hvbWVgOlxyXG4gICAgdG8gPSBwYXRoLmluY2x1ZGVzKCcvbHMnKSA/IGAvY291cnNlLyR7Y291cnNlLm5hbWV9L2xzLyR7bHNUeXBlfS8ke2NhcmR9YCA6XHJcbiAgICAgIHRvID0gcGF0aC5pbmNsdWRlcygnL2hvbWUnKSA/ICggY2FyZC5pbmNsdWRlcygnMScpID8gIGAvY291cnNlLyR7Y291cnNlLm5hbWV9YCA6IGAvY291cnNlLyR7Y291cnNlLm5hbWV9L2xzLyR7bHNUeXBlfWApIDpcclxuICAgICAgICB0byA9IGAvY291cnNlLyR7Y291cnNlLm5hbWV9LyR7Y2FyZH1gXHJcblxyXG4gIHByb3BzLmhpc3RvcnkucHVzaCh0bylcclxufVxyXG5cclxuZXhwb3J0IGRlZmF1bHQgZnVuY3Rpb24gSG9tZShwcm9wcykge1xyXG4gIGNvbnN0IGNsYXNzZXMgPSB1c2VTdHlsZXMoKTtcclxuXHJcbiAgY29uc3QgcGF0aCA9IHByb3BzLmhpc3RvcnkubG9jYXRpb24ucGF0aG5hbWUrJydcclxuXHJcbiAgY29uc3QgY2hhcHRlcnMgPSBbJ0NoYXB0ZXItMScsJ0NoYXB0ZXItMiddXHJcblxyXG4gIGNvbnN0IGNhcmRzID0gcGF0aC5zdGFydHNXaXRoKCcvZGFzaGJvYXJkJykgPyBjb3Vyc2VzIDogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAvLyBpdHMgZGhhc2hib2FyZFxyXG4gICAgICAgICAgICAgICAgICBwYXRoLmluY2x1ZGVzKCcvaG9tZScpID8gY2hhcHRlcnMgOiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgLy8gSXRzIENvdXJzZSBIb21lIHRoYXQgaW5jbHVkZXMgQ2hhcHRlcnNcclxuICAgICAgICAgICAgICAgICAgICBwYXRoLmluY2x1ZGVzKCcvbHMnKSA/IGxlYXJuaW5nU3R5bGVzLmZpbmQoc3R5bGUgPT4gcHJvcHMubWF0Y2gucGFyYW1zLmxzX3R5cGUgPT09IHN0eWxlLnR5cGUpLmNvbnRlbnRzICA6ICAgICAvLyBJdHMgdGhlIExTIFByZWRpY3RlZCBDb3Vyc2UgQ2hhcHRlciBIb21lICBcclxuICAgICAgICAgICAgICAgICAgICAgICAgWyAnT3ZlcnZpZXcnLCdEZWZpbml0b25zJywgJ0FjdGl2aXR5JywgJ0NvbnRlbnQnLCdWaXN1YWwnLCdTdW1tYXJ5J107ICAgICAgICAgICAgICAgICAgIC8vIEl0cyB0aGUgZGVmYXVsdCBDb3Vyc2UgQ2hhcHRlciBIb21lXHJcblxyXG4gIGxldCBjb3Vyc2UgPSAocGF0aD09PScvZGFzaGJvYXJkJykgPyAgKCd2YWxpZCcpIDogKGNvdXJzZXMuZmluZCgoY291cnNlKSA9PiBwcm9wcy5tYXRjaC5wYXJhbXMuY291cnNlID09PSBjb3Vyc2UubmFtZSkgKVxyXG5cclxuICByZXR1cm4gKFxyXG4gICAgPFJlYWN0LkZyYWdtZW50PiBcclxuICAgICAgeyBjb3Vyc2UgPyAoXHJcbiAgICAgICAgPFJlYWN0LkZyYWdtZW50PlxyXG4gICAgICAgICAgPENzc0Jhc2VsaW5lIC8+XHJcbiAgICAgICAgICA8QXBwQmFyIHBvc2l0aW9uPVwicmVsYXRpdmVcIj5cclxuICAgICAgICAgICAgPFRvb2xiYXI+XHJcbiAgICAgICAgICAgIHsgcGF0aD09PScvZGFzaGJvYXJkJyA/ICAoXHJcbiAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImg2XCIgY29sb3I9XCJpbmhlcml0XCIgbm9XcmFwIGNsYXNzTmFtZT17Y2xhc3Nlcy50aXRsZX0+XHJcbiAgICAgICAgICAgICAgICAgIERhc2hib2FyZFxyXG4gICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICk6KFxyXG4gICAgICAgICAgICAgIDxSZWFjdC5GcmFnbWVudD5cclxuICAgICAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PVwiaDZcIiBjb2xvcj1cImluaGVyaXRcIiBub1dyYXAgY2xhc3NOYW1lPXtjbGFzc2VzLnRpdGxlfT5cclxuICAgICAgICAgICAgICAgIHtjb3Vyc2UubmFtZX1cclxuICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgPEljb25CdXR0b24gZWRnZT1cInN0YXJ0XCIgY2xhc3NOYW1lPXtjbGFzc2VzLkhvbWVCdXR0b259IGNvbG9yPVwiaW5oZXJpdFwiIGFyaWEtbGFiZWw9XCJob21lXCIgb25DbGljaz17IChlKSA9PiB7XHJcbiAgICAgICAgICAgICAgICBlLnByZXZlbnREZWZhdWx0KClcclxuICAgICAgICAgICAgICAgIHByb3BzLmhpc3RvcnkucHVzaCggJy9kYXNoYm9hcmQnKVxyXG4gICAgICAgICAgICAgICAgfSB9PlxyXG4gICAgICAgICAgICAgICAgICA8VHlwb2dyYXBoeSBndXR0ZXJCb3R0b20gdmFyaWFudD1cImJvZHkxXCIgPlxyXG4gICAgICAgICAgICAgICAgICAgIERhc2hib2FyZFxyXG4gICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgPC9JY29uQnV0dG9uPiBcclxuICAgICAgICAgICAgICA8L1JlYWN0LkZyYWdtZW50PilcclxuICAgICAgICAgICAgfVxyXG4gICAgICAgICAgICA8L1Rvb2xiYXI+XHJcbiAgICAgICAgICA8L0FwcEJhcj5cclxuICAgICAgICAgIDxtYWluPlxyXG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT17Y2xhc3Nlcy5oZXJvQ29udGVudH0+XHJcbiAgICAgICAgICAgIDxDb250YWluZXIgbWF4V2lkdGg9XCJzbVwiPlxyXG4gICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgY29tcG9uZW50PVwiaDFcIiB2YXJpYW50PVwiaDJcIiBhbGlnbj1cImNlbnRlclwiIGNvbG9yPVwidGV4dFByaW1hcnlcIiBndXR0ZXJCb3R0b20+XHJcbiAgICAgICAgICAgICAgICB7IHBhdGg9PT0nL2Rhc2hib2FyZCcgPyAgKGBXZWxjb21lIHRvIHlvdXIgRGFzaGJvYXJkICFgKTooIGBXZWxjb21lIHRvICR7Y291cnNlLm5hbWV9IWApfVxyXG4gICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgeyBwYXRoPT09Jy9kYXNoYm9hcmQnID8gKFxyXG4gICAgICAgICAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PVwiaDVcIiBhbGlnbj1cImNlbnRlclwiIGNvbG9yPVwidGV4dFNlY29uZGFyeVwiIHBhcmFncmFwaD5cclxuICAgICAgICAgICAgICAgICAgICBZb3UgY2FuIGZpbmQgeW91ciBzdWJzY3JpYmVkIGNvdXJzZXMgYmVsb3cuXHJcbiAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT4pOm51bGxcclxuICAgICAgICAgICAgICAgIH1cclxuICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJoNVwiIGFsaWduPVwiY2VudGVyXCIgY29sb3I9XCJ0ZXh0U2Vjb25kYXJ5XCIgcGFyYWdyYXBoPlxyXG4gICAgICAgICAgICAgICAgICBIYXBweSBMZWFybmluZ1xyXG4gICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICA8L0NvbnRhaW5lcj5cclxuICAgICAgICAgICAgPC9kaXY+XHJcbiAgICAgICAgICAgIDxDb250YWluZXIgY2xhc3NOYW1lPXtjbGFzc2VzLmNhcmRHcmlkfSBtYXhXaWR0aD1cIm1kXCI+XHJcbiAgICAgICAgICAgICAgPEdyaWQgY29udGFpbmVyIHNwYWNpbmc9ezJ9PlxyXG4gICAgICAgICAgICAgICAgICB7Y2FyZHMubWFwKChjYXJkLGkpID0+IChcclxuICAgICAgICAgICAgICAgICAgICAgIDxHcmlkIGl0ZW0ga2V5PXtjYXJkfSB4cz17MTJ9IHNtPXs2fSBtZD17IChwYXRoLmluY2x1ZGVzKCcvbHMnKXx8cGF0aC5pbmNsdWRlcygnL2hvbWUnKSkgPyA2OiA0fT4gXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgPGRpdiBvbkNsaWNrPXsoZSkgPT4ge2hhbmRsZVJvdXRlKHByb3BzLGNhcmQsY291cnNlKX19PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8Q2FyZCBjbGFzc05hbWU9e2NsYXNzZXMuY2FyZH0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxDYXJkTWVkaWFcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGNsYXNzTmFtZT17Y2xhc3Nlcy5jYXJkTWVkaWF9XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpbWFnZT0geyBwYXRoID09PScvZGFzaGJvYXJkJyA/IGNhcmQuaW1hZ2U6Y291cnNlLmltYWdlfVxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgdGl0bGU9e3BhdGggPT09Jy9kYXNoYm9hcmQnID8gY2FyZC5uYW1lIDogYCR7Y291cnNlLm5hbWV9ICR7Y2FyZH1gfVxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAvPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8Q2FyZENvbnRlbnQgY2xhc3NOYW1lPXtjbGFzc2VzLmNhcmRDb250ZW50fT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IGd1dHRlckJvdHRvbSB2YXJpYW50PVwiaDVcIiBjb21wb25lbnQ9XCJoMlwiPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB7cGF0aCA9PT0nL2Rhc2hib2FyZCcgPyBjYXJkLm5hbWUgOiBjYXJkIH1cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB7IHBhdGggPT09Jy9kYXNoYm9hcmQnID8gY2FyZC5kZXNjIDogY291cnNlLmRlc2N9XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvQ2FyZENvbnRlbnQ+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvQ2FyZD5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvZGl2PlxyXG4gICAgICAgICAgICAgICAgICAgICAgPC9HcmlkPlxyXG4gICAgICAgICAgICAgICAgICApKX1cclxuICAgICAgICAgICAgICA8L0dyaWQ+XHJcbiAgICAgICAgICAgIDwvQ29udGFpbmVyPlxyXG4gICAgICAgICAgPC9tYWluPlxyXG4gICAgICAgICAgPGZvb3RlciBjbGFzc05hbWU9e2NsYXNzZXMuZm9vdGVyfT5cclxuICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImg2XCIgYWxpZ249XCJjZW50ZXJcIiBndXR0ZXJCb3R0b20+XHJcbiAgICAgICAgICAgIOKAnFN0dWR5IGhhcmQgd2hhdCBpbnRlcmVzdHMgeW91IHRoZSBtb3N0IGluIHRoZSBtb3N0IHVuZGlzY2lwbGluZWQsIGlycmV2ZXJlbnQgYW5kIG9yaWdpbmFsIG1hbm5lciBwb3NzaWJsZS7igJ1cclxuICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PVwic3VidGl0bGUxXCIgYWxpZ249XCJjZW50ZXJcIiBjb2xvcj1cInRleHRTZWNvbmRhcnlcIiBjb21wb25lbnQ9XCJwXCI+XHJcbiAgICAgICAgICAgIFJpY2hhcmQgUC4gRmV5bm1hblxyXG4gICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgIDxDb3B5cmlnaHQgLz5cclxuICAgICAgICAgIDwvZm9vdGVyPiBcclxuICAgICAgICA8L1JlYWN0LkZyYWdtZW50PiApOiAoPGgxPiA0MDQgRXJyb3IgPC9oMT4pIFxyXG4gICAgICB9XHJcbiAgICA8L1JlYWN0LkZyYWdtZW50PiBcclxuICApO1xyXG59Il0sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0FBQUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUFBO0FBQUE7QUFBQTtBQUVBO0FBQUE7QUFBQTtBQVFBO0FBQ0E7QUFFQTtBQUNBO0FBQ0E7QUFEQTtBQUdBO0FBQ0E7QUFEQTtBQUdBO0FBQ0E7QUFDQTtBQUZBO0FBSUE7QUFDQTtBQURBO0FBR0E7QUFDQTtBQUNBO0FBRkE7QUFJQTtBQUNBO0FBREE7QUFHQTtBQUNBO0FBQ0E7QUFGQTtBQUlBO0FBQ0E7QUFEQTtBQUdBO0FBQ0E7QUFDQTtBQUNBO0FBSEE7QUFLQTtBQUNBO0FBQ0E7QUFGQTtBQUdBO0FBQ0E7QUFEQTtBQUdBO0FBQ0E7QUFDQTtBQUZBO0FBdkNBO0FBQ0E7QUE0Q0E7QUFBQTtBQUVBO0FBRUE7QUFFQTtBQUVBO0FBS0E7QUFDQTtBQUNBO0FBZkE7QUFBQTtBQUFBO0FBQUE7QUFDQTtBQWVBO0FBQ0E7QUFFQTtBQUVBO0FBRUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBRUE7QUFLQTtBQUFBO0FBR0E7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUtBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFHQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQ0E7QUFDQTtBQUNBO0FBSEE7QUFJQTtBQUFBO0FBQUE7QUFTQTtBQUFBO0FBQ0E7QUFBQTtBQUNBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUlBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFJQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBS0E7QUFBQTtBQUFBO0FBQ0E7QUFBQTtBQUFBO0FBRUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQ0E7QUFBQTtBQUFBO0FBQUE7QUFDQTtBQUFBO0FBRUE7QUFDQTtBQUNBO0FBSEE7QUFLQTtBQUFBO0FBQ0E7QUFBQTtBQUFBO0FBQUE7QUFjQTtBQUFBO0FBQ0E7QUFBQTtBQUFBO0FBQUE7QUFHQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBU0EiLCJzb3VyY2VSb290IjoiIn0=\n//# sourceURL=webpack-internal:///./React/Shared/Components/Course/Home.js\n");
 
 /***/ }),
 
@@ -2314,103 +301,7 @@ function Home(props) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return LS; });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core */ "@material-ui/core");
-/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../Data/learningStyles */ "./React/Shared/Data/learningStyles.js");
-
-
-
-var useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["makeStyles"])(theme => ({
-  icon: {
-    marginRight: theme.spacing(2)
-  },
-  handleButton: {
-    margin: theme.spacing(4),
-    float: 'right'
-  },
-  link: {
-    textDecoration: 'none'
-  },
-  heroContent: {
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(8, 0, 6)
-  },
-  heroButtons: {
-    margin: theme.spacing(4)
-  },
-  cardGrid: {
-    paddingTop: theme.spacing(8),
-    paddingBottom: theme.spacing(8)
-  },
-  card: {
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column'
-  },
-  cardMedia: {
-    paddingTop: '56.25%' // 16:9
-
-  },
-  cardContent: {
-    flexGrow: 1
-  },
-  footer: {
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(6)
-  }
-}));
-function LS(props) {
-  var classes = useStyles();
-  var lsTypeParam = props.match.params.ls_type + '';
-  var ls = _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__["default"].find(ls => lsTypeParam === ls.type);
-  var [hide, setHide] = react__WEBPACK_IMPORTED_MODULE_0___default.a.useState(false);
-  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["AppBar"], {
-    position: "relative"
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Toolbar"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "h6",
-    color: "inherit",
-    noWrap: true
-  }, "Learning Styles"))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Container"], {
-    maxWidth: "md"
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Card"], {
-    className: classes.card
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["CardContent"], {
-    className: classes.cardContent
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["List"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    gutterBottom: true,
-    variant: "body2",
-    color: "secondary"
-  }, "Hello there, to improve your ease of study, we use FLSM mapping techiques to asses your learning style and will give study materials according to that.")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    gutterBottom: true,
-    variant: "h4"
-  }, ls.name)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    gutterBottom: true,
-    variant: "body1"
-  }, ls.type.charAt(0) === 'a' ? 'You like activites rathar than boring theories' : 'You learn from what you study')), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    gutterBottom: true,
-    variant: "body1"
-  }, ls.type.charAt(1) === 's' ? 'You think before approching a problem' : 'You give preference to you intuitions')), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    gutterBottom: true,
-    variant: "body1"
-  }, ls.type.charAt(2) === 'v' ? 'You like graphical stuff and illustrations' : 'You are good with reading ( verbal )')), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    gutterBottom: true,
-    variant: "body1"
-  }, ls.type.charAt(0) === 's' ? 'You study sequencially (step by step)' : 'You prefer global view about the things')), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Divider"], null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    gutterBottom: true,
-    variant: "body1"
-  }, "In the upcomming chapters you will get the learning materials that matches your interests. Happly Learning !"))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Button"], {
-    variant: "outlined",
-    color: "primary",
-    className: classes.handleButton,
-    onClick: e => {
-      props.history.push('/course/' + props.match.params.course + '/ls/' + ls.type);
-    }
-  }, "Proceed  !"))))));
-}
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"default\", function() { return LS; });\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ \"react\");\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core */ \"@material-ui/core\");\n/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__);\n/* harmony import */ var _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../Data/learningStyles */ \"./React/Shared/Data/learningStyles.js\");\n\n\n\nvar useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"makeStyles\"])(theme => ({\n  icon: {\n    marginRight: theme.spacing(2)\n  },\n  handleButton: {\n    margin: theme.spacing(4),\n    float: 'right'\n  },\n  link: {\n    textDecoration: 'none'\n  },\n  heroContent: {\n    backgroundColor: theme.palette.background.paper,\n    padding: theme.spacing(8, 0, 6)\n  },\n  heroButtons: {\n    margin: theme.spacing(4)\n  },\n  cardGrid: {\n    paddingTop: theme.spacing(8),\n    paddingBottom: theme.spacing(8)\n  },\n  card: {\n    height: '100%',\n    display: 'flex',\n    flexDirection: 'column'\n  },\n  cardMedia: {\n    paddingTop: '56.25%' // 16:9\n\n  },\n  cardContent: {\n    flexGrow: 1\n  },\n  footer: {\n    backgroundColor: theme.palette.background.paper,\n    padding: theme.spacing(6)\n  }\n}));\nfunction LS(props) {\n  var classes = useStyles();\n  var lsTypeParam = props.match.params.ls_type + '';\n  var ls = _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__[\"default\"].find(ls => lsTypeParam === ls.type);\n  var [hide, setHide] = react__WEBPACK_IMPORTED_MODULE_0___default.a.useState(false);\n  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(\"div\", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"AppBar\"], {\n    position: \"relative\"\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Toolbar\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h6\",\n    color: \"inherit\",\n    noWrap: true\n  }, \"Learning Styles\"))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Container\"], {\n    maxWidth: \"md\"\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Card\"], {\n    className: classes.card\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"CardContent\"], {\n    className: classes.cardContent\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"List\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    gutterBottom: true,\n    variant: \"body2\",\n    color: \"secondary\"\n  }, \"Hello there, to improve your ease of study, we use FLSM mapping techiques to asses your learning style and will give study materials according to that.\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    gutterBottom: true,\n    variant: \"h4\"\n  }, ls.name)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    gutterBottom: true,\n    variant: \"body1\"\n  }, ls.type.charAt(0) === 'a' ? 'You like activites rathar than boring theories' : 'You learn from what you study')), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    gutterBottom: true,\n    variant: \"body1\"\n  }, ls.type.charAt(1) === 's' ? 'You think before approching a problem' : 'You give preference to you intuitions')), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    gutterBottom: true,\n    variant: \"body1\"\n  }, ls.type.charAt(2) === 'v' ? 'You like graphical stuff and illustrations' : 'You are good with reading ( verbal )')), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    gutterBottom: true,\n    variant: \"body1\"\n  }, ls.type.charAt(0) === 's' ? 'You study sequencially (step by step)' : 'You prefer global view about the things')), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Divider\"], null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    gutterBottom: true,\n    variant: \"body1\"\n  }, \"In the upcomming chapters you will get the learning materials that matches your interests. Happly Learning !\"))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Button\"], {\n    variant: \"outlined\",\n    color: \"primary\",\n    className: classes.handleButton,\n    onClick: e => {\n      props.history.push('/course/' + props.match.params.course + '/ls/' + ls.type);\n    }\n  }, \"Proceed  !\"))))));\n}//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9Db3Vyc2UvTFMvTFMuanMuanMiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9Db3Vyc2UvTFMvTFMuanM/ODYzNyJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgUmVhY3QgZnJvbSAncmVhY3QnXHJcbmltcG9ydCB7IFR5cG9ncmFwaHksIFxyXG4gICAgbWFrZVN0eWxlcywgXHJcbiAgICBCdXR0b24sXHJcbiAgICBBcHBCYXIsIFxyXG4gICAgQ2FyZENvbnRlbnQsIFxyXG4gICAgQ2FyZCxcclxuICAgIExpc3QsXHJcbiAgICBMaXN0SXRlbSxcclxuICAgIERpdmlkZXIsXHJcbiAgICBUb29sYmFyLCBDb250YWluZXIgfSBmcm9tICdAbWF0ZXJpYWwtdWkvY29yZSdcclxuXHJcbiBpbXBvcnQgTGVhcm5pbmdTdHlsZXMgZnJvbSAnLi4vLi4vLi4vRGF0YS9sZWFybmluZ1N0eWxlcycgICBcclxuXHJcbmNvbnN0IHVzZVN0eWxlcyA9IG1ha2VTdHlsZXModGhlbWUgPT4gKHtcclxuICAgIGljb246IHtcclxuICAgICAgbWFyZ2luUmlnaHQ6IHRoZW1lLnNwYWNpbmcoMiksXHJcbiAgICB9LFxyXG4gICAgaGFuZGxlQnV0dG9uIDp7XHJcbiAgICAgIG1hcmdpbjogdGhlbWUuc3BhY2luZyg0KSxcclxuICAgICAgZmxvYXQ6J3JpZ2h0J1xyXG4gICAgfSxcclxuICAgIGxpbmsgOiB7XHJcbiAgICAgIHRleHREZWNvcmF0aW9uIDogJ25vbmUnLFxyXG4gICAgfSxcclxuICAgIGhlcm9Db250ZW50OiB7XHJcbiAgICAgIGJhY2tncm91bmRDb2xvcjogdGhlbWUucGFsZXR0ZS5iYWNrZ3JvdW5kLnBhcGVyLFxyXG4gICAgICBwYWRkaW5nOiB0aGVtZS5zcGFjaW5nKDgsIDAsIDYpLFxyXG4gICAgfSxcclxuICAgIGhlcm9CdXR0b25zOiB7XHJcbiAgICAgIG1hcmdpbjogdGhlbWUuc3BhY2luZyg0KSxcclxuICAgIH0sXHJcbiAgICBjYXJkR3JpZDoge1xyXG4gICAgICBwYWRkaW5nVG9wOiB0aGVtZS5zcGFjaW5nKDgpLFxyXG4gICAgICBwYWRkaW5nQm90dG9tOiB0aGVtZS5zcGFjaW5nKDgpLFxyXG4gICAgfSxcclxuICAgIGNhcmQ6IHtcclxuICAgICAgaGVpZ2h0OiAnMTAwJScsXHJcbiAgICAgIGRpc3BsYXk6ICdmbGV4JyxcclxuICAgICAgZmxleERpcmVjdGlvbjogJ2NvbHVtbicsXHJcbiAgICB9LFxyXG4gICAgY2FyZE1lZGlhOiB7XHJcbiAgICAgIHBhZGRpbmdUb3A6ICc1Ni4yNSUnLCAvLyAxNjo5XHJcbiAgICB9LFxyXG4gICAgY2FyZENvbnRlbnQ6IHtcclxuICAgICAgZmxleEdyb3c6IDEsXHJcbiAgICB9LFxyXG4gICAgZm9vdGVyOiB7XHJcbiAgICAgIGJhY2tncm91bmRDb2xvcjogdGhlbWUucGFsZXR0ZS5iYWNrZ3JvdW5kLnBhcGVyLFxyXG4gICAgICBwYWRkaW5nOiB0aGVtZS5zcGFjaW5nKDYpLFxyXG4gICAgfSxcclxuICB9KSk7XHJcblxyXG5cclxuXHJcblxyXG5leHBvcnQgZGVmYXVsdCBmdW5jdGlvbiBMUyAocHJvcHMpIHtcclxuXHJcbiAgICBjb25zdCBjbGFzc2VzID0gdXNlU3R5bGVzKClcclxuXHJcbiAgICBsZXQgbHNUeXBlUGFyYW0gPSBwcm9wcy5tYXRjaC5wYXJhbXMubHNfdHlwZSsnJ1xyXG5cclxuXHJcbiAgICBjb25zdCBscyA9ICBMZWFybmluZ1N0eWxlcy5maW5kKChscykgPT4gbHNUeXBlUGFyYW0gPT09IGxzLnR5cGUpXHJcblxyXG4gICAgY29uc3QgW2hpZGUsc2V0SGlkZV0gPSBSZWFjdC51c2VTdGF0ZShmYWxzZSlcclxuXHJcbiAgICByZXR1cm4oXHJcbiAgICAgICAgPFJlYWN0LkZyYWdtZW50PlxyXG4gICAgICAgIDxkaXY+XHJcbiAgICAgICAgICAgIDxBcHBCYXIgcG9zaXRpb249XCJyZWxhdGl2ZVwiPlxyXG4gICAgICAgICAgICAgICAgPFRvb2xiYXI+XHJcbiAgICAgICAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PVwiaDZcIiBjb2xvcj1cImluaGVyaXRcIiBub1dyYXA+XHJcbiAgICAgICAgICAgICAgICAgICAgTGVhcm5pbmcgU3R5bGVzXHJcbiAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICA8L1Rvb2xiYXI+XHJcbiAgICAgICAgICAgIDwvQXBwQmFyPiAgICBcclxuICAgICAgICAgICAgPENvbnRhaW5lciBtYXhXaWR0aD1cIm1kXCI+XHJcbiAgICAgICAgICAgICAgICA8Q2FyZCBjbGFzc05hbWU9e2NsYXNzZXMuY2FyZH0+XHJcbiAgICAgICAgICAgICAgICAgICAgPENhcmRDb250ZW50IGNsYXNzTmFtZT17Y2xhc3Nlcy5jYXJkQ29udGVudH0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIDxMaXN0PlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IGd1dHRlckJvdHRvbSB2YXJpYW50PVwiYm9keTJcIiBjb2xvcj0nc2Vjb25kYXJ5Jz5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgSGVsbG8gdGhlcmUsIHRvIGltcHJvdmUgeW91ciBlYXNlIG9mIHN0dWR5LCB3ZSB1c2UgRkxTTSBtYXBwaW5nIHRlY2hpcXVlcyB0byBhc3NlcyB5b3VyIGxlYXJuaW5nIHN0eWxlIGFuZCB3aWxsIGdpdmUgc3R1ZHkgbWF0ZXJpYWxzIGFjY29yZGluZyB0byB0aGF0LlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgZ3V0dGVyQm90dG9tIHZhcmlhbnQ9XCJoNFwiPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB7bHMubmFtZX1cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IGd1dHRlckJvdHRvbSB2YXJpYW50PVwiYm9keTFcIj5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAge1xyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgbHMudHlwZS5jaGFyQXQoMCkgPT09ICdhJyA/IChcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgJ1lvdSBsaWtlIGFjdGl2aXRlcyByYXRoYXIgdGhhbiBib3JpbmcgdGhlb3JpZXMnXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgKTooXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICdZb3UgbGVhcm4gZnJvbSB3aGF0IHlvdSBzdHVkeSdcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICApXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIH1cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IGd1dHRlckJvdHRvbSB2YXJpYW50PVwiYm9keTFcIj5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAge1xyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgbHMudHlwZS5jaGFyQXQoMSkgPT09ICdzJyA/IChcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgJ1lvdSB0aGluayBiZWZvcmUgYXBwcm9jaGluZyBhIHByb2JsZW0nXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgKTooXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICdZb3UgZ2l2ZSBwcmVmZXJlbmNlIHRvIHlvdSBpbnR1aXRpb25zJ1xyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIClcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgfVxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgZ3V0dGVyQm90dG9tIHZhcmlhbnQ9XCJib2R5MVwiPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB7XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBscy50eXBlLmNoYXJBdCgyKSA9PT0gJ3YnID8gKFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAnWW91IGxpa2UgZ3JhcGhpY2FsIHN0dWZmIGFuZCBpbGx1c3RyYXRpb25zJ1xyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICk6KFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAnWW91IGFyZSBnb29kIHdpdGggcmVhZGluZyAoIHZlcmJhbCApJ1xyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIClcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgfVxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgZ3V0dGVyQm90dG9tIHZhcmlhbnQ9XCJib2R5MVwiPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB7XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBscy50eXBlLmNoYXJBdCgwKSA9PT0gJ3MnID8gKFxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAnWW91IHN0dWR5IHNlcXVlbmNpYWxseSAoc3RlcCBieSBzdGVwKSdcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICApOihcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgJ1lvdSBwcmVmZXIgZ2xvYmFsIHZpZXcgYWJvdXQgdGhlIHRoaW5ncydcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICApXHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIH1cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPERpdmlkZXIvPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IGd1dHRlckJvdHRvbSB2YXJpYW50PVwiYm9keTFcIj5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBJbiB0aGUgdXBjb21taW5nIGNoYXB0ZXJzIHlvdSB3aWxsIGdldCB0aGUgbGVhcm5pbmcgbWF0ZXJpYWxzIHRoYXQgbWF0Y2hlcyB5b3VyIGludGVyZXN0cy4gSGFwcGx5IExlYXJuaW5nICFcclxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICA8L0xpc3Q+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIDxCdXR0b24gdmFyaWFudD1cIm91dGxpbmVkXCIgY29sb3I9XCJwcmltYXJ5XCIgY2xhc3NOYW1lPXtjbGFzc2VzLmhhbmRsZUJ1dHRvbn0gb25DbGljaz17KGUpPT57ICBwcm9wcy5oaXN0b3J5LnB1c2goICcvY291cnNlLycrcHJvcHMubWF0Y2gucGFyYW1zLmNvdXJzZSsnL2xzLycrbHMudHlwZSkgfX1cclxuICAgICAgICAgICAgICAgICAgICAgICAgPlxyXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgUHJvY2VlZCAgISAgICAgXHJcbiAgICAgICAgICAgICAgICAgICAgICAgIDwvQnV0dG9uPlxyXG4gICAgICAgICAgICAgICAgICAgIDwvQ2FyZENvbnRlbnQ+XHJcbiAgICAgICAgICAgICAgICA8L0NhcmQ+XHJcbiAgICAgICAgICAgIDwvQ29udGFpbmVyPlxyXG4gICAgICAgIDwvZGl2PiBcclxuICAgICAgICA8L1JlYWN0LkZyYWdtZW50PlxyXG4gICAgKVxyXG59XHJcbiJdLCJtYXBwaW5ncyI6IkFBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUNBO0FBV0E7QUFFQTtBQUNBO0FBQ0E7QUFEQTtBQUdBO0FBQ0E7QUFDQTtBQUZBO0FBSUE7QUFDQTtBQURBO0FBR0E7QUFDQTtBQUNBO0FBRkE7QUFJQTtBQUNBO0FBREE7QUFHQTtBQUNBO0FBQ0E7QUFGQTtBQUlBO0FBQ0E7QUFDQTtBQUNBO0FBSEE7QUFLQTtBQUNBO0FBQ0E7QUFGQTtBQUdBO0FBQ0E7QUFEQTtBQUdBO0FBQ0E7QUFDQTtBQUZBO0FBakNBO0FBMENBO0FBRUE7QUFFQTtBQUdBO0FBRUE7QUFFQTtBQUdBO0FBQUE7QUFFQTtBQUFBO0FBQUE7QUFBQTtBQUtBO0FBQUE7QUFDQTtBQUFBO0FBQ0E7QUFBQTtBQUdBO0FBQUE7QUFBQTtBQUFBO0FBS0E7QUFBQTtBQUFBO0FBS0E7QUFBQTtBQUFBO0FBV0E7QUFBQTtBQUFBO0FBV0E7QUFBQTtBQUFBO0FBV0E7QUFBQTtBQUFBO0FBWUE7QUFBQTtBQUFBO0FBS0E7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFVQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///./React/Shared/Components/Course/LS/LS.js\n");
 
 /***/ }),
 
@@ -2421,7 +312,7 @@ function LS(props) {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-
+eval("//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9Db3Vyc2UvTFNNYXRlcmlhbHMvQWNpdml0eVZlcmJhbC5qcy5qcyIsInNvdXJjZXMiOltdLCJtYXBwaW5ncyI6IiIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///./React/Shared/Components/Course/LSMaterials/AcivityVerbal.js\n");
 
 /***/ }),
 
@@ -2432,7 +323,7 @@ function LS(props) {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-
+eval("//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9Db3Vyc2UvTFNNYXRlcmlhbHMvQWN0aXZpdHlWaXN1YWwuanMuanMiLCJzb3VyY2VzIjpbXSwibWFwcGluZ3MiOiIiLCJzb3VyY2VSb290IjoiIn0=\n//# sourceURL=webpack-internal:///./React/Shared/Components/Course/LSMaterials/ActivityVisual.js\n");
 
 /***/ }),
 
@@ -2443,7 +334,7 @@ function LS(props) {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-
+eval("//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9Db3Vyc2UvTFNNYXRlcmlhbHMvQ29udGVudFZlcmJhbERldGFpbGVkLmpzLmpzIiwic291cmNlcyI6W10sIm1hcHBpbmdzIjoiIiwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///./React/Shared/Components/Course/LSMaterials/ContentVerbalDetailed.js\n");
 
 /***/ }),
 
@@ -2454,7 +345,7 @@ function LS(props) {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-
+eval("//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9Db3Vyc2UvTFNNYXRlcmlhbHMvQ29udGVudFZlcmJhbE92ZXJ2aWV3LmpzLmpzIiwic291cmNlcyI6W10sIm1hcHBpbmdzIjoiIiwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///./React/Shared/Components/Course/LSMaterials/ContentVerbalOverview.js\n");
 
 /***/ }),
 
@@ -2465,7 +356,7 @@ function LS(props) {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-
+eval("//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9Db3Vyc2UvTFNNYXRlcmlhbHMvQ29udGVudFZpc3VhbERldGFpbGVkLmpzLmpzIiwic291cmNlcyI6W10sIm1hcHBpbmdzIjoiIiwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///./React/Shared/Components/Course/LSMaterials/ContentVisualDetailed.js\n");
 
 /***/ }),
 
@@ -2476,7 +367,7 @@ function LS(props) {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-
+eval("//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9Db3Vyc2UvTFNNYXRlcmlhbHMvQ29udGVudFZpc3VhbE92ZXJ2aWV3LmpzLmpzIiwic291cmNlcyI6W10sIm1hcHBpbmdzIjoiIiwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///./React/Shared/Components/Course/LSMaterials/ContentVisualOverview.js\n");
 
 /***/ }),
 
@@ -2488,174 +379,7 @@ function LS(props) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return OverviewVerbal; });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core */ "@material-ui/core");
-/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../Data/learningStyles */ "./React/Shared/Data/learningStyles.js");
-/* harmony import */ var _material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @material-ui/icons/ArrowForwardIosRounded */ "@material-ui/icons/ArrowForwardIosRounded");
-/* harmony import */ var _material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @material-ui/icons/KeyboardArrowRightOutlined */ "@material-ui/icons/KeyboardArrowRightOutlined");
-/* harmony import */ var _material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4__);
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
-
-
-
-
-
-
-var useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["makeStyles"])(theme => ({
-  icon: {
-    marginRight: theme.spacing(2)
-  },
-  link: {
-    textDecoration: "none"
-  },
-  heroContent: {
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(8, 0, 6)
-  },
-  heroButtons: {
-    margin: theme.spacing(4)
-  },
-  cardGrid: {
-    paddingTop: theme.spacing(8),
-    paddingBottom: theme.spacing(8)
-  },
-  handleButton: {
-    margin: theme.spacing(4),
-    float: "right"
-  },
-  card: {
-    height: "100%",
-    display: "flex",
-    flexDirection: "column"
-  },
-  cardMedia: {
-    paddingTop: "56.25%" // 16:9
-
-  },
-  cardContent: {
-    flexGrow: 1
-  },
-  footer: {
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(6)
-  },
-  Text: {
-    display: "block"
-  }
-}));
-
-var handleSubmit = /*#__PURE__*/function () {
-  var _ref = _asyncToGenerator(function* (e, props) {
-    e.preventDefault();
-    var category = props.match.params.category;
-    var lsType = props.match.params.ls_type;
-    var course = props.match.params.course;
-    var lsContents = _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__["default"].find(style => lsType === style.type).contents;
-    var path = lsContents.indexOf(category) + 1 < lsContents.length ? "/course/".concat(course, "/ls/").concat(lsType, "/").concat(lsContents[lsContents.indexOf(category) + 1]) : "/course/".concat(course, "/home");
-    console.log("Vijay");
-    props.history.push(path);
-  });
-
-  return function handleSubmit(_x, _x2) {
-    return _ref.apply(this, arguments);
-  };
-}();
-
-function OverviewVerbal(props) {
-  var classes = useStyles();
-  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("form", {
-    autoComplete: "off",
-    noValidate: true
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["List"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "h4"
-  }, " Primitive Data Types ")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, " ", "There are eight primitive datatypes supported by Java. Primitive datatypes are predefined by the language and named by a keyword. Let us now look into the eight primitive data types in detail.", " ")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "h6"
-  }, "byte")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "Byte data type is an 8-bit signed two's complement integer")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "Minimum value is -128 (-2^7)")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "Maximum value is 127 (inclusive)(2^7 -1)")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "h6"
-  }, "short")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "Short data type is a 16-bit signed two's complement integer")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "Minimum value is -32,768 (-2^15)")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "Maximum value is 32,767 (inclusive) (2^15 -1)")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "h6"
-  }, "int")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "Int data type is a 32-bit signed two's complement integer.")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "Minimum value is - 2,147,483,648 (-2^31)")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "Maximum value is 2,147,483,647(inclusive) (2^31 -1)")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "h6"
-  }, "float")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "Float data type is a single-precision 32-bit IEEE 754 floating point")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "Float is mainly used to save memory in large arrays of floating point numbers")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "h6"
-  }, "double")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "double data type is a double-precision 64-bit IEEE 754 floating point")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "This data type is generally used as the default data type for decimal values, generally the default choice")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "Float data type is never used for precise values such as currency")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "h6"
-  }, "double")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "double data type is a double-precision 64-bit IEEE 754 floating point")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "This data type is generally used as the default data type for decimal values, generally the default choice")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "Double data type should never be used for precise values such as currency")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "h6"
-  }, "boolean")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "boolean data type represents one bit of information")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "There are only two possible values: true and false")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "This data type is used for simple flags that track true/false conditions")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "h6"
-  }, "char")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "char data type is a single 16-bit Unicode character")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "h4"
-  }, " Reference Datatypes ")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "Reference variables are created using defined constructors of the classes. They are used to access objects. These variables are declared to be of a specific type that cannot be changed. For example, Employee, Puppy, etc.")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "Class objects and various type of array variables come under reference datatype.")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "Default value of any reference variable is null.")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "A reference variable can be used to refer any object of the declared type or any compatible type.")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItemIcon"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "Example: Animal animal = new Animal(\"giraffe\");"))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Button"], {
-    variant: "contained",
-    color: "primary",
-    className: classes.handleButton,
-    onClick: e => {
-      handleSubmit(e, props);
-    }
-  }, "Next"));
-}
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"default\", function() { return DefinitionVerbalDetailed; });\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ \"react\");\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core */ \"@material-ui/core\");\n/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__);\n/* harmony import */ var _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../Data/learningStyles */ \"./React/Shared/Data/learningStyles.js\");\n/* harmony import */ var _material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @material-ui/icons/ArrowForwardIosRounded */ \"@material-ui/icons/ArrowForwardIosRounded\");\n/* harmony import */ var _material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3__);\n/* harmony import */ var _material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @material-ui/icons/KeyboardArrowRightOutlined */ \"@material-ui/icons/KeyboardArrowRightOutlined\");\n/* harmony import */ var _material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4__);\nfunction asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }\n\nfunction _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"next\", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"throw\", err); } _next(undefined); }); }; }\n\n\n\n\n\n\nvar useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"makeStyles\"])(theme => ({\n  icon: {\n    marginRight: theme.spacing(2)\n  },\n  link: {\n    textDecoration: \"none\"\n  },\n  heroContent: {\n    backgroundColor: theme.palette.background.paper,\n    padding: theme.spacing(8, 0, 6)\n  },\n  heroButtons: {\n    margin: theme.spacing(4)\n  },\n  cardGrid: {\n    paddingTop: theme.spacing(8),\n    paddingBottom: theme.spacing(8)\n  },\n  handleButton: {\n    margin: theme.spacing(4),\n    float: \"right\"\n  },\n  card: {\n    height: \"100%\",\n    display: \"flex\",\n    flexDirection: \"column\"\n  },\n  cardMedia: {\n    paddingTop: \"56.25%\" // 16:9\n\n  },\n  cardContent: {\n    flexGrow: 1\n  },\n  footer: {\n    backgroundColor: theme.palette.background.paper,\n    padding: theme.spacing(6)\n  },\n  Text: {\n    display: \"block\"\n  }\n}));\n\nvar handleSubmit = /*#__PURE__*/function () {\n  var _ref = _asyncToGenerator(function* (e, props) {\n    e.preventDefault();\n    var category = props.match.params.category;\n    var lsType = props.match.params.ls_type;\n    var course = props.match.params.course;\n    var lsContents = _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__[\"default\"].find(style => lsType === style.type).contents;\n    var path = lsContents.indexOf(category) + 1 < lsContents.length ? \"/course/\".concat(course, \"/ls/\").concat(lsType, \"/\").concat(lsContents[lsContents.indexOf(category) + 1]) : \"/course/\".concat(course, \"/home\");\n    console.log(\"Vijay\");\n    props.history.push(path);\n  });\n\n  return function handleSubmit(_x, _x2) {\n    return _ref.apply(this, arguments);\n  };\n}();\n\nfunction DefinitionVerbalDetailed(props) {\n  var classes = useStyles();\n  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(\"form\", {\n    autoComplete: \"off\",\n    noValidate: true\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"List\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h4\"\n  }, \" Primitive Data Types \")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \" \", \"There are eight primitive datatypes supported by Java. Primitive datatypes are predefined by the language and named by a keyword. Let us now look into the eight primitive data types in detail.\", \" \")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h6\"\n  }, \"byte\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Byte data type is an 8-bit signed two's complement integer\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Minimum value is -128 (-2^7)\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Maximum value is 127 (inclusive)(2^7 -1)\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h6\"\n  }, \"short\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Short data type is a 16-bit signed two's complement integer\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Minimum value is -32,768 (-2^15)\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Maximum value is 32,767 (inclusive) (2^15 -1)\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h6\"\n  }, \"int\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Int data type is a 32-bit signed two's complement integer.\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Minimum value is - 2,147,483,648 (-2^31)\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Maximum value is 2,147,483,647(inclusive) (2^31 -1)\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h6\"\n  }, \"float\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Float data type is a single-precision 32-bit IEEE 754 floating point\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Float is mainly used to save memory in large arrays of floating point numbers\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h6\"\n  }, \"double\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"double data type is a double-precision 64-bit IEEE 754 floating point\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"This data type is generally used as the default data type for decimal values, generally the default choice\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Float data type is never used for precise values such as currency\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h6\"\n  }, \"double\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"double data type is a double-precision 64-bit IEEE 754 floating point\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"This data type is generally used as the default data type for decimal values, generally the default choice\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Double data type should never be used for precise values such as currency\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h6\"\n  }, \"boolean\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"boolean data type represents one bit of information\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"There are only two possible values: true and false\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"This data type is used for simple flags that track true/false conditions\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h6\"\n  }, \"char\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"char data type is a single 16-bit Unicode character\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h4\"\n  }, \" Reference Datatypes \")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Reference variables are created using defined constructors of the classes. They are used to access objects. These variables are declared to be of a specific type that cannot be changed. For example, Employee, Puppy, etc.\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Class objects and various type of array variables come under reference datatype.\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Default value of any reference variable is null.\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"A reference variable can be used to refer any object of the declared type or any compatible type.\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Example: Animal animal = new Animal(\\\"giraffe\\\");\"))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Button\"], {\n    variant: \"contained\",\n    color: \"primary\",\n    className: classes.handleButton,\n    onClick: e => {\n      handleSubmit(e, props);\n    }\n  }, \"Next\"));\n}//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9Db3Vyc2UvTFNNYXRlcmlhbHMvRGVmaW5pdGlvblZlcmJhbERldGFpbGVkLmpzLmpzIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vLy4vUmVhY3QvU2hhcmVkL0NvbXBvbmVudHMvQ291cnNlL0xTTWF0ZXJpYWxzL0RlZmluaXRpb25WZXJiYWxEZXRhaWxlZC5qcz80ZGQ0Il0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCBSZWFjdCwgeyB1c2VTdGF0ZSwgdXNlRWZmZWN0IH0gZnJvbSBcInJlYWN0XCI7XHJcbmltcG9ydCB7XHJcbiAgVHlwb2dyYXBoeSxcclxuICBQYXBlcixcclxuICBtYWtlU3R5bGVzLFxyXG4gIEJ1dHRvbixcclxuICBMaXN0LFxyXG4gIExpc3RJdGVtLFxyXG4gIExpc3RJdGVtSWNvbixcclxuICBEaXZpZGVyLFxyXG4gIENvbnRhaW5lclxyXG59IGZyb20gXCJAbWF0ZXJpYWwtdWkvY29yZVwiO1xyXG5pbXBvcnQgbGVhcm5pbmdTdHlsZXMgZnJvbSBcIi4uLy4uLy4uL0RhdGEvbGVhcm5pbmdTdHlsZXNcIjtcclxuaW1wb3J0IEFycm93Rm9yd2FyZElvc1JvdW5kZWRJY29uIGZyb20gXCJAbWF0ZXJpYWwtdWkvaWNvbnMvQXJyb3dGb3J3YXJkSW9zUm91bmRlZFwiO1xyXG5pbXBvcnQgS2V5Ym9hcmRBcnJvd1JpZ2h0T3V0bGluZWRJY29uIGZyb20gXCJAbWF0ZXJpYWwtdWkvaWNvbnMvS2V5Ym9hcmRBcnJvd1JpZ2h0T3V0bGluZWRcIjtcclxuXHJcbmNvbnN0IHVzZVN0eWxlcyA9IG1ha2VTdHlsZXModGhlbWUgPT4gKHtcclxuICBpY29uOiB7XHJcbiAgICBtYXJnaW5SaWdodDogdGhlbWUuc3BhY2luZygyKVxyXG4gIH0sXHJcbiAgbGluazoge1xyXG4gICAgdGV4dERlY29yYXRpb246IFwibm9uZVwiXHJcbiAgfSxcclxuICBoZXJvQ29udGVudDoge1xyXG4gICAgYmFja2dyb3VuZENvbG9yOiB0aGVtZS5wYWxldHRlLmJhY2tncm91bmQucGFwZXIsXHJcbiAgICBwYWRkaW5nOiB0aGVtZS5zcGFjaW5nKDgsIDAsIDYpXHJcbiAgfSxcclxuICBoZXJvQnV0dG9uczoge1xyXG4gICAgbWFyZ2luOiB0aGVtZS5zcGFjaW5nKDQpXHJcbiAgfSxcclxuICBjYXJkR3JpZDoge1xyXG4gICAgcGFkZGluZ1RvcDogdGhlbWUuc3BhY2luZyg4KSxcclxuICAgIHBhZGRpbmdCb3R0b206IHRoZW1lLnNwYWNpbmcoOClcclxuICB9LFxyXG4gIGhhbmRsZUJ1dHRvbjoge1xyXG4gICAgbWFyZ2luOiB0aGVtZS5zcGFjaW5nKDQpLFxyXG4gICAgZmxvYXQ6IFwicmlnaHRcIlxyXG4gIH0sXHJcbiAgY2FyZDoge1xyXG4gICAgaGVpZ2h0OiBcIjEwMCVcIixcclxuICAgIGRpc3BsYXk6IFwiZmxleFwiLFxyXG4gICAgZmxleERpcmVjdGlvbjogXCJjb2x1bW5cIlxyXG4gIH0sXHJcbiAgY2FyZE1lZGlhOiB7XHJcbiAgICBwYWRkaW5nVG9wOiBcIjU2LjI1JVwiIC8vIDE2OjlcclxuICB9LFxyXG4gIGNhcmRDb250ZW50OiB7XHJcbiAgICBmbGV4R3JvdzogMVxyXG4gIH0sXHJcbiAgZm9vdGVyOiB7XHJcbiAgICBiYWNrZ3JvdW5kQ29sb3I6IHRoZW1lLnBhbGV0dGUuYmFja2dyb3VuZC5wYXBlcixcclxuICAgIHBhZGRpbmc6IHRoZW1lLnNwYWNpbmcoNilcclxuICB9LFxyXG4gIFRleHQ6IHtcclxuICAgIGRpc3BsYXk6IFwiYmxvY2tcIlxyXG4gIH1cclxufSkpO1xyXG5cclxuY29uc3QgaGFuZGxlU3VibWl0ID0gYXN5bmMgKGUsIHByb3BzKSA9PiB7XHJcbiAgZS5wcmV2ZW50RGVmYXVsdCgpO1xyXG5cclxuICBjb25zdCBjYXRlZ29yeSA9IHByb3BzLm1hdGNoLnBhcmFtcy5jYXRlZ29yeTtcclxuXHJcbiAgY29uc3QgbHNUeXBlID0gcHJvcHMubWF0Y2gucGFyYW1zLmxzX3R5cGU7XHJcblxyXG4gIGNvbnN0IGNvdXJzZSA9IHByb3BzLm1hdGNoLnBhcmFtcy5jb3Vyc2U7XHJcblxyXG4gIGNvbnN0IGxzQ29udGVudHMgPSBsZWFybmluZ1N0eWxlcy5maW5kKHN0eWxlID0+IGxzVHlwZSA9PT0gc3R5bGUudHlwZSlcclxuICAgIC5jb250ZW50cztcclxuXHJcbiAgY29uc3QgcGF0aCA9XHJcbiAgICBsc0NvbnRlbnRzLmluZGV4T2YoY2F0ZWdvcnkpICsgMSA8IGxzQ29udGVudHMubGVuZ3RoXHJcbiAgICAgID8gYC9jb3Vyc2UvJHtjb3Vyc2V9L2xzLyR7bHNUeXBlfS8ke1xyXG4gICAgICAgICAgbHNDb250ZW50c1tsc0NvbnRlbnRzLmluZGV4T2YoY2F0ZWdvcnkpICsgMV1cclxuICAgICAgICB9YFxyXG4gICAgICA6IGAvY291cnNlLyR7Y291cnNlfS9ob21lYDtcclxuXHJcbiAgY29uc29sZS5sb2coXCJWaWpheVwiKTtcclxuXHJcbiAgcHJvcHMuaGlzdG9yeS5wdXNoKHBhdGgpO1xyXG59O1xyXG5cclxuZXhwb3J0IGRlZmF1bHQgZnVuY3Rpb24gRGVmaW5pdGlvblZlcmJhbERldGFpbGVkKHByb3BzKSB7XHJcbiAgY29uc3QgY2xhc3NlcyA9IHVzZVN0eWxlcygpO1xyXG4gIHJldHVybiAoXHJcbiAgICA8Zm9ybSBhdXRvQ29tcGxldGU9XCJvZmZcIiBub1ZhbGlkYXRlPlxyXG4gICAgICA8TGlzdD5cclxuICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PVwiaDRcIj4gUHJpbWl0aXZlIERhdGEgVHlwZXMgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImJvZHkxXCI+XHJcbiAgICAgICAgICAgIHtcIiBcIn1cclxuICAgICAgICAgICAgVGhlcmUgYXJlIGVpZ2h0IHByaW1pdGl2ZSBkYXRhdHlwZXMgc3VwcG9ydGVkIGJ5IEphdmEuIFByaW1pdGl2ZVxyXG4gICAgICAgICAgICBkYXRhdHlwZXMgYXJlIHByZWRlZmluZWQgYnkgdGhlIGxhbmd1YWdlIGFuZCBuYW1lZCBieSBhIGtleXdvcmQuIExldFxyXG4gICAgICAgICAgICB1cyBub3cgbG9vayBpbnRvIHRoZSBlaWdodCBwcmltaXRpdmUgZGF0YSB0eXBlcyBpbiBkZXRhaWwue1wiIFwifVxyXG4gICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgPExpc3RJdGVtSWNvbj5cclxuICAgICAgICAgICAgPEFycm93Rm9yd2FyZElvc1JvdW5kZWRJY29uIC8+XHJcbiAgICAgICAgICA8L0xpc3RJdGVtSWNvbj5cclxuICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJoNlwiPmJ5dGU8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICA8TGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgICA8S2V5Ym9hcmRBcnJvd1JpZ2h0T3V0bGluZWRJY29uIC8+XHJcbiAgICAgICAgICA8L0xpc3RJdGVtSWNvbj5cclxuICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJib2R5MVwiPlxyXG4gICAgICAgICAgICBCeXRlIGRhdGEgdHlwZSBpcyBhbiA4LWJpdCBzaWduZWQgdHdvJ3MgY29tcGxlbWVudCBpbnRlZ2VyXHJcbiAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICA8TGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgICA8S2V5Ym9hcmRBcnJvd1JpZ2h0T3V0bGluZWRJY29uIC8+XHJcbiAgICAgICAgICA8L0xpc3RJdGVtSWNvbj5cclxuICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJib2R5MVwiPk1pbmltdW0gdmFsdWUgaXMgLTEyOCAoLTJeNyk8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICA8TGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgICA8S2V5Ym9hcmRBcnJvd1JpZ2h0T3V0bGluZWRJY29uIC8+XHJcbiAgICAgICAgICA8L0xpc3RJdGVtSWNvbj5cclxuICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJib2R5MVwiPlxyXG4gICAgICAgICAgICBNYXhpbXVtIHZhbHVlIGlzIDEyNyAoaW5jbHVzaXZlKSgyXjcgLTEpXHJcbiAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICA8TGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgICA8QXJyb3dGb3J3YXJkSW9zUm91bmRlZEljb24gLz5cclxuICAgICAgICAgIDwvTGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImg2XCI+c2hvcnQ8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICA8TGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgICA8S2V5Ym9hcmRBcnJvd1JpZ2h0T3V0bGluZWRJY29uIC8+XHJcbiAgICAgICAgICA8L0xpc3RJdGVtSWNvbj5cclxuICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJib2R5MVwiPlxyXG4gICAgICAgICAgICBTaG9ydCBkYXRhIHR5cGUgaXMgYSAxNi1iaXQgc2lnbmVkIHR3bydzIGNvbXBsZW1lbnQgaW50ZWdlclxyXG4gICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgPExpc3RJdGVtSWNvbj5cclxuICAgICAgICAgICAgPEtleWJvYXJkQXJyb3dSaWdodE91dGxpbmVkSWNvbiAvPlxyXG4gICAgICAgICAgPC9MaXN0SXRlbUljb24+XHJcbiAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PVwiYm9keTFcIj5cclxuICAgICAgICAgICAgTWluaW11bSB2YWx1ZSBpcyAtMzIsNzY4ICgtMl4xNSlcclxuICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgIDxMaXN0SXRlbUljb24+XHJcbiAgICAgICAgICAgIDxLZXlib2FyZEFycm93UmlnaHRPdXRsaW5lZEljb24gLz5cclxuICAgICAgICAgIDwvTGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImJvZHkxXCI+XHJcbiAgICAgICAgICAgIE1heGltdW0gdmFsdWUgaXMgMzIsNzY3IChpbmNsdXNpdmUpICgyXjE1IC0xKVxyXG4gICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgPExpc3RJdGVtSWNvbj5cclxuICAgICAgICAgICAgPEFycm93Rm9yd2FyZElvc1JvdW5kZWRJY29uIC8+XHJcbiAgICAgICAgICA8L0xpc3RJdGVtSWNvbj5cclxuICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJoNlwiPmludDwvVHlwb2dyYXBoeT5cclxuICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgIDxMaXN0SXRlbUljb24+XHJcbiAgICAgICAgICAgIDxLZXlib2FyZEFycm93UmlnaHRPdXRsaW5lZEljb24gLz5cclxuICAgICAgICAgIDwvTGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImJvZHkxXCI+XHJcbiAgICAgICAgICAgIEludCBkYXRhIHR5cGUgaXMgYSAzMi1iaXQgc2lnbmVkIHR3bydzIGNvbXBsZW1lbnQgaW50ZWdlci5cclxuICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgIDxMaXN0SXRlbUljb24+XHJcbiAgICAgICAgICAgIDxLZXlib2FyZEFycm93UmlnaHRPdXRsaW5lZEljb24gLz5cclxuICAgICAgICAgIDwvTGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImJvZHkxXCI+XHJcbiAgICAgICAgICAgIE1pbmltdW0gdmFsdWUgaXMgLSAyLDE0Nyw0ODMsNjQ4ICgtMl4zMSlcclxuICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgIDxMaXN0SXRlbUljb24+XHJcbiAgICAgICAgICAgIDxLZXlib2FyZEFycm93UmlnaHRPdXRsaW5lZEljb24gLz5cclxuICAgICAgICAgIDwvTGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImJvZHkxXCI+XHJcbiAgICAgICAgICAgIE1heGltdW0gdmFsdWUgaXMgMiwxNDcsNDgzLDY0NyhpbmNsdXNpdmUpICgyXjMxIC0xKVxyXG4gICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgPExpc3RJdGVtSWNvbj5cclxuICAgICAgICAgICAgPEFycm93Rm9yd2FyZElvc1JvdW5kZWRJY29uIC8+XHJcbiAgICAgICAgICA8L0xpc3RJdGVtSWNvbj5cclxuICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJoNlwiPmZsb2F0PC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgPExpc3RJdGVtSWNvbj5cclxuICAgICAgICAgICAgPEtleWJvYXJkQXJyb3dSaWdodE91dGxpbmVkSWNvbiAvPlxyXG4gICAgICAgICAgPC9MaXN0SXRlbUljb24+XHJcbiAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PVwiYm9keTFcIj5cclxuICAgICAgICAgICAgRmxvYXQgZGF0YSB0eXBlIGlzIGEgc2luZ2xlLXByZWNpc2lvbiAzMi1iaXQgSUVFRSA3NTQgZmxvYXRpbmcgcG9pbnRcclxuICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgIDxMaXN0SXRlbUljb24+XHJcbiAgICAgICAgICAgIDxLZXlib2FyZEFycm93UmlnaHRPdXRsaW5lZEljb24gLz5cclxuICAgICAgICAgIDwvTGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImJvZHkxXCI+XHJcbiAgICAgICAgICAgIEZsb2F0IGlzIG1haW5seSB1c2VkIHRvIHNhdmUgbWVtb3J5IGluIGxhcmdlIGFycmF5cyBvZiBmbG9hdGluZ1xyXG4gICAgICAgICAgICBwb2ludCBudW1iZXJzXHJcbiAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICA8TGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgICA8QXJyb3dGb3J3YXJkSW9zUm91bmRlZEljb24gLz5cclxuICAgICAgICAgIDwvTGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImg2XCI+ZG91YmxlPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgPExpc3RJdGVtSWNvbj5cclxuICAgICAgICAgICAgPEtleWJvYXJkQXJyb3dSaWdodE91dGxpbmVkSWNvbiAvPlxyXG4gICAgICAgICAgPC9MaXN0SXRlbUljb24+XHJcbiAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PVwiYm9keTFcIj5cclxuICAgICAgICAgICAgZG91YmxlIGRhdGEgdHlwZSBpcyBhIGRvdWJsZS1wcmVjaXNpb24gNjQtYml0IElFRUUgNzU0IGZsb2F0aW5nXHJcbiAgICAgICAgICAgIHBvaW50XHJcbiAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICA8TGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgICA8S2V5Ym9hcmRBcnJvd1JpZ2h0T3V0bGluZWRJY29uIC8+XHJcbiAgICAgICAgICA8L0xpc3RJdGVtSWNvbj5cclxuICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJib2R5MVwiPlxyXG4gICAgICAgICAgICBUaGlzIGRhdGEgdHlwZSBpcyBnZW5lcmFsbHkgdXNlZCBhcyB0aGUgZGVmYXVsdCBkYXRhIHR5cGUgZm9yXHJcbiAgICAgICAgICAgIGRlY2ltYWwgdmFsdWVzLCBnZW5lcmFsbHkgdGhlIGRlZmF1bHQgY2hvaWNlXHJcbiAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICA8TGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgICA8S2V5Ym9hcmRBcnJvd1JpZ2h0T3V0bGluZWRJY29uIC8+XHJcbiAgICAgICAgICA8L0xpc3RJdGVtSWNvbj5cclxuICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJib2R5MVwiPlxyXG4gICAgICAgICAgICBGbG9hdCBkYXRhIHR5cGUgaXMgbmV2ZXIgdXNlZCBmb3IgcHJlY2lzZSB2YWx1ZXMgc3VjaCBhcyBjdXJyZW5jeVxyXG4gICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgPExpc3RJdGVtSWNvbj5cclxuICAgICAgICAgICAgPEFycm93Rm9yd2FyZElvc1JvdW5kZWRJY29uIC8+XHJcbiAgICAgICAgICA8L0xpc3RJdGVtSWNvbj5cclxuICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJoNlwiPmRvdWJsZTwvVHlwb2dyYXBoeT5cclxuICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgIDxMaXN0SXRlbUljb24+XHJcbiAgICAgICAgICAgIDxLZXlib2FyZEFycm93UmlnaHRPdXRsaW5lZEljb24gLz5cclxuICAgICAgICAgIDwvTGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImJvZHkxXCI+XHJcbiAgICAgICAgICAgIGRvdWJsZSBkYXRhIHR5cGUgaXMgYSBkb3VibGUtcHJlY2lzaW9uIDY0LWJpdCBJRUVFIDc1NCBmbG9hdGluZ1xyXG4gICAgICAgICAgICBwb2ludFxyXG4gICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgPExpc3RJdGVtSWNvbj5cclxuICAgICAgICAgICAgPEtleWJvYXJkQXJyb3dSaWdodE91dGxpbmVkSWNvbiAvPlxyXG4gICAgICAgICAgPC9MaXN0SXRlbUljb24+XHJcbiAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PVwiYm9keTFcIj5cclxuICAgICAgICAgICAgVGhpcyBkYXRhIHR5cGUgaXMgZ2VuZXJhbGx5IHVzZWQgYXMgdGhlIGRlZmF1bHQgZGF0YSB0eXBlIGZvclxyXG4gICAgICAgICAgICBkZWNpbWFsIHZhbHVlcywgZ2VuZXJhbGx5IHRoZSBkZWZhdWx0IGNob2ljZVxyXG4gICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgPExpc3RJdGVtSWNvbj5cclxuICAgICAgICAgICAgPEtleWJvYXJkQXJyb3dSaWdodE91dGxpbmVkSWNvbiAvPlxyXG4gICAgICAgICAgPC9MaXN0SXRlbUljb24+XHJcbiAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PVwiYm9keTFcIj5cclxuICAgICAgICAgICAgRG91YmxlIGRhdGEgdHlwZSBzaG91bGQgbmV2ZXIgYmUgdXNlZCBmb3IgcHJlY2lzZSB2YWx1ZXMgc3VjaCBhc1xyXG4gICAgICAgICAgICBjdXJyZW5jeVxyXG4gICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgPExpc3RJdGVtSWNvbj5cclxuICAgICAgICAgICAgPEFycm93Rm9yd2FyZElvc1JvdW5kZWRJY29uIC8+XHJcbiAgICAgICAgICA8L0xpc3RJdGVtSWNvbj5cclxuICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJoNlwiPmJvb2xlYW48L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICA8TGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgICA8S2V5Ym9hcmRBcnJvd1JpZ2h0T3V0bGluZWRJY29uIC8+XHJcbiAgICAgICAgICA8L0xpc3RJdGVtSWNvbj5cclxuICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJib2R5MVwiPlxyXG4gICAgICAgICAgICBib29sZWFuIGRhdGEgdHlwZSByZXByZXNlbnRzIG9uZSBiaXQgb2YgaW5mb3JtYXRpb25cclxuICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgIDxMaXN0SXRlbUljb24+XHJcbiAgICAgICAgICAgIDxLZXlib2FyZEFycm93UmlnaHRPdXRsaW5lZEljb24gLz5cclxuICAgICAgICAgIDwvTGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImJvZHkxXCI+XHJcbiAgICAgICAgICAgIFRoZXJlIGFyZSBvbmx5IHR3byBwb3NzaWJsZSB2YWx1ZXM6IHRydWUgYW5kIGZhbHNlXHJcbiAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICA8TGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgICA8S2V5Ym9hcmRBcnJvd1JpZ2h0T3V0bGluZWRJY29uIC8+XHJcbiAgICAgICAgICA8L0xpc3RJdGVtSWNvbj5cclxuICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJib2R5MVwiPlxyXG4gICAgICAgICAgICBUaGlzIGRhdGEgdHlwZSBpcyB1c2VkIGZvciBzaW1wbGUgZmxhZ3MgdGhhdCB0cmFjayB0cnVlL2ZhbHNlXHJcbiAgICAgICAgICAgIGNvbmRpdGlvbnNcclxuICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgIDxMaXN0SXRlbUljb24+XHJcbiAgICAgICAgICAgIDxBcnJvd0ZvcndhcmRJb3NSb3VuZGVkSWNvbiAvPlxyXG4gICAgICAgICAgPC9MaXN0SXRlbUljb24+XHJcbiAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PVwiaDZcIj5jaGFyPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgPExpc3RJdGVtSWNvbj5cclxuICAgICAgICAgICAgPEtleWJvYXJkQXJyb3dSaWdodE91dGxpbmVkSWNvbiAvPlxyXG4gICAgICAgICAgPC9MaXN0SXRlbUljb24+XHJcbiAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PVwiYm9keTFcIj5cclxuICAgICAgICAgICAgY2hhciBkYXRhIHR5cGUgaXMgYSBzaW5nbGUgMTYtYml0IFVuaWNvZGUgY2hhcmFjdGVyXHJcbiAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PVwiaDRcIj4gUmVmZXJlbmNlIERhdGF0eXBlcyA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICA8TGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgICA8S2V5Ym9hcmRBcnJvd1JpZ2h0T3V0bGluZWRJY29uIC8+XHJcbiAgICAgICAgICA8L0xpc3RJdGVtSWNvbj5cclxuICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJib2R5MVwiPlxyXG4gICAgICAgICAgICBSZWZlcmVuY2UgdmFyaWFibGVzIGFyZSBjcmVhdGVkIHVzaW5nIGRlZmluZWQgY29uc3RydWN0b3JzIG9mIHRoZVxyXG4gICAgICAgICAgICBjbGFzc2VzLiBUaGV5IGFyZSB1c2VkIHRvIGFjY2VzcyBvYmplY3RzLiBUaGVzZSB2YXJpYWJsZXMgYXJlXHJcbiAgICAgICAgICAgIGRlY2xhcmVkIHRvIGJlIG9mIGEgc3BlY2lmaWMgdHlwZSB0aGF0IGNhbm5vdCBiZSBjaGFuZ2VkLiBGb3JcclxuICAgICAgICAgICAgZXhhbXBsZSwgRW1wbG95ZWUsIFB1cHB5LCBldGMuXHJcbiAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICA8TGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgICA8S2V5Ym9hcmRBcnJvd1JpZ2h0T3V0bGluZWRJY29uIC8+XHJcbiAgICAgICAgICA8L0xpc3RJdGVtSWNvbj5cclxuICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJib2R5MVwiPlxyXG4gICAgICAgICAgICBDbGFzcyBvYmplY3RzIGFuZCB2YXJpb3VzIHR5cGUgb2YgYXJyYXkgdmFyaWFibGVzIGNvbWUgdW5kZXJcclxuICAgICAgICAgICAgcmVmZXJlbmNlIGRhdGF0eXBlLlxyXG4gICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgPExpc3RJdGVtSWNvbj5cclxuICAgICAgICAgICAgPEtleWJvYXJkQXJyb3dSaWdodE91dGxpbmVkSWNvbiAvPlxyXG4gICAgICAgICAgPC9MaXN0SXRlbUljb24+XHJcbiAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PVwiYm9keTFcIj5cclxuICAgICAgICAgICAgRGVmYXVsdCB2YWx1ZSBvZiBhbnkgcmVmZXJlbmNlIHZhcmlhYmxlIGlzIG51bGwuXHJcbiAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICA8TGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgICA8S2V5Ym9hcmRBcnJvd1JpZ2h0T3V0bGluZWRJY29uIC8+XHJcbiAgICAgICAgICA8L0xpc3RJdGVtSWNvbj5cclxuICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJib2R5MVwiPlxyXG4gICAgICAgICAgICBBIHJlZmVyZW5jZSB2YXJpYWJsZSBjYW4gYmUgdXNlZCB0byByZWZlciBhbnkgb2JqZWN0IG9mIHRoZSBkZWNsYXJlZFxyXG4gICAgICAgICAgICB0eXBlIG9yIGFueSBjb21wYXRpYmxlIHR5cGUuXHJcbiAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICA8TGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgICA8S2V5Ym9hcmRBcnJvd1JpZ2h0T3V0bGluZWRJY29uIC8+XHJcbiAgICAgICAgICA8L0xpc3RJdGVtSWNvbj5cclxuICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJib2R5MVwiPlxyXG4gICAgICAgICAgICBFeGFtcGxlOiBBbmltYWwgYW5pbWFsID0gbmV3IEFuaW1hbChcImdpcmFmZmVcIik7XHJcbiAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgPC9MaXN0PlxyXG4gICAgICA8QnV0dG9uXHJcbiAgICAgICAgdmFyaWFudD1cImNvbnRhaW5lZFwiXHJcbiAgICAgICAgY29sb3I9XCJwcmltYXJ5XCJcclxuICAgICAgICBjbGFzc05hbWU9e2NsYXNzZXMuaGFuZGxlQnV0dG9ufVxyXG4gICAgICAgIG9uQ2xpY2s9e2UgPT4ge1xyXG4gICAgICAgICAgaGFuZGxlU3VibWl0KGUsIHByb3BzKTtcclxuICAgICAgICB9fVxyXG4gICAgICA+XHJcbiAgICAgICAgTmV4dFxyXG4gICAgICA8L0J1dHRvbj5cclxuICAgIDwvZm9ybT5cclxuICApO1xyXG59XHJcbiJdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7O0FBQUE7QUFDQTtBQVdBO0FBQ0E7QUFDQTtBQUVBO0FBQ0E7QUFDQTtBQURBO0FBR0E7QUFDQTtBQURBO0FBR0E7QUFDQTtBQUNBO0FBRkE7QUFJQTtBQUNBO0FBREE7QUFHQTtBQUNBO0FBQ0E7QUFGQTtBQUlBO0FBQ0E7QUFDQTtBQUZBO0FBSUE7QUFDQTtBQUNBO0FBQ0E7QUFIQTtBQUtBO0FBQ0E7QUFDQTtBQUZBO0FBR0E7QUFDQTtBQURBO0FBR0E7QUFDQTtBQUNBO0FBRkE7QUFJQTtBQUNBO0FBREE7QUFyQ0E7QUFDQTtBQXlDQTtBQUFBO0FBQ0E7QUFFQTtBQUVBO0FBRUE7QUFFQTtBQUdBO0FBT0E7QUFFQTtBQUNBO0FBQ0E7QUF2QkE7QUFBQTtBQUFBO0FBQUE7QUFDQTtBQXVCQTtBQUNBO0FBQ0E7QUFDQTtBQUFBO0FBQUE7QUFHQTtBQUFBO0FBR0E7QUFBQTtBQVdBO0FBQUE7QUFNQTtBQUFBO0FBUUE7QUFBQTtBQU1BO0FBQUE7QUFRQTtBQUFBO0FBTUE7QUFBQTtBQVFBO0FBQUE7QUFRQTtBQUFBO0FBUUE7QUFBQTtBQU1BO0FBQUE7QUFRQTtBQUFBO0FBUUE7QUFBQTtBQVFBO0FBQUE7QUFNQTtBQUFBO0FBUUE7QUFBQTtBQVNBO0FBQUE7QUFNQTtBQUFBO0FBU0E7QUFBQTtBQVNBO0FBQUE7QUFRQTtBQUFBO0FBTUE7QUFBQTtBQVNBO0FBQUE7QUFTQTtBQUFBO0FBU0E7QUFBQTtBQU1BO0FBQUE7QUFRQTtBQUFBO0FBUUE7QUFBQTtBQVNBO0FBQUE7QUFNQTtBQUFBO0FBS0E7QUFBQTtBQU1BO0FBQUE7QUFXQTtBQUFBO0FBU0E7QUFBQTtBQVFBO0FBQUE7QUFTQTtBQUFBO0FBTUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBTkE7QUFZQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///./React/Shared/Components/Course/LSMaterials/DefinitionVerbalDetailed.js\n");
 
 /***/ }),
 
@@ -2663,10 +387,11 @@ function OverviewVerbal(props) {
 /*!********************************************************************************!*\
   !*** ./React/Shared/Components/Course/LSMaterials/DefinitionVerbalOverview.js ***!
   \********************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-
+"use strict";
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"default\", function() { return DefinitionVerbalOverview; });\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ \"react\");\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core */ \"@material-ui/core\");\n/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__);\n/* harmony import */ var _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../Data/learningStyles */ \"./React/Shared/Data/learningStyles.js\");\n/* harmony import */ var _material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @material-ui/icons/ArrowForwardIosRounded */ \"@material-ui/icons/ArrowForwardIosRounded\");\n/* harmony import */ var _material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3__);\n/* harmony import */ var _material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @material-ui/icons/KeyboardArrowRightOutlined */ \"@material-ui/icons/KeyboardArrowRightOutlined\");\n/* harmony import */ var _material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4__);\nfunction asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }\n\nfunction _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"next\", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"throw\", err); } _next(undefined); }); }; }\n\n\n\n\n\n\nvar useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"makeStyles\"])(theme => ({\n  icon: {\n    marginRight: theme.spacing(2)\n  },\n  link: {\n    textDecoration: \"none\"\n  },\n  heroContent: {\n    backgroundColor: theme.palette.background.paper,\n    padding: theme.spacing(8, 0, 6)\n  },\n  heroButtons: {\n    margin: theme.spacing(4)\n  },\n  cardGrid: {\n    paddingTop: theme.spacing(8),\n    paddingBottom: theme.spacing(8)\n  },\n  handleButton: {\n    margin: theme.spacing(4),\n    float: \"right\"\n  },\n  card: {\n    height: \"100%\",\n    display: \"flex\",\n    flexDirection: \"column\"\n  },\n  cardMedia: {\n    paddingTop: \"56.25%\" // 16:9\n\n  },\n  cardContent: {\n    flexGrow: 1\n  },\n  footer: {\n    backgroundColor: theme.palette.background.paper,\n    padding: theme.spacing(6)\n  },\n  Text: {\n    display: \"block\"\n  }\n}));\n\nvar handleSubmit = /*#__PURE__*/function () {\n  var _ref = _asyncToGenerator(function* (e, props) {\n    e.preventDefault();\n    var category = props.match.params.category;\n    var lsType = props.match.params.ls_type;\n    var course = props.match.params.course;\n    var lsContents = _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__[\"default\"].find(style => lsType === style.type).contents;\n    var path = lsContents.indexOf(category) + 1 < lsContents.length ? \"/course/\".concat(course, \"/ls/\").concat(lsType, \"/\").concat(lsContents[lsContents.indexOf(category) + 1]) : \"/course/\".concat(course, \"/home\");\n    console.log(\"Vijay\");\n    props.history.push(path);\n  });\n\n  return function handleSubmit(_x, _x2) {\n    return _ref.apply(this, arguments);\n  };\n}();\n\nfunction DefinitionVerbalOverview(props) {\n  var classes = useStyles();\n  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(\"form\", {\n    autoComplete: \"off\",\n    noValidate: true\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"List\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h4\"\n  }, \" Primitive Data Types \")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \" \", \"There are eight primitive datatypes supported by Java. Primitive datatypes are predefined by the language and named by a keyword. Let us now look into the eight primitive data types in detail.\", \" \")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h6\"\n  }, \"byte\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Byte data type is an 8-bit signed two's complement integer\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h6\"\n  }, \"short\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Short data type is a 16-bit signed two's complement integer\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h6\"\n  }, \"int\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Int data type is a 32-bit signed two's complement integer.\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h6\"\n  }, \"float\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Float data type is a single-precision 32-bit IEEE 754 floating point\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h6\"\n  }, \"double\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"double data type is a double-precision 64-bit IEEE 754 floating point\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h6\"\n  }, \"boolean\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"boolean data type represents one bit of information\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_ArrowForwardIosRounded__WEBPACK_IMPORTED_MODULE_3___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h6\"\n  }, \"char\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"char data type is a single 16-bit Unicode character\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h4\"\n  }, \" Reference Datatypes \")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItemIcon\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_KeyboardArrowRightOutlined__WEBPACK_IMPORTED_MODULE_4___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"Reference variables are created using defined constructors of the classes. They are used to access objects. These variables are declared to be of a specific type that cannot be changed. For example, Employee, Puppy, etc.\"))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Button\"], {\n    variant: \"contained\",\n    color: \"primary\",\n    className: classes.handleButton,\n    onClick: e => {\n      handleSubmit(e, props);\n    }\n  }, \"Next\"));\n}//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9Db3Vyc2UvTFNNYXRlcmlhbHMvRGVmaW5pdGlvblZlcmJhbE92ZXJ2aWV3LmpzLmpzIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vLy4vUmVhY3QvU2hhcmVkL0NvbXBvbmVudHMvQ291cnNlL0xTTWF0ZXJpYWxzL0RlZmluaXRpb25WZXJiYWxPdmVydmlldy5qcz9kYzQxIl0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCBSZWFjdCwgeyB1c2VTdGF0ZSwgdXNlRWZmZWN0IH0gZnJvbSBcInJlYWN0XCI7XHJcbmltcG9ydCB7XHJcbiAgVHlwb2dyYXBoeSxcclxuICBQYXBlcixcclxuICBtYWtlU3R5bGVzLFxyXG4gIEJ1dHRvbixcclxuICBMaXN0LFxyXG4gIExpc3RJdGVtLFxyXG4gIExpc3RJdGVtSWNvbixcclxuICBEaXZpZGVyLFxyXG4gIENvbnRhaW5lclxyXG59IGZyb20gXCJAbWF0ZXJpYWwtdWkvY29yZVwiO1xyXG5pbXBvcnQgbGVhcm5pbmdTdHlsZXMgZnJvbSBcIi4uLy4uLy4uL0RhdGEvbGVhcm5pbmdTdHlsZXNcIjtcclxuaW1wb3J0IEFycm93Rm9yd2FyZElvc1JvdW5kZWRJY29uIGZyb20gXCJAbWF0ZXJpYWwtdWkvaWNvbnMvQXJyb3dGb3J3YXJkSW9zUm91bmRlZFwiO1xyXG5pbXBvcnQgS2V5Ym9hcmRBcnJvd1JpZ2h0T3V0bGluZWRJY29uIGZyb20gXCJAbWF0ZXJpYWwtdWkvaWNvbnMvS2V5Ym9hcmRBcnJvd1JpZ2h0T3V0bGluZWRcIjtcclxuXHJcbmNvbnN0IHVzZVN0eWxlcyA9IG1ha2VTdHlsZXModGhlbWUgPT4gKHtcclxuICBpY29uOiB7XHJcbiAgICBtYXJnaW5SaWdodDogdGhlbWUuc3BhY2luZygyKVxyXG4gIH0sXHJcbiAgbGluazoge1xyXG4gICAgdGV4dERlY29yYXRpb246IFwibm9uZVwiXHJcbiAgfSxcclxuICBoZXJvQ29udGVudDoge1xyXG4gICAgYmFja2dyb3VuZENvbG9yOiB0aGVtZS5wYWxldHRlLmJhY2tncm91bmQucGFwZXIsXHJcbiAgICBwYWRkaW5nOiB0aGVtZS5zcGFjaW5nKDgsIDAsIDYpXHJcbiAgfSxcclxuICBoZXJvQnV0dG9uczoge1xyXG4gICAgbWFyZ2luOiB0aGVtZS5zcGFjaW5nKDQpXHJcbiAgfSxcclxuICBjYXJkR3JpZDoge1xyXG4gICAgcGFkZGluZ1RvcDogdGhlbWUuc3BhY2luZyg4KSxcclxuICAgIHBhZGRpbmdCb3R0b206IHRoZW1lLnNwYWNpbmcoOClcclxuICB9LFxyXG4gIGhhbmRsZUJ1dHRvbjoge1xyXG4gICAgbWFyZ2luOiB0aGVtZS5zcGFjaW5nKDQpLFxyXG4gICAgZmxvYXQ6IFwicmlnaHRcIlxyXG4gIH0sXHJcbiAgY2FyZDoge1xyXG4gICAgaGVpZ2h0OiBcIjEwMCVcIixcclxuICAgIGRpc3BsYXk6IFwiZmxleFwiLFxyXG4gICAgZmxleERpcmVjdGlvbjogXCJjb2x1bW5cIlxyXG4gIH0sXHJcbiAgY2FyZE1lZGlhOiB7XHJcbiAgICBwYWRkaW5nVG9wOiBcIjU2LjI1JVwiIC8vIDE2OjlcclxuICB9LFxyXG4gIGNhcmRDb250ZW50OiB7XHJcbiAgICBmbGV4R3JvdzogMVxyXG4gIH0sXHJcbiAgZm9vdGVyOiB7XHJcbiAgICBiYWNrZ3JvdW5kQ29sb3I6IHRoZW1lLnBhbGV0dGUuYmFja2dyb3VuZC5wYXBlcixcclxuICAgIHBhZGRpbmc6IHRoZW1lLnNwYWNpbmcoNilcclxuICB9LFxyXG4gIFRleHQ6IHtcclxuICAgIGRpc3BsYXk6IFwiYmxvY2tcIlxyXG4gIH1cclxufSkpO1xyXG5cclxuY29uc3QgaGFuZGxlU3VibWl0ID0gYXN5bmMgKGUsIHByb3BzKSA9PiB7XHJcbiAgZS5wcmV2ZW50RGVmYXVsdCgpO1xyXG5cclxuICBjb25zdCBjYXRlZ29yeSA9IHByb3BzLm1hdGNoLnBhcmFtcy5jYXRlZ29yeTtcclxuXHJcbiAgY29uc3QgbHNUeXBlID0gcHJvcHMubWF0Y2gucGFyYW1zLmxzX3R5cGU7XHJcblxyXG4gIGNvbnN0IGNvdXJzZSA9IHByb3BzLm1hdGNoLnBhcmFtcy5jb3Vyc2U7XHJcblxyXG4gIGNvbnN0IGxzQ29udGVudHMgPSBsZWFybmluZ1N0eWxlcy5maW5kKHN0eWxlID0+IGxzVHlwZSA9PT0gc3R5bGUudHlwZSlcclxuICAgIC5jb250ZW50cztcclxuXHJcbiAgY29uc3QgcGF0aCA9XHJcbiAgICBsc0NvbnRlbnRzLmluZGV4T2YoY2F0ZWdvcnkpICsgMSA8IGxzQ29udGVudHMubGVuZ3RoXHJcbiAgICAgID8gYC9jb3Vyc2UvJHtjb3Vyc2V9L2xzLyR7bHNUeXBlfS8ke1xyXG4gICAgICAgICAgbHNDb250ZW50c1tsc0NvbnRlbnRzLmluZGV4T2YoY2F0ZWdvcnkpICsgMV1cclxuICAgICAgICB9YFxyXG4gICAgICA6IGAvY291cnNlLyR7Y291cnNlfS9ob21lYDtcclxuXHJcbiAgY29uc29sZS5sb2coXCJWaWpheVwiKTtcclxuXHJcbiAgcHJvcHMuaGlzdG9yeS5wdXNoKHBhdGgpO1xyXG59O1xyXG5cclxuZXhwb3J0IGRlZmF1bHQgZnVuY3Rpb24gRGVmaW5pdGlvblZlcmJhbE92ZXJ2aWV3KHByb3BzKSB7XHJcbiAgY29uc3QgY2xhc3NlcyA9IHVzZVN0eWxlcygpO1xyXG4gIHJldHVybiAoXHJcbiAgICA8Zm9ybSBhdXRvQ29tcGxldGU9XCJvZmZcIiBub1ZhbGlkYXRlPlxyXG4gICAgICA8TGlzdD5cclxuICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PVwiaDRcIj4gUHJpbWl0aXZlIERhdGEgVHlwZXMgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImJvZHkxXCI+XHJcbiAgICAgICAgICAgIHtcIiBcIn1cclxuICAgICAgICAgICAgVGhlcmUgYXJlIGVpZ2h0IHByaW1pdGl2ZSBkYXRhdHlwZXMgc3VwcG9ydGVkIGJ5IEphdmEuIFByaW1pdGl2ZVxyXG4gICAgICAgICAgICBkYXRhdHlwZXMgYXJlIHByZWRlZmluZWQgYnkgdGhlIGxhbmd1YWdlIGFuZCBuYW1lZCBieSBhIGtleXdvcmQuIExldFxyXG4gICAgICAgICAgICB1cyBub3cgbG9vayBpbnRvIHRoZSBlaWdodCBwcmltaXRpdmUgZGF0YSB0eXBlcyBpbiBkZXRhaWwue1wiIFwifVxyXG4gICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgPExpc3RJdGVtSWNvbj5cclxuICAgICAgICAgICAgPEFycm93Rm9yd2FyZElvc1JvdW5kZWRJY29uIC8+XHJcbiAgICAgICAgICA8L0xpc3RJdGVtSWNvbj5cclxuICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJoNlwiPmJ5dGU8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICA8TGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgICA8S2V5Ym9hcmRBcnJvd1JpZ2h0T3V0bGluZWRJY29uIC8+XHJcbiAgICAgICAgICA8L0xpc3RJdGVtSWNvbj5cclxuICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJib2R5MVwiPlxyXG4gICAgICAgICAgICBCeXRlIGRhdGEgdHlwZSBpcyBhbiA4LWJpdCBzaWduZWQgdHdvJ3MgY29tcGxlbWVudCBpbnRlZ2VyXHJcbiAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICBcclxuICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICA8TGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgICA8QXJyb3dGb3J3YXJkSW9zUm91bmRlZEljb24gLz5cclxuICAgICAgICAgIDwvTGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImg2XCI+c2hvcnQ8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICA8TGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgICA8S2V5Ym9hcmRBcnJvd1JpZ2h0T3V0bGluZWRJY29uIC8+XHJcbiAgICAgICAgICA8L0xpc3RJdGVtSWNvbj5cclxuICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJib2R5MVwiPlxyXG4gICAgICAgICAgICBTaG9ydCBkYXRhIHR5cGUgaXMgYSAxNi1iaXQgc2lnbmVkIHR3bydzIGNvbXBsZW1lbnQgaW50ZWdlclxyXG4gICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICBcclxuICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICA8TGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgICA8QXJyb3dGb3J3YXJkSW9zUm91bmRlZEljb24gLz5cclxuICAgICAgICAgIDwvTGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImg2XCI+aW50PC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgPExpc3RJdGVtSWNvbj5cclxuICAgICAgICAgICAgPEtleWJvYXJkQXJyb3dSaWdodE91dGxpbmVkSWNvbiAvPlxyXG4gICAgICAgICAgPC9MaXN0SXRlbUljb24+XHJcbiAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PVwiYm9keTFcIj5cclxuICAgICAgICAgICAgSW50IGRhdGEgdHlwZSBpcyBhIDMyLWJpdCBzaWduZWQgdHdvJ3MgY29tcGxlbWVudCBpbnRlZ2VyLlxyXG4gICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgXHJcbiAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgPExpc3RJdGVtSWNvbj5cclxuICAgICAgICAgICAgPEFycm93Rm9yd2FyZElvc1JvdW5kZWRJY29uIC8+XHJcbiAgICAgICAgICA8L0xpc3RJdGVtSWNvbj5cclxuICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJoNlwiPmZsb2F0PC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgPExpc3RJdGVtSWNvbj5cclxuICAgICAgICAgICAgPEtleWJvYXJkQXJyb3dSaWdodE91dGxpbmVkSWNvbiAvPlxyXG4gICAgICAgICAgPC9MaXN0SXRlbUljb24+XHJcbiAgICAgICAgICA8VHlwb2dyYXBoeSB2YXJpYW50PVwiYm9keTFcIj5cclxuICAgICAgICAgICAgRmxvYXQgZGF0YSB0eXBlIGlzIGEgc2luZ2xlLXByZWNpc2lvbiAzMi1iaXQgSUVFRSA3NTQgZmxvYXRpbmcgcG9pbnRcclxuICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgXHJcbiAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgPExpc3RJdGVtSWNvbj5cclxuICAgICAgICAgICAgPEFycm93Rm9yd2FyZElvc1JvdW5kZWRJY29uIC8+XHJcbiAgICAgICAgICA8L0xpc3RJdGVtSWNvbj5cclxuICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJoNlwiPmRvdWJsZTwvVHlwb2dyYXBoeT5cclxuICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgIDxMaXN0SXRlbUljb24+XHJcbiAgICAgICAgICAgIDxLZXlib2FyZEFycm93UmlnaHRPdXRsaW5lZEljb24gLz5cclxuICAgICAgICAgIDwvTGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImJvZHkxXCI+XHJcbiAgICAgICAgICAgIGRvdWJsZSBkYXRhIHR5cGUgaXMgYSBkb3VibGUtcHJlY2lzaW9uIDY0LWJpdCBJRUVFIDc1NCBmbG9hdGluZ1xyXG4gICAgICAgICAgICBwb2ludFxyXG4gICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICBcclxuICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICA8TGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgICA8QXJyb3dGb3J3YXJkSW9zUm91bmRlZEljb24gLz5cclxuICAgICAgICAgIDwvTGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImg2XCI+Ym9vbGVhbjwvVHlwb2dyYXBoeT5cclxuICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgIDxMaXN0SXRlbUljb24+XHJcbiAgICAgICAgICAgIDxLZXlib2FyZEFycm93UmlnaHRPdXRsaW5lZEljb24gLz5cclxuICAgICAgICAgIDwvTGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImJvZHkxXCI+XHJcbiAgICAgICAgICAgIGJvb2xlYW4gZGF0YSB0eXBlIHJlcHJlc2VudHMgb25lIGJpdCBvZiBpbmZvcm1hdGlvblxyXG4gICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgXHJcbiAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgPExpc3RJdGVtSWNvbj5cclxuICAgICAgICAgICAgPEFycm93Rm9yd2FyZElvc1JvdW5kZWRJY29uIC8+XHJcbiAgICAgICAgICA8L0xpc3RJdGVtSWNvbj5cclxuICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJoNlwiPmNoYXI8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgPC9MaXN0SXRlbT5cclxuICAgICAgICA8TGlzdEl0ZW0+XHJcbiAgICAgICAgICA8TGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgICA8S2V5Ym9hcmRBcnJvd1JpZ2h0T3V0bGluZWRJY29uIC8+XHJcbiAgICAgICAgICA8L0xpc3RJdGVtSWNvbj5cclxuICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJib2R5MVwiPlxyXG4gICAgICAgICAgICBjaGFyIGRhdGEgdHlwZSBpcyBhIHNpbmdsZSAxNi1iaXQgVW5pY29kZSBjaGFyYWN0ZXJcclxuICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJoNFwiPiBSZWZlcmVuY2UgRGF0YXR5cGVzIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgIDxMaXN0SXRlbUljb24+XHJcbiAgICAgICAgICAgIDxLZXlib2FyZEFycm93UmlnaHRPdXRsaW5lZEljb24gLz5cclxuICAgICAgICAgIDwvTGlzdEl0ZW1JY29uPlxyXG4gICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImJvZHkxXCI+XHJcbiAgICAgICAgICAgIFJlZmVyZW5jZSB2YXJpYWJsZXMgYXJlIGNyZWF0ZWQgdXNpbmcgZGVmaW5lZCBjb25zdHJ1Y3RvcnMgb2YgdGhlXHJcbiAgICAgICAgICAgIGNsYXNzZXMuIFRoZXkgYXJlIHVzZWQgdG8gYWNjZXNzIG9iamVjdHMuIFRoZXNlIHZhcmlhYmxlcyBhcmVcclxuICAgICAgICAgICAgZGVjbGFyZWQgdG8gYmUgb2YgYSBzcGVjaWZpYyB0eXBlIHRoYXQgY2Fubm90IGJlIGNoYW5nZWQuIEZvclxyXG4gICAgICAgICAgICBleGFtcGxlLCBFbXBsb3llZSwgUHVwcHksIGV0Yy5cclxuICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICA8L0xpc3Q+XHJcbiAgICAgIDxCdXR0b25cclxuICAgICAgICB2YXJpYW50PVwiY29udGFpbmVkXCJcclxuICAgICAgICBjb2xvcj1cInByaW1hcnlcIlxyXG4gICAgICAgIGNsYXNzTmFtZT17Y2xhc3Nlcy5oYW5kbGVCdXR0b259XHJcbiAgICAgICAgb25DbGljaz17ZSA9PiB7XHJcbiAgICAgICAgICBoYW5kbGVTdWJtaXQoZSwgcHJvcHMpO1xyXG4gICAgICAgIH19XHJcbiAgICAgID5cclxuICAgICAgICBOZXh0XHJcbiAgICAgIDwvQnV0dG9uPlxyXG4gICAgPC9mb3JtPlxyXG4gICk7XHJcbn1cclxuIl0sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7QUFBQTtBQUNBO0FBV0E7QUFDQTtBQUNBO0FBRUE7QUFDQTtBQUNBO0FBREE7QUFHQTtBQUNBO0FBREE7QUFHQTtBQUNBO0FBQ0E7QUFGQTtBQUlBO0FBQ0E7QUFEQTtBQUdBO0FBQ0E7QUFDQTtBQUZBO0FBSUE7QUFDQTtBQUNBO0FBRkE7QUFJQTtBQUNBO0FBQ0E7QUFDQTtBQUhBO0FBS0E7QUFDQTtBQUNBO0FBRkE7QUFHQTtBQUNBO0FBREE7QUFHQTtBQUNBO0FBQ0E7QUFGQTtBQUlBO0FBQ0E7QUFEQTtBQXJDQTtBQUNBO0FBeUNBO0FBQUE7QUFDQTtBQUVBO0FBRUE7QUFFQTtBQUVBO0FBR0E7QUFPQTtBQUVBO0FBQ0E7QUFDQTtBQXZCQTtBQUFBO0FBQUE7QUFBQTtBQUNBO0FBdUJBO0FBQ0E7QUFDQTtBQUNBO0FBQUE7QUFBQTtBQUdBO0FBQUE7QUFHQTtBQUFBO0FBV0E7QUFBQTtBQU1BO0FBQUE7QUFTQTtBQUFBO0FBTUE7QUFBQTtBQVNBO0FBQUE7QUFNQTtBQUFBO0FBU0E7QUFBQTtBQU1BO0FBQUE7QUFTQTtBQUFBO0FBTUE7QUFBQTtBQVVBO0FBQUE7QUFNQTtBQUFBO0FBU0E7QUFBQTtBQU1BO0FBQUE7QUFLQTtBQUFBO0FBTUE7QUFBQTtBQVNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQU5BO0FBWUEiLCJzb3VyY2VSb290IjoiIn0=\n//# sourceURL=webpack-internal:///./React/Shared/Components/Course/LSMaterials/DefinitionVerbalOverview.js\n");
 
 /***/ }),
 
@@ -2677,7 +402,7 @@ function OverviewVerbal(props) {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-
+eval("//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9Db3Vyc2UvTFNNYXRlcmlhbHMvRGVmaW5pdGlvblZpc3VhbERldGFpbGVkLmpzLmpzIiwic291cmNlcyI6W10sIm1hcHBpbmdzIjoiIiwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///./React/Shared/Components/Course/LSMaterials/DefinitionVisualDetailed.js\n");
 
 /***/ }),
 
@@ -2688,7 +413,7 @@ function OverviewVerbal(props) {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-
+eval("//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9Db3Vyc2UvTFNNYXRlcmlhbHMvRGVmaW5pdGlvblZpc3VhbE92ZXJ2aWV3LmpzLmpzIiwic291cmNlcyI6W10sIm1hcHBpbmdzIjoiIiwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///./React/Shared/Components/Course/LSMaterials/DefinitionVisualOverview.js\n");
 
 /***/ }),
 
@@ -2700,117 +425,7 @@ function OverviewVerbal(props) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return OverviewVerbal; });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core */ "@material-ui/core");
-/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../Data/learningStyles */ "./React/Shared/Data/learningStyles.js");
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
-
-
-
-
-var useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["makeStyles"])(theme => ({
-  icon: {
-    marginRight: theme.spacing(2)
-  },
-  link: {
-    textDecoration: "none"
-  },
-  heroContent: {
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(8, 0, 6)
-  },
-  heroButtons: {
-    margin: theme.spacing(4)
-  },
-  cardGrid: {
-    paddingTop: theme.spacing(8),
-    paddingBottom: theme.spacing(8)
-  },
-  handleButton: {
-    margin: theme.spacing(4),
-    float: "right"
-  },
-  card: {
-    height: "100%",
-    display: "flex",
-    flexDirection: "column"
-  },
-  cardMedia: {
-    paddingTop: "56.25%" // 16:9
-
-  },
-  cardContent: {
-    flexGrow: 1
-  },
-  footer: {
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(6)
-  },
-  Text: {
-    display: "block"
-  }
-}));
-
-var handleSubmit = /*#__PURE__*/function () {
-  var _ref = _asyncToGenerator(function* (e, props) {
-    e.preventDefault();
-    var category = props.match.params.category;
-    var lsType = props.match.params.ls_type;
-    var course = props.match.params.course;
-    var lsContents = _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__["default"].find(style => lsType === style.type).contents;
-    var path = lsContents.indexOf(category) + 1 < lsContents.length ? "/course/".concat(course, "/ls/").concat(lsType, "/").concat(lsContents[lsContents.indexOf(category) + 1]) : "/course/".concat(course, "/home");
-    props.history.push(path);
-  });
-
-  return function handleSubmit(_x, _x2) {
-    return _ref.apply(this, arguments);
-  };
-}();
-
-function OverviewVerbal(props) {
-  var classes = useStyles();
-  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("form", {
-    autoComplete: "off",
-    noValidate: true
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["List"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "There are two data types available in Java")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "h6"
-  }, "Primitive Data Types")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "* byte")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "* short")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "* int")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "* long")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "* float")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "* double")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "* boolean")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "* char")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "h6"
-  }, "Reference/Object Data Types")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "* Reference variables are created using defined constructors of the classes. They are used to access objects. These variables are declared to be of a specific type that cannot be changed."))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Button"], {
-    variant: "contained",
-    color: "primary",
-    className: classes.handleButton,
-    onClick: e => {
-      handleSubmit(e, props);
-    }
-  }, "Next"));
-}
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"default\", function() { return OverviewVerbal; });\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ \"react\");\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core */ \"@material-ui/core\");\n/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__);\n/* harmony import */ var _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../Data/learningStyles */ \"./React/Shared/Data/learningStyles.js\");\nfunction asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }\n\nfunction _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"next\", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"throw\", err); } _next(undefined); }); }; }\n\n\n\n\nvar useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"makeStyles\"])(theme => ({\n  icon: {\n    marginRight: theme.spacing(2)\n  },\n  link: {\n    textDecoration: \"none\"\n  },\n  heroContent: {\n    backgroundColor: theme.palette.background.paper,\n    padding: theme.spacing(8, 0, 6)\n  },\n  heroButtons: {\n    margin: theme.spacing(4)\n  },\n  cardGrid: {\n    paddingTop: theme.spacing(8),\n    paddingBottom: theme.spacing(8)\n  },\n  handleButton: {\n    margin: theme.spacing(4),\n    float: \"right\"\n  },\n  card: {\n    height: \"100%\",\n    display: \"flex\",\n    flexDirection: \"column\"\n  },\n  cardMedia: {\n    paddingTop: \"56.25%\" // 16:9\n\n  },\n  cardContent: {\n    flexGrow: 1\n  },\n  footer: {\n    backgroundColor: theme.palette.background.paper,\n    padding: theme.spacing(6)\n  },\n  Text: {\n    display: \"block\"\n  }\n}));\n\nvar handleSubmit = /*#__PURE__*/function () {\n  var _ref = _asyncToGenerator(function* (e, props) {\n    e.preventDefault();\n    var category = props.match.params.category;\n    var lsType = props.match.params.ls_type;\n    var course = props.match.params.course;\n    var lsContents = _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__[\"default\"].find(style => lsType === style.type).contents;\n    var path = lsContents.indexOf(category) + 1 < lsContents.length ? \"/course/\".concat(course, \"/ls/\").concat(lsType, \"/\").concat(lsContents[lsContents.indexOf(category) + 1]) : \"/course/\".concat(course, \"/home\");\n    props.history.push(path);\n  });\n\n  return function handleSubmit(_x, _x2) {\n    return _ref.apply(this, arguments);\n  };\n}();\n\nfunction OverviewVerbal(props) {\n  var classes = useStyles();\n  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(\"form\", {\n    autoComplete: \"off\",\n    noValidate: true\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"List\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"There are two data types available in Java\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h6\"\n  }, \"Primitive Data Types\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"* byte\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"* short\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"* int\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"* long\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"* float\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"* double\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"* boolean\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"* char\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"h6\"\n  }, \"Reference/Object Data Types\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body1\"\n  }, \"* Reference variables are created using defined constructors of the classes. They are used to access objects. These variables are declared to be of a specific type that cannot be changed.\"))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Button\"], {\n    variant: \"contained\",\n    color: \"primary\",\n    className: classes.handleButton,\n    onClick: e => {\n      handleSubmit(e, props);\n    }\n  }, \"Next\"));\n}//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9Db3Vyc2UvTFNNYXRlcmlhbHMvT3ZlcnZpZXdWZXJiYWwuanMuanMiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9Db3Vyc2UvTFNNYXRlcmlhbHMvT3ZlcnZpZXdWZXJiYWwuanM/MWFhMyJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgUmVhY3QsIHsgdXNlU3RhdGUsIHVzZUVmZmVjdCB9IGZyb20gXCJyZWFjdFwiO1xyXG5pbXBvcnQge1xyXG4gIFR5cG9ncmFwaHksXHJcbiAgUGFwZXIsXHJcbiAgbWFrZVN0eWxlcyxcclxuICBCdXR0b24sXHJcbiAgTGlzdCxcclxuICBMaXN0SXRlbSxcclxuICBEaXZpZGVyLFxyXG4gIENvbnRhaW5lclxyXG59IGZyb20gXCJAbWF0ZXJpYWwtdWkvY29yZVwiO1xyXG5pbXBvcnQgbGVhcm5pbmdTdHlsZXMgZnJvbSBcIi4uLy4uLy4uL0RhdGEvbGVhcm5pbmdTdHlsZXNcIjtcclxuXHJcbmNvbnN0IHVzZVN0eWxlcyA9IG1ha2VTdHlsZXModGhlbWUgPT4gKHtcclxuICBpY29uOiB7XHJcbiAgICBtYXJnaW5SaWdodDogdGhlbWUuc3BhY2luZygyKVxyXG4gIH0sXHJcbiAgbGluazoge1xyXG4gICAgdGV4dERlY29yYXRpb246IFwibm9uZVwiXHJcbiAgfSxcclxuICBoZXJvQ29udGVudDoge1xyXG4gICAgYmFja2dyb3VuZENvbG9yOiB0aGVtZS5wYWxldHRlLmJhY2tncm91bmQucGFwZXIsXHJcbiAgICBwYWRkaW5nOiB0aGVtZS5zcGFjaW5nKDgsIDAsIDYpXHJcbiAgfSxcclxuICBoZXJvQnV0dG9uczoge1xyXG4gICAgbWFyZ2luOiB0aGVtZS5zcGFjaW5nKDQpXHJcbiAgfSxcclxuICBjYXJkR3JpZDoge1xyXG4gICAgcGFkZGluZ1RvcDogdGhlbWUuc3BhY2luZyg4KSxcclxuICAgIHBhZGRpbmdCb3R0b206IHRoZW1lLnNwYWNpbmcoOClcclxuICB9LFxyXG4gIGhhbmRsZUJ1dHRvbjoge1xyXG4gICAgbWFyZ2luOiB0aGVtZS5zcGFjaW5nKDQpLFxyXG4gICAgZmxvYXQ6IFwicmlnaHRcIlxyXG4gIH0sXHJcbiAgY2FyZDoge1xyXG4gICAgaGVpZ2h0OiBcIjEwMCVcIixcclxuICAgIGRpc3BsYXk6IFwiZmxleFwiLFxyXG4gICAgZmxleERpcmVjdGlvbjogXCJjb2x1bW5cIlxyXG4gIH0sXHJcbiAgY2FyZE1lZGlhOiB7XHJcbiAgICBwYWRkaW5nVG9wOiBcIjU2LjI1JVwiIC8vIDE2OjlcclxuICB9LFxyXG4gIGNhcmRDb250ZW50OiB7XHJcbiAgICBmbGV4R3JvdzogMVxyXG4gIH0sXHJcbiAgZm9vdGVyOiB7XHJcbiAgICBiYWNrZ3JvdW5kQ29sb3I6IHRoZW1lLnBhbGV0dGUuYmFja2dyb3VuZC5wYXBlcixcclxuICAgIHBhZGRpbmc6IHRoZW1lLnNwYWNpbmcoNilcclxuICB9LFxyXG4gIFRleHQ6IHtcclxuICAgIGRpc3BsYXk6IFwiYmxvY2tcIlxyXG4gIH1cclxufSkpO1xyXG5cclxuY29uc3QgaGFuZGxlU3VibWl0ID0gYXN5bmMgKGUsIHByb3BzKSA9PiB7XHJcbiAgZS5wcmV2ZW50RGVmYXVsdCgpO1xyXG5cclxuICBjb25zdCBjYXRlZ29yeSA9IHByb3BzLm1hdGNoLnBhcmFtcy5jYXRlZ29yeTtcclxuXHJcbiAgY29uc3QgbHNUeXBlID0gcHJvcHMubWF0Y2gucGFyYW1zLmxzX3R5cGU7XHJcblxyXG4gIGNvbnN0IGNvdXJzZSA9IHByb3BzLm1hdGNoLnBhcmFtcy5jb3Vyc2U7XHJcblxyXG4gIGNvbnN0IGxzQ29udGVudHMgPSBsZWFybmluZ1N0eWxlcy5maW5kKHN0eWxlID0+IGxzVHlwZSA9PT0gc3R5bGUudHlwZSlcclxuICAgIC5jb250ZW50cztcclxuXHJcbiAgY29uc3QgcGF0aCA9XHJcbiAgICBsc0NvbnRlbnRzLmluZGV4T2YoY2F0ZWdvcnkpICsgMSA8IGxzQ29udGVudHMubGVuZ3RoXHJcbiAgICAgID8gYC9jb3Vyc2UvJHtjb3Vyc2V9L2xzLyR7bHNUeXBlfS8ke1xyXG4gICAgICAgICAgbHNDb250ZW50c1tsc0NvbnRlbnRzLmluZGV4T2YoY2F0ZWdvcnkpICsgMV1cclxuICAgICAgICB9YFxyXG4gICAgICA6IGAvY291cnNlLyR7Y291cnNlfS9ob21lYDtcclxuXHJcbiAgcHJvcHMuaGlzdG9yeS5wdXNoKHBhdGgpO1xyXG59O1xyXG5cclxuZXhwb3J0IGRlZmF1bHQgZnVuY3Rpb24gT3ZlcnZpZXdWZXJiYWwocHJvcHMpIHtcclxuICBjb25zdCBjbGFzc2VzID0gdXNlU3R5bGVzKCk7XHJcbiAgcmV0dXJuIChcclxuICAgIDxmb3JtIGF1dG9Db21wbGV0ZT1cIm9mZlwiIG5vVmFsaWRhdGU+XHJcbiAgICAgIDxMaXN0PlxyXG4gICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJib2R5MVwiPlxyXG4gICAgICAgICAgICBUaGVyZSBhcmUgdHdvIGRhdGEgdHlwZXMgYXZhaWxhYmxlIGluIEphdmFcclxuICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJoNlwiPlByaW1pdGl2ZSBEYXRhIFR5cGVzPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImJvZHkxXCI+KiBieXRlPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImJvZHkxXCI+KiBzaG9ydDwvVHlwb2dyYXBoeT5cclxuICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJib2R5MVwiPiogaW50PC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImJvZHkxXCI+KiBsb25nPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImJvZHkxXCI+KiBmbG9hdDwvVHlwb2dyYXBoeT5cclxuICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJib2R5MVwiPiogZG91YmxlPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImJvZHkxXCI+KiBib29sZWFuPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImJvZHkxXCI+KiBjaGFyPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImg2XCI+UmVmZXJlbmNlL09iamVjdCBEYXRhIFR5cGVzPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgIDwvTGlzdEl0ZW0+XHJcbiAgICAgICAgPExpc3RJdGVtPlxyXG4gICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImJvZHkxXCI+XHJcbiAgICAgICAgICAgICogUmVmZXJlbmNlIHZhcmlhYmxlcyBhcmUgY3JlYXRlZCB1c2luZyBkZWZpbmVkIGNvbnN0cnVjdG9ycyBvZiB0aGVcclxuICAgICAgICAgICAgY2xhc3Nlcy4gVGhleSBhcmUgdXNlZCB0byBhY2Nlc3Mgb2JqZWN0cy4gVGhlc2UgdmFyaWFibGVzIGFyZVxyXG4gICAgICAgICAgICBkZWNsYXJlZCB0byBiZSBvZiBhIHNwZWNpZmljIHR5cGUgdGhhdCBjYW5ub3QgYmUgY2hhbmdlZC5cclxuICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICA8L0xpc3Q+XHJcbiAgICAgIDxCdXR0b25cclxuICAgICAgICB2YXJpYW50PVwiY29udGFpbmVkXCJcclxuICAgICAgICBjb2xvcj1cInByaW1hcnlcIlxyXG4gICAgICAgIGNsYXNzTmFtZT17Y2xhc3Nlcy5oYW5kbGVCdXR0b259XHJcbiAgICAgICAgb25DbGljaz17ZSA9PiB7XHJcbiAgICAgICAgICBoYW5kbGVTdWJtaXQoZSwgcHJvcHMpO1xyXG4gICAgICAgIH19XHJcbiAgICAgID5cclxuICAgICAgICBOZXh0XHJcbiAgICAgIDwvQnV0dG9uPlxyXG4gICAgPC9mb3JtPlxyXG4gICk7XHJcbn1cclxuIl0sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7OztBQUFBO0FBQ0E7QUFVQTtBQUVBO0FBQ0E7QUFDQTtBQURBO0FBR0E7QUFDQTtBQURBO0FBR0E7QUFDQTtBQUNBO0FBRkE7QUFJQTtBQUNBO0FBREE7QUFHQTtBQUNBO0FBQ0E7QUFGQTtBQUlBO0FBQ0E7QUFDQTtBQUZBO0FBSUE7QUFDQTtBQUNBO0FBQ0E7QUFIQTtBQUtBO0FBQ0E7QUFDQTtBQUZBO0FBR0E7QUFDQTtBQURBO0FBR0E7QUFDQTtBQUNBO0FBRkE7QUFJQTtBQUNBO0FBREE7QUFyQ0E7QUFDQTtBQXlDQTtBQUFBO0FBQ0E7QUFFQTtBQUVBO0FBRUE7QUFFQTtBQUdBO0FBT0E7QUFDQTtBQUNBO0FBckJBO0FBQUE7QUFBQTtBQUFBO0FBQ0E7QUFxQkE7QUFDQTtBQUNBO0FBQ0E7QUFBQTtBQUFBO0FBR0E7QUFBQTtBQUtBO0FBQUE7QUFHQTtBQUFBO0FBR0E7QUFBQTtBQUdBO0FBQUE7QUFHQTtBQUFBO0FBR0E7QUFBQTtBQUdBO0FBQUE7QUFHQTtBQUFBO0FBR0E7QUFBQTtBQUdBO0FBQUE7QUFHQTtBQUFBO0FBUUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBTkE7QUFZQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///./React/Shared/Components/Course/LSMaterials/OverviewVerbal.js\n");
 
 /***/ }),
 
@@ -2822,111 +437,7 @@ function OverviewVerbal(props) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return OverviewVerbal; });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core */ "@material-ui/core");
-/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../Data/learningStyles */ "./React/Shared/Data/learningStyles.js");
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
-
-
-
-
-var useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["makeStyles"])(theme => ({
-  icon: {
-    marginRight: theme.spacing(2)
-  },
-  link: {
-    textDecoration: "none"
-  },
-  heroContent: {
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(8, 0, 6)
-  },
-  heroButtons: {
-    margin: theme.spacing(4)
-  },
-  cardGrid: {
-    paddingTop: theme.spacing(8),
-    paddingBottom: theme.spacing(8)
-  },
-  handleButton: {
-    margin: theme.spacing(4),
-    float: "right"
-  },
-  card: {
-    height: "100%",
-    display: "flex",
-    flexDirection: "column"
-  },
-  cardMedia: {
-    paddingTop: "56.25%" // 16:9
-
-  },
-  cardContent: {
-    flexGrow: 1
-  },
-  footer: {
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(6)
-  },
-  Text: {
-    display: "block"
-  }
-}));
-
-var handleSubmit = /*#__PURE__*/function () {
-  var _ref = _asyncToGenerator(function* (e, props) {
-    e.preventDefault();
-    var category = props.match.params.category;
-    var lsType = props.match.params.ls_type;
-    var course = props.match.params.course;
-    var lsContents = _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__["default"].find(style => lsType === style.type).contents;
-    var path = lsContents.indexOf(category) + 1 < lsContents.length ? "/course/".concat(course, "/ls/").concat(lsType, "/").concat(lsContents[lsContents.indexOf(category) + 1]) : "/course/".concat(course, "/home");
-    props.history.push(path);
-  });
-
-  return function handleSubmit(_x, _x2) {
-    return _ref.apply(this, arguments);
-  };
-}();
-
-function OverviewVerbal(props) {
-  var classes = useStyles();
-  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Container"], {
-    maxWidth: "sm"
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("form", {
-    autoComplete: "off",
-    noValidate: true
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["List"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Card"], {
-    className: classes.root
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["CardActionArea"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["CardMedia"], {
-    component: "img",
-    alt: "Contemplative Reptile" // height="250"
-    ,
-    image: "https://1.bp.blogspot.com/-E_tUghZLenM/XW_qJ7IEg4I/AAAAAAAAC7I/NInngU0p89gCgpn1hdlaETa1zC4QvE6_ACLcBGAs/s1600/java-data-types.png",
-    title: "Variables"
-  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["CardContent"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    gutterBottom: true,
-    variant: "h5",
-    component: "h2"
-  }, "Java Variables"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body2",
-    color: "textSecondary",
-    component: "p"
-  }, "The Above Diagram Shows the classification of variables in Java")))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Button"], {
-    variant: "contained",
-    color: "primary",
-    className: classes.handleButton,
-    onClick: e => {
-      handleSubmit(e, props);
-    }
-  }, "Next")));
-}
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"default\", function() { return OverviewVerbal; });\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ \"react\");\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core */ \"@material-ui/core\");\n/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__);\n/* harmony import */ var _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../Data/learningStyles */ \"./React/Shared/Data/learningStyles.js\");\nfunction asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }\n\nfunction _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"next\", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"throw\", err); } _next(undefined); }); }; }\n\n\n\n\nvar useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"makeStyles\"])(theme => ({\n  icon: {\n    marginRight: theme.spacing(2)\n  },\n  link: {\n    textDecoration: \"none\"\n  },\n  heroContent: {\n    backgroundColor: theme.palette.background.paper,\n    padding: theme.spacing(8, 0, 6)\n  },\n  heroButtons: {\n    margin: theme.spacing(4)\n  },\n  cardGrid: {\n    paddingTop: theme.spacing(8),\n    paddingBottom: theme.spacing(8)\n  },\n  handleButton: {\n    margin: theme.spacing(4),\n    float: \"right\"\n  },\n  card: {\n    height: \"100%\",\n    display: \"flex\",\n    flexDirection: \"column\"\n  },\n  cardMedia: {\n    paddingTop: \"56.25%\" // 16:9\n\n  },\n  cardContent: {\n    flexGrow: 1\n  },\n  footer: {\n    backgroundColor: theme.palette.background.paper,\n    padding: theme.spacing(6)\n  },\n  Text: {\n    display: \"block\"\n  }\n}));\n\nvar handleSubmit = /*#__PURE__*/function () {\n  var _ref = _asyncToGenerator(function* (e, props) {\n    e.preventDefault();\n    var category = props.match.params.category;\n    var lsType = props.match.params.ls_type;\n    var course = props.match.params.course;\n    var lsContents = _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__[\"default\"].find(style => lsType === style.type).contents;\n    var path = lsContents.indexOf(category) + 1 < lsContents.length ? \"/course/\".concat(course, \"/ls/\").concat(lsType, \"/\").concat(lsContents[lsContents.indexOf(category) + 1]) : \"/course/\".concat(course, \"/home\");\n    props.history.push(path);\n  });\n\n  return function handleSubmit(_x, _x2) {\n    return _ref.apply(this, arguments);\n  };\n}();\n\nfunction OverviewVerbal(props) {\n  var classes = useStyles();\n  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Container\"], {\n    maxWidth: \"sm\"\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(\"form\", {\n    autoComplete: \"off\",\n    noValidate: true\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"List\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"ListItem\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Card\"], {\n    className: classes.root\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"CardActionArea\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"CardMedia\"], {\n    component: \"img\",\n    alt: \"Contemplative Reptile\" // height=\"250\"\n    ,\n    image: \"https://1.bp.blogspot.com/-E_tUghZLenM/XW_qJ7IEg4I/AAAAAAAAC7I/NInngU0p89gCgpn1hdlaETa1zC4QvE6_ACLcBGAs/s1600/java-data-types.png\",\n    title: \"Variables\"\n  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"CardContent\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    gutterBottom: true,\n    variant: \"h5\",\n    component: \"h2\"\n  }, \"Java Variables\"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Typography\"], {\n    variant: \"body2\",\n    color: \"textSecondary\",\n    component: \"p\"\n  }, \"The Above Diagram Shows the classification of variables in Java\")))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__[\"Button\"], {\n    variant: \"contained\",\n    color: \"primary\",\n    className: classes.handleButton,\n    onClick: e => {\n      handleSubmit(e, props);\n    }\n  }, \"Next\")));\n}//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9Db3Vyc2UvTFNNYXRlcmlhbHMvT3ZlcnZpZXdWaXN1YWwuanMuanMiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9Db3Vyc2UvTFNNYXRlcmlhbHMvT3ZlcnZpZXdWaXN1YWwuanM/Y2U5YyJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgUmVhY3QsIHsgdXNlU3RhdGUsIHVzZUVmZmVjdCB9IGZyb20gXCJyZWFjdFwiO1xyXG5pbXBvcnQge1xyXG4gIFR5cG9ncmFwaHksXHJcbiAgbWFrZVN0eWxlcyxcclxuICBDYXJkLFxyXG4gIENhcmRBY3Rpb25BcmVhLFxyXG4gIENhcmRNZWRpYSxcclxuICBDYXJkQ29udGVudCxcclxuICBCdXR0b24sXHJcbiAgTGlzdCxcclxuICBMaXN0SXRlbSxcclxuICBDb250YWluZXJcclxufSBmcm9tIFwiQG1hdGVyaWFsLXVpL2NvcmVcIjtcclxuaW1wb3J0IGxlYXJuaW5nU3R5bGVzIGZyb20gXCIuLi8uLi8uLi9EYXRhL2xlYXJuaW5nU3R5bGVzXCI7XHJcblxyXG5jb25zdCB1c2VTdHlsZXMgPSBtYWtlU3R5bGVzKHRoZW1lID0+ICh7XHJcbiAgaWNvbjoge1xyXG4gICAgbWFyZ2luUmlnaHQ6IHRoZW1lLnNwYWNpbmcoMilcclxuICB9LFxyXG4gIGxpbms6IHtcclxuICAgIHRleHREZWNvcmF0aW9uOiBcIm5vbmVcIlxyXG4gIH0sXHJcbiAgaGVyb0NvbnRlbnQ6IHtcclxuICAgIGJhY2tncm91bmRDb2xvcjogdGhlbWUucGFsZXR0ZS5iYWNrZ3JvdW5kLnBhcGVyLFxyXG4gICAgcGFkZGluZzogdGhlbWUuc3BhY2luZyg4LCAwLCA2KVxyXG4gIH0sXHJcbiAgaGVyb0J1dHRvbnM6IHtcclxuICAgIG1hcmdpbjogdGhlbWUuc3BhY2luZyg0KVxyXG4gIH0sXHJcbiAgY2FyZEdyaWQ6IHtcclxuICAgIHBhZGRpbmdUb3A6IHRoZW1lLnNwYWNpbmcoOCksXHJcbiAgICBwYWRkaW5nQm90dG9tOiB0aGVtZS5zcGFjaW5nKDgpXHJcbiAgfSxcclxuICBoYW5kbGVCdXR0b246IHtcclxuICAgIG1hcmdpbjogdGhlbWUuc3BhY2luZyg0KSxcclxuICAgIGZsb2F0OiBcInJpZ2h0XCJcclxuICB9LFxyXG4gIGNhcmQ6IHtcclxuICAgIGhlaWdodDogXCIxMDAlXCIsXHJcbiAgICBkaXNwbGF5OiBcImZsZXhcIixcclxuICAgIGZsZXhEaXJlY3Rpb246IFwiY29sdW1uXCJcclxuICB9LFxyXG4gIGNhcmRNZWRpYToge1xyXG4gICAgcGFkZGluZ1RvcDogXCI1Ni4yNSVcIiAvLyAxNjo5XHJcbiAgfSxcclxuICBjYXJkQ29udGVudDoge1xyXG4gICAgZmxleEdyb3c6IDFcclxuICB9LFxyXG4gIGZvb3Rlcjoge1xyXG4gICAgYmFja2dyb3VuZENvbG9yOiB0aGVtZS5wYWxldHRlLmJhY2tncm91bmQucGFwZXIsXHJcbiAgICBwYWRkaW5nOiB0aGVtZS5zcGFjaW5nKDYpXHJcbiAgfSxcclxuICBUZXh0OiB7XHJcbiAgICBkaXNwbGF5OiBcImJsb2NrXCJcclxuICB9XHJcbn0pKTtcclxuXHJcbmNvbnN0IGhhbmRsZVN1Ym1pdCA9IGFzeW5jIChlLCBwcm9wcykgPT4ge1xyXG4gIGUucHJldmVudERlZmF1bHQoKTtcclxuXHJcbiAgY29uc3QgY2F0ZWdvcnkgPSBwcm9wcy5tYXRjaC5wYXJhbXMuY2F0ZWdvcnk7XHJcblxyXG4gIGNvbnN0IGxzVHlwZSA9IHByb3BzLm1hdGNoLnBhcmFtcy5sc190eXBlO1xyXG5cclxuICBjb25zdCBjb3Vyc2UgPSBwcm9wcy5tYXRjaC5wYXJhbXMuY291cnNlO1xyXG5cclxuICBjb25zdCBsc0NvbnRlbnRzID0gbGVhcm5pbmdTdHlsZXMuZmluZChzdHlsZSA9PiBsc1R5cGUgPT09IHN0eWxlLnR5cGUpXHJcbiAgICAuY29udGVudHM7XHJcblxyXG4gIGNvbnN0IHBhdGggPVxyXG4gICAgbHNDb250ZW50cy5pbmRleE9mKGNhdGVnb3J5KSArIDEgPCBsc0NvbnRlbnRzLmxlbmd0aFxyXG4gICAgICA/IGAvY291cnNlLyR7Y291cnNlfS9scy8ke2xzVHlwZX0vJHtcclxuICAgICAgICAgIGxzQ29udGVudHNbbHNDb250ZW50cy5pbmRleE9mKGNhdGVnb3J5KSArIDFdXHJcbiAgICAgICAgfWBcclxuICAgICAgOiBgL2NvdXJzZS8ke2NvdXJzZX0vaG9tZWA7XHJcblxyXG4gIHByb3BzLmhpc3RvcnkucHVzaChwYXRoKTtcclxufTtcclxuXHJcbmV4cG9ydCBkZWZhdWx0IGZ1bmN0aW9uIE92ZXJ2aWV3VmVyYmFsKHByb3BzKSB7XHJcbiAgY29uc3QgY2xhc3NlcyA9IHVzZVN0eWxlcygpO1xyXG4gIHJldHVybiAoXHJcbiAgICA8Q29udGFpbmVyIG1heFdpZHRoPVwic21cIj5cclxuICAgICAgPGZvcm0gYXV0b0NvbXBsZXRlPVwib2ZmXCIgbm9WYWxpZGF0ZT5cclxuICAgICAgICA8TGlzdD5cclxuICAgICAgICAgIDxMaXN0SXRlbT5cclxuICAgICAgICAgICAgPENhcmQgY2xhc3NOYW1lPXtjbGFzc2VzLnJvb3R9PlxyXG4gICAgICAgICAgICAgIDxDYXJkQWN0aW9uQXJlYT5cclxuICAgICAgICAgICAgICAgIDxDYXJkTWVkaWFcclxuICAgICAgICAgICAgICAgICAgY29tcG9uZW50PVwiaW1nXCJcclxuICAgICAgICAgICAgICAgICAgYWx0PVwiQ29udGVtcGxhdGl2ZSBSZXB0aWxlXCJcclxuICAgICAgICAgICAgICAgICAgLy8gaGVpZ2h0PVwiMjUwXCJcclxuICAgICAgICAgICAgICAgICAgaW1hZ2U9XCJodHRwczovLzEuYnAuYmxvZ3Nwb3QuY29tLy1FX3RVZ2haTGVuTS9YV19xSjdJRWc0SS9BQUFBQUFBQUM3SS9OSW5uZ1UwcDg5Z0NncG4xaGRsYUVUYTF6QzRRdkU2X0FDTGNCR0FzL3MxNjAwL2phdmEtZGF0YS10eXBlcy5wbmdcIlxyXG4gICAgICAgICAgICAgICAgICB0aXRsZT1cIlZhcmlhYmxlc1wiXHJcbiAgICAgICAgICAgICAgICAvPlxyXG4gICAgICAgICAgICAgICAgPENhcmRDb250ZW50PlxyXG4gICAgICAgICAgICAgICAgICA8VHlwb2dyYXBoeSBndXR0ZXJCb3R0b20gdmFyaWFudD1cImg1XCIgY29tcG9uZW50PVwiaDJcIj5cclxuICAgICAgICAgICAgICAgICAgICBKYXZhIFZhcmlhYmxlc1xyXG4gICAgICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5XHJcbiAgICAgICAgICAgICAgICAgICAgdmFyaWFudD1cImJvZHkyXCJcclxuICAgICAgICAgICAgICAgICAgICBjb2xvcj1cInRleHRTZWNvbmRhcnlcIlxyXG4gICAgICAgICAgICAgICAgICAgIGNvbXBvbmVudD1cInBcIlxyXG4gICAgICAgICAgICAgICAgICA+XHJcbiAgICAgICAgICAgICAgICAgICAgVGhlIEFib3ZlIERpYWdyYW0gU2hvd3MgdGhlIGNsYXNzaWZpY2F0aW9uIG9mIHZhcmlhYmxlcyBpblxyXG4gICAgICAgICAgICAgICAgICAgIEphdmFcclxuICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgPC9DYXJkQ29udGVudD5cclxuICAgICAgICAgICAgICA8L0NhcmRBY3Rpb25BcmVhPlxyXG4gICAgICAgICAgICA8L0NhcmQ+XHJcbiAgICAgICAgICA8L0xpc3RJdGVtPlxyXG4gICAgICAgIDwvTGlzdD5cclxuXHJcbiAgICAgICAgPEJ1dHRvblxyXG4gICAgICAgICAgdmFyaWFudD1cImNvbnRhaW5lZFwiXHJcbiAgICAgICAgICBjb2xvcj1cInByaW1hcnlcIlxyXG4gICAgICAgICAgY2xhc3NOYW1lPXtjbGFzc2VzLmhhbmRsZUJ1dHRvbn1cclxuICAgICAgICAgIG9uQ2xpY2s9e2UgPT4ge1xyXG4gICAgICAgICAgICBoYW5kbGVTdWJtaXQoZSwgcHJvcHMpO1xyXG4gICAgICAgICAgfX1cclxuICAgICAgICA+XHJcbiAgICAgICAgICBOZXh0XHJcbiAgICAgICAgPC9CdXR0b24+XHJcbiAgICAgIDwvZm9ybT5cclxuICAgIDwvQ29udGFpbmVyPlxyXG4gICk7XHJcbn1cclxuIl0sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7OztBQUFBO0FBQ0E7QUFZQTtBQUVBO0FBQ0E7QUFDQTtBQURBO0FBR0E7QUFDQTtBQURBO0FBR0E7QUFDQTtBQUNBO0FBRkE7QUFJQTtBQUNBO0FBREE7QUFHQTtBQUNBO0FBQ0E7QUFGQTtBQUlBO0FBQ0E7QUFDQTtBQUZBO0FBSUE7QUFDQTtBQUNBO0FBQ0E7QUFIQTtBQUtBO0FBQ0E7QUFDQTtBQUZBO0FBR0E7QUFDQTtBQURBO0FBR0E7QUFDQTtBQUNBO0FBRkE7QUFJQTtBQUNBO0FBREE7QUFyQ0E7QUFDQTtBQXlDQTtBQUFBO0FBQ0E7QUFFQTtBQUVBO0FBRUE7QUFFQTtBQUdBO0FBT0E7QUFDQTtBQUNBO0FBckJBO0FBQUE7QUFBQTtBQUFBO0FBQ0E7QUFxQkE7QUFDQTtBQUNBO0FBQ0E7QUFBQTtBQUNBO0FBQUE7QUFBQTtBQUdBO0FBQUE7QUFHQTtBQUNBO0FBRkE7QUFJQTtBQUNBO0FBTEE7QUFRQTtBQUFBO0FBQUE7QUFBQTtBQUlBO0FBQ0E7QUFDQTtBQUhBO0FBZUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBTkE7QUFhQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///./React/Shared/Components/Course/LSMaterials/OverviewVisual.js\n");
 
 /***/ }),
 
@@ -2937,7 +448,7 @@ function OverviewVerbal(props) {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-
+eval("//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9Db3Vyc2UvTFNNYXRlcmlhbHMvU3VtbWFyeVZlcmJhbC5qcy5qcyIsInNvdXJjZXMiOltdLCJtYXBwaW5ncyI6IiIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///./React/Shared/Components/Course/LSMaterials/SummaryVerbal.js\n");
 
 /***/ }),
 
@@ -2948,7 +459,7 @@ function OverviewVerbal(props) {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-
+eval("//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9Db3Vyc2UvTFNNYXRlcmlhbHMvU3VtbWFyeVZpc3VhbC5qcy5qcyIsInNvdXJjZXMiOltdLCJtYXBwaW5ncyI6IiIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///./React/Shared/Components/Course/LSMaterials/SummaryVisual.js\n");
 
 /***/ }),
 
@@ -2960,94 +471,7 @@ function OverviewVerbal(props) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Page; });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _Data_courses__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../Data/courses */ "./React/Shared/Data/courses.js");
-/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @material-ui/core */ "@material-ui/core");
-/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _Data_categories__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../Data/categories */ "./React/Shared/Data/categories.js");
-
-
-
-
-var useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["makeStyles"])(theme => ({
-  icon: {
-    marginRight: theme.spacing(2)
-  },
-  handleButton: {
-    margin: theme.spacing(4),
-    float: 'right'
-  },
-  link: {
-    textDecoration: 'none'
-  },
-  heroContent: {
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(8, 0, 6)
-  },
-  heroButtons: {
-    margin: theme.spacing(4)
-  },
-  title: {
-    flexGrow: 1
-  },
-  cardGrid: {
-    paddingTop: theme.spacing(8),
-    paddingBottom: theme.spacing(8)
-  },
-  card: {
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column'
-  },
-  cardMedia: {
-    paddingTop: '56.25%' // 16:9
-
-  },
-  cardContent: {
-    flexGrow: 1
-  },
-  footer: {
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(6)
-  }
-}));
-function Page(props) {
-  var classes = useStyles();
-  var course = _Data_courses__WEBPACK_IMPORTED_MODULE_1__["default"].find(course => props.match.params.course === course.name);
-  var category = _Data_categories__WEBPACK_IMPORTED_MODULE_3__["default"].find(category => props.match.params.category === category.name);
-  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, course ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["AppBar"], {
-    position: "relative"
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Toolbar"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    variant: "h6",
-    className: classes.title,
-    color: "inherit",
-    noWrap: true
-  }, course.name + ' ' + category.name), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["IconButton"], {
-    edge: "start",
-    color: "inherit",
-    "aria-label": "home",
-    onClick: e => {
-      e.preventDefault();
-      props.history.push('/course/' + course.name + '/home');
-    }
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    gutterBottom: true,
-    variant: "body1"
-  }, "Course Home")))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Card"], {
-    className: classes.card
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Container"], {
-    maxWidth: "md"
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["CardContent"], {
-    className: classes.cardContent
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
-    gutterBottom: true,
-    variant: "h5",
-    component: "h2"
-  }, category.name), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(category.component, props), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null))))) : react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, " 404 Error "));
-}
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"default\", function() { return Page; });\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ \"react\");\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var _Data_courses__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../Data/courses */ \"./React/Shared/Data/courses.js\");\n/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @material-ui/core */ \"@material-ui/core\");\n/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__);\n/* harmony import */ var _Data_categories__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../Data/categories */ \"./React/Shared/Data/categories.js\");\n\n\n\n\nvar useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"makeStyles\"])(theme => ({\n  icon: {\n    marginRight: theme.spacing(2)\n  },\n  handleButton: {\n    margin: theme.spacing(4),\n    float: 'right'\n  },\n  link: {\n    textDecoration: 'none'\n  },\n  heroContent: {\n    backgroundColor: theme.palette.background.paper,\n    padding: theme.spacing(8, 0, 6)\n  },\n  heroButtons: {\n    margin: theme.spacing(4)\n  },\n  title: {\n    flexGrow: 1\n  },\n  cardGrid: {\n    paddingTop: theme.spacing(8),\n    paddingBottom: theme.spacing(8)\n  },\n  card: {\n    height: '100%',\n    display: 'flex',\n    flexDirection: 'column'\n  },\n  cardMedia: {\n    paddingTop: '56.25%' // 16:9\n\n  },\n  cardContent: {\n    flexGrow: 1\n  },\n  footer: {\n    backgroundColor: theme.palette.background.paper,\n    padding: theme.spacing(6)\n  }\n}));\nfunction Page(props) {\n  var classes = useStyles();\n  var course = _Data_courses__WEBPACK_IMPORTED_MODULE_1__[\"default\"].find(course => props.match.params.course === course.name);\n  var category = _Data_categories__WEBPACK_IMPORTED_MODULE_3__[\"default\"].find(category => props.match.params.category === category.name);\n  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(\"div\", null, course ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"AppBar\"], {\n    position: \"relative\"\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Toolbar\"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    variant: \"h6\",\n    className: classes.title,\n    color: \"inherit\",\n    noWrap: true\n  }, course.name + ' ' + category.name), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"IconButton\"], {\n    edge: \"start\",\n    color: \"inherit\",\n    \"aria-label\": \"home\",\n    onClick: e => {\n      e.preventDefault();\n      props.history.push('/course/' + course.name + '/home');\n    }\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    gutterBottom: true,\n    variant: \"body1\"\n  }, \"Course Home\")))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Card\"], {\n    className: classes.card\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Container\"], {\n    maxWidth: \"md\"\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"CardContent\"], {\n    className: classes.cardContent\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__[\"Typography\"], {\n    gutterBottom: true,\n    variant: \"h5\",\n    component: \"h2\"\n  }, category.name), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(category.component, props), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(\"br\", null))))) : react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(\"h1\", null, \" 404 Error \"));\n}//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9Db3Vyc2UvUGFnZS5qcy5qcyIsInNvdXJjZXMiOlsid2VicGFjazovLy8uL1JlYWN0L1NoYXJlZC9Db21wb25lbnRzL0NvdXJzZS9QYWdlLmpzP2EyYmMiXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IFJlYWN0LCB7dXNlU3RhdGUsIHVzZUVmZmVjdH0gZnJvbSAncmVhY3QnXHJcbmltcG9ydCBjb3Vyc2VzIGZyb20gJy4uLy4uL0RhdGEvY291cnNlcydcclxuaW1wb3J0IHsgVHlwb2dyYXBoeSwgXHJcbiAgICBtYWtlU3R5bGVzLCBcclxuICAgIFRleHRGaWVsZCxcclxuICAgIEFwcEJhciwgXHJcbiAgICBDYXJkQ29udGVudCwgXHJcbiAgICBDYXJkLFxyXG4gICAgVG9vbGJhcixcclxuICAgIEljb25CdXR0b24sXHJcbiAgICBDb250YWluZXIgfSBmcm9tICdAbWF0ZXJpYWwtdWkvY29yZSdcclxuXHJcbmltcG9ydCBjYXRlZ29yaWVzIGZyb20gJy4uLy4uL0RhdGEvY2F0ZWdvcmllcydcclxuXHJcblxyXG5jb25zdCB1c2VTdHlsZXMgPSBtYWtlU3R5bGVzKHRoZW1lID0+ICh7XHJcbiAgICBpY29uOiB7XHJcbiAgICAgIG1hcmdpblJpZ2h0OiB0aGVtZS5zcGFjaW5nKDIpLFxyXG4gICAgfSxcclxuICAgIGhhbmRsZUJ1dHRvbiA6e1xyXG4gICAgICBtYXJnaW46IHRoZW1lLnNwYWNpbmcoNCksXHJcbiAgICAgIGZsb2F0OidyaWdodCdcclxuICAgIH0sXHJcbiAgICBsaW5rIDoge1xyXG4gICAgICB0ZXh0RGVjb3JhdGlvbiA6ICdub25lJyxcclxuICAgIH0sXHJcbiAgICBoZXJvQ29udGVudDoge1xyXG4gICAgICBiYWNrZ3JvdW5kQ29sb3I6IHRoZW1lLnBhbGV0dGUuYmFja2dyb3VuZC5wYXBlcixcclxuICAgICAgcGFkZGluZzogdGhlbWUuc3BhY2luZyg4LCAwLCA2KSxcclxuICAgIH0sXHJcbiAgICBoZXJvQnV0dG9uczoge1xyXG4gICAgICBtYXJnaW46IHRoZW1lLnNwYWNpbmcoNCksXHJcbiAgICB9LFxyXG4gICAgdGl0bGU6IHtcclxuICAgICAgZmxleEdyb3c6IDEsXHJcbiAgICB9LFxyXG4gICAgY2FyZEdyaWQ6IHtcclxuICAgICAgcGFkZGluZ1RvcDogdGhlbWUuc3BhY2luZyg4KSxcclxuICAgICAgcGFkZGluZ0JvdHRvbTogdGhlbWUuc3BhY2luZyg4KSxcclxuICAgIH0sXHJcbiAgICBjYXJkOiB7XHJcbiAgICAgIGhlaWdodDogJzEwMCUnLFxyXG4gICAgICBkaXNwbGF5OiAnZmxleCcsXHJcbiAgICAgIGZsZXhEaXJlY3Rpb246ICdjb2x1bW4nLFxyXG4gICAgfSxcclxuICAgIGNhcmRNZWRpYToge1xyXG4gICAgICBwYWRkaW5nVG9wOiAnNTYuMjUlJywgLy8gMTY6OVxyXG4gICAgfSxcclxuICAgIGNhcmRDb250ZW50OiB7XHJcbiAgICAgIGZsZXhHcm93OiAxLFxyXG4gICAgfSxcclxuICAgIGZvb3Rlcjoge1xyXG4gICAgICBiYWNrZ3JvdW5kQ29sb3I6IHRoZW1lLnBhbGV0dGUuYmFja2dyb3VuZC5wYXBlcixcclxuICAgICAgcGFkZGluZzogdGhlbWUuc3BhY2luZyg2KSxcclxuICAgIH0sXHJcbiAgfSkpO1xyXG5cclxuXHJcbmV4cG9ydCBkZWZhdWx0IGZ1bmN0aW9uIFBhZ2UgKHByb3BzKSB7XHJcblxyXG4gICAgY29uc3QgY2xhc3NlcyA9IHVzZVN0eWxlcygpXHJcblxyXG4gICAgY29uc3QgY291cnNlID0gIGNvdXJzZXMuZmluZCgoY291cnNlKSA9PiBwcm9wcy5tYXRjaC5wYXJhbXMuY291cnNlID09PSBjb3Vyc2UubmFtZSlcclxuICAgIGNvbnN0IGNhdGVnb3J5ID0gY2F0ZWdvcmllcy5maW5kKChjYXRlZ29yeSkgPT4gKHByb3BzLm1hdGNoLnBhcmFtcy5jYXRlZ29yeSkgPT09IGNhdGVnb3J5Lm5hbWUpIFxyXG5cclxuICAgIHJldHVybihcclxuICAgICAgICA8ZGl2PlxyXG4gICAgICAgICAgeyBjb3Vyc2UgPyAoXHJcbiAgICAgICAgICAgIDxSZWFjdC5GcmFnbWVudD5cclxuICAgICAgICAgICAgICA8QXBwQmFyIHBvc2l0aW9uPVwicmVsYXRpdmVcIj5cclxuICAgICAgICAgICAgICAgICAgPFRvb2xiYXI+XHJcbiAgICAgICAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImg2XCIgY2xhc3NOYW1lPXsgY2xhc3Nlcy50aXRsZSB9ICBjb2xvcj1cImluaGVyaXRcIiBub1dyYXA+XHJcbiAgICAgICAgICAgICAgICAgICAgICB7Y291cnNlLm5hbWUrJyAnK2NhdGVnb3J5Lm5hbWV9XHJcbiAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgICAgIDxJY29uQnV0dG9uIGVkZ2U9XCJzdGFydFwiIGNvbG9yPVwiaW5oZXJpdFwiIGFyaWEtbGFiZWw9XCJob21lXCIgb25DbGljaz17IChlKSA9PiB7XHJcbiAgICAgICAgICAgICAgICAgICAgICBlLnByZXZlbnREZWZhdWx0KClcclxuICAgICAgICAgICAgICAgICAgICAgIHByb3BzLmhpc3RvcnkucHVzaCggJy9jb3Vyc2UvJytjb3Vyc2UubmFtZSsnL2hvbWUnIClcclxuICAgICAgICAgICAgICAgICAgICAgIH0gfT5cclxuICAgICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IGd1dHRlckJvdHRvbSB2YXJpYW50PVwiYm9keTFcIiA+XHJcbiAgICAgICAgICAgICAgICAgICAgICAgIENvdXJzZSBIb21lIFxyXG4gICAgICAgICAgICAgICAgICAgICAgPC9UeXBvZ3JhcGh5PlxyXG4gICAgICAgICAgICAgICAgICAgIDwvSWNvbkJ1dHRvbj5cclxuICAgICAgICAgICAgICAgICAgPC9Ub29sYmFyPlxyXG4gICAgICAgICAgICAgIDwvQXBwQmFyPlxyXG4gICAgICAgICAgICAgIDxDYXJkIGNsYXNzTmFtZT17Y2xhc3Nlcy5jYXJkfT5cclxuICAgICAgICAgICAgICAgIDxDb250YWluZXIgbWF4V2lkdGg9XCJtZFwiPlxyXG4gICAgICAgICAgICAgICAgICA8Q2FyZENvbnRlbnQgY2xhc3NOYW1lPXtjbGFzc2VzLmNhcmRDb250ZW50fT5cclxuICAgICAgICAgICAgICAgICAgICAgIDxUeXBvZ3JhcGh5IGd1dHRlckJvdHRvbSB2YXJpYW50PVwiaDVcIiBjb21wb25lbnQ9XCJoMlwiID5cclxuICAgICAgICAgICAgICAgICAgICAgICAgICB7Y2F0ZWdvcnkubmFtZX1cclxuICAgICAgICAgICAgICAgICAgICAgIDwvVHlwb2dyYXBoeT5cclxuICAgICAgICAgICAgICAgICAgICAgICAgeyA8Y2F0ZWdvcnkuY29tcG9uZW50ICB7Li4ucHJvcHN9Lz59XHJcbiAgICAgICAgICAgICAgICAgICAgICA8YnIvPlxyXG4gICAgICAgICAgICAgICAgICA8L0NhcmRDb250ZW50PlxyXG4gICAgICAgICAgICAgICAgPC9Db250YWluZXI+XHJcbiAgICAgICAgICAgICAgPC9DYXJkPiBcclxuICAgICAgICAgICAgPC9SZWFjdC5GcmFnbWVudD4pIDogKDxoMT4gNDA0IEVycm9yIDwvaDE+KSBcclxuICAgICAgICAgIH1cclxuICAgICAgICA8L2Rpdj4gXHJcbiAgICApXHJcbn1cclxuIl0sIm1hcHBpbmdzIjoiQUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFDQTtBQUNBO0FBVUE7QUFHQTtBQUNBO0FBQ0E7QUFEQTtBQUdBO0FBQ0E7QUFDQTtBQUZBO0FBSUE7QUFDQTtBQURBO0FBR0E7QUFDQTtBQUNBO0FBRkE7QUFJQTtBQUNBO0FBREE7QUFHQTtBQUNBO0FBREE7QUFHQTtBQUNBO0FBQ0E7QUFGQTtBQUlBO0FBQ0E7QUFDQTtBQUNBO0FBSEE7QUFLQTtBQUNBO0FBQ0E7QUFGQTtBQUdBO0FBQ0E7QUFEQTtBQUdBO0FBQ0E7QUFDQTtBQUZBO0FBcENBO0FBMkNBO0FBRUE7QUFFQTtBQUNBO0FBRUE7QUFJQTtBQUFBO0FBRUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUdBO0FBQUE7QUFBQTtBQUFBO0FBQ0E7QUFDQTtBQUNBO0FBSEE7QUFJQTtBQUFBO0FBQUE7QUFNQTtBQUFBO0FBQ0E7QUFBQTtBQUNBO0FBQUE7QUFDQTtBQUFBO0FBQUE7QUFBQTtBQVlBIiwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///./React/Shared/Components/Course/Page.js\n");
 
 /***/ }),
 
@@ -3059,242 +483,7 @@ function Page(props) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Login; });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _material_ui_core_Avatar__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core/Avatar */ "@material-ui/core/Avatar");
-/* harmony import */ var _material_ui_core_Avatar__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Avatar__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _material_ui_core_Button__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @material-ui/core/Button */ "@material-ui/core/Button");
-/* harmony import */ var _material_ui_core_Button__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Button__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @material-ui/core/CssBaseline */ "@material-ui/core/CssBaseline");
-/* harmony import */ var _material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _material_ui_core_TextField__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @material-ui/core/TextField */ "@material-ui/core/TextField");
-/* harmony import */ var _material_ui_core_TextField__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_TextField__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _material_ui_core_FormControlLabel__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @material-ui/core/FormControlLabel */ "@material-ui/core/FormControlLabel");
-/* harmony import */ var _material_ui_core_FormControlLabel__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_FormControlLabel__WEBPACK_IMPORTED_MODULE_5__);
-/* harmony import */ var _material_ui_core_Checkbox__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @material-ui/core/Checkbox */ "@material-ui/core/Checkbox");
-/* harmony import */ var _material_ui_core_Checkbox__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Checkbox__WEBPACK_IMPORTED_MODULE_6__);
-/* harmony import */ var _material_ui_core_Link__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @material-ui/core/Link */ "@material-ui/core/Link");
-/* harmony import */ var _material_ui_core_Link__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Link__WEBPACK_IMPORTED_MODULE_7__);
-/* harmony import */ var _material_ui_core_Paper__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @material-ui/core/Paper */ "@material-ui/core/Paper");
-/* harmony import */ var _material_ui_core_Paper__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Paper__WEBPACK_IMPORTED_MODULE_8__);
-/* harmony import */ var _material_ui_core_Box__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @material-ui/core/Box */ "@material-ui/core/Box");
-/* harmony import */ var _material_ui_core_Box__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Box__WEBPACK_IMPORTED_MODULE_9__);
-/* harmony import */ var _material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @material-ui/core/Grid */ "@material-ui/core/Grid");
-/* harmony import */ var _material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_10___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_10__);
-/* harmony import */ var _material_ui_icons_LockOutlined__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @material-ui/icons/LockOutlined */ "@material-ui/icons/LockOutlined");
-/* harmony import */ var _material_ui_icons_LockOutlined__WEBPACK_IMPORTED_MODULE_11___default = /*#__PURE__*/__webpack_require__.n(_material_ui_icons_LockOutlined__WEBPACK_IMPORTED_MODULE_11__);
-/* harmony import */ var _material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @material-ui/core/Typography */ "@material-ui/core/Typography");
-/* harmony import */ var _material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_12__);
-/* harmony import */ var _material_ui_core_styles__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! @material-ui/core/styles */ "@material-ui/core/styles");
-/* harmony import */ var _material_ui_core_styles__WEBPACK_IMPORTED_MODULE_13___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_styles__WEBPACK_IMPORTED_MODULE_13__);
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! axios */ "axios");
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_14___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_14__);
-/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! react-router-dom */ "react-router-dom");
-/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_15___default = /*#__PURE__*/__webpack_require__.n(react_router_dom__WEBPACK_IMPORTED_MODULE_15__);
-/* harmony import */ var _Signup__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./Signup */ "./React/Shared/Components/Signup.js");
-/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! @material-ui/core */ "@material-ui/core");
-/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_17___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_17__);
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function Copyright() {
-  var classes = useStyles();
-  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_12___default.a, {
-    variant: "body2",
-    color: "textSecondary",
-    align: "center"
-  }, 'Copyright © ', react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_15__["Link"], {
-    to: "/",
-    className: classes.link
-  }, "Chill Studies"), ' ', new Date().getFullYear(), '.');
-}
-
-var useStyles = Object(_material_ui_core_styles__WEBPACK_IMPORTED_MODULE_13__["makeStyles"])(theme => ({
-  root: {
-    height: '100vh'
-  },
-  link: {
-    textDecoration: 'none',
-    marginTop: '5px%'
-  },
-  image: {
-    backgroundImage: 'url(https://images.unsplash.com/photo-1503676260728-1c00da094a0b?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80)',
-    backgroundRepeat: 'no-repeat',
-    backgroundColor: theme.palette.type === 'dark' ? theme.palette.grey[900] : theme.palette.grey[50],
-    backgroundSize: 'cover',
-    backgroundPosition: 'center'
-  },
-  paper: {
-    margin: theme.spacing(8, 4),
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center'
-  },
-  avatar: {
-    margin: theme.spacing(1),
-    backgroundColor: theme.palette.secondary.main
-  },
-  form: {
-    width: '100%',
-    // Fix IE 11 issue.
-    marginTop: theme.spacing(1)
-  },
-  submit: {
-    margin: theme.spacing(3, 0, 2)
-  }
-}));
-
-function handleClick(_x, _x2) {
-  return _handleClick.apply(this, arguments);
-}
-
-function _handleClick() {
-  _handleClick = _asyncToGenerator(function* (e, props) {
-    e.preventDefault();
-    var email = document.getElementById('email').value;
-    var password = document.getElementById('password').value;
-
-    try {
-      var res = yield axios__WEBPACK_IMPORTED_MODULE_14___default.a.post('http://127.0.0.1:8000/api/v1/student/login', {
-        "studentId": email,
-        "password": password
-      });
-
-      if (res.status === 201) {
-        sessionStorage.setItem('auth', res.data.data.student._id);
-        props.history.push('/dashboard');
-      } else {
-        alert("Pls Enter Valid Details");
-      }
-    } catch (err) {
-      alert(err);
-    }
-  });
-  return _handleClick.apply(this, arguments);
-}
-
-function Login(props) {
-  var classes = useStyles();
-  var [signIn, setSingIn] = react__WEBPACK_IMPORTED_MODULE_0___default.a.useState(true);
-
-  var handleSignup = () => {
-    signIn ? setSingIn(false) : setSingIn(true);
-  };
-
-  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_10___default.a, {
-    container: true,
-    component: "main",
-    className: classes.root
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_3___default.a, null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_10___default.a, {
-    item: true,
-    xs: false,
-    sm: 4,
-    md: 7,
-    className: classes.image
-  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_10___default.a, {
-    item: true,
-    xs: 12,
-    sm: 8,
-    md: 5,
-    component: _material_ui_core_Paper__WEBPACK_IMPORTED_MODULE_8___default.a
-  }, signIn ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_17__["Container"], {
-    component: "main",
-    maxWidth: "sm"
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_3___default.a, null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-    className: classes.paper
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Avatar__WEBPACK_IMPORTED_MODULE_1___default.a, {
-    className: classes.avatar
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_LockOutlined__WEBPACK_IMPORTED_MODULE_11___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_12___default.a, {
-    component: "h1",
-    variant: "h5"
-  }, "Sign in"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("form", {
-    className: classes.form,
-    noValidate: true
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_TextField__WEBPACK_IMPORTED_MODULE_4___default.a, {
-    variant: "outlined",
-    margin: "normal",
-    required: true,
-    fullWidth: true,
-    id: "email",
-    label: "Email Address",
-    name: "email",
-    autoComplete: "email",
-    autoFocus: true
-  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_TextField__WEBPACK_IMPORTED_MODULE_4___default.a, {
-    variant: "outlined",
-    margin: "normal",
-    required: true,
-    fullWidth: true,
-    name: "password",
-    label: "Password",
-    type: "password",
-    id: "password",
-    autoComplete: "current-password"
-  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_FormControlLabel__WEBPACK_IMPORTED_MODULE_5___default.a, {
-    control: react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Checkbox__WEBPACK_IMPORTED_MODULE_6___default.a, {
-      value: "remember",
-      color: "primary"
-    }),
-    label: "Remember me"
-  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Button__WEBPACK_IMPORTED_MODULE_2___default.a, {
-    type: "submit",
-    fullWidth: true,
-    variant: "contained",
-    color: "primary",
-    className: classes.submit,
-    onClick: e => {
-      handleClick(e, props);
-    }
-  }, "Sign In"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Button__WEBPACK_IMPORTED_MODULE_2___default.a, {
-    fullWidth: true,
-    variant: "outlined",
-    color: "primary",
-    className: classes.submit,
-    onClick: e => {
-      e.preventDefault();
-      handleSignup();
-    }
-  }, "Sign Up"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_10___default.a, {
-    container: true
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_10___default.a, {
-    item: true,
-    xs: true
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Link__WEBPACK_IMPORTED_MODULE_7___default.a, {
-    href: "#",
-    variant: "body2"
-  }, "Forgot password?")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_10___default.a, {
-    item: true
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Link__WEBPACK_IMPORTED_MODULE_7___default.a, {
-    href: "#",
-    variant: "body2"
-  }, "Don't have an account? Sign Up"))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Box__WEBPACK_IMPORTED_MODULE_9___default.a, {
-    mt: 5
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Copyright, null))))) : react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_Signup__WEBPACK_IMPORTED_MODULE_16__["default"], {
-    handleSignup: handleSignup
-  })));
-}
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"default\", function() { return Login; });\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ \"react\");\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var _material_ui_core_Avatar__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core/Avatar */ \"@material-ui/core/Avatar\");\n/* harmony import */ var _material_ui_core_Avatar__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Avatar__WEBPACK_IMPORTED_MODULE_1__);\n/* harmony import */ var _material_ui_core_Button__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @material-ui/core/Button */ \"@material-ui/core/Button\");\n/* harmony import */ var _material_ui_core_Button__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Button__WEBPACK_IMPORTED_MODULE_2__);\n/* harmony import */ var _material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @material-ui/core/CssBaseline */ \"@material-ui/core/CssBaseline\");\n/* harmony import */ var _material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_3__);\n/* harmony import */ var _material_ui_core_TextField__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @material-ui/core/TextField */ \"@material-ui/core/TextField\");\n/* harmony import */ var _material_ui_core_TextField__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_TextField__WEBPACK_IMPORTED_MODULE_4__);\n/* harmony import */ var _material_ui_core_FormControlLabel__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @material-ui/core/FormControlLabel */ \"@material-ui/core/FormControlLabel\");\n/* harmony import */ var _material_ui_core_FormControlLabel__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_FormControlLabel__WEBPACK_IMPORTED_MODULE_5__);\n/* harmony import */ var _material_ui_core_Checkbox__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @material-ui/core/Checkbox */ \"@material-ui/core/Checkbox\");\n/* harmony import */ var _material_ui_core_Checkbox__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Checkbox__WEBPACK_IMPORTED_MODULE_6__);\n/* harmony import */ var _material_ui_core_Link__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @material-ui/core/Link */ \"@material-ui/core/Link\");\n/* harmony import */ var _material_ui_core_Link__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Link__WEBPACK_IMPORTED_MODULE_7__);\n/* harmony import */ var _material_ui_core_Paper__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @material-ui/core/Paper */ \"@material-ui/core/Paper\");\n/* harmony import */ var _material_ui_core_Paper__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Paper__WEBPACK_IMPORTED_MODULE_8__);\n/* harmony import */ var _material_ui_core_Box__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @material-ui/core/Box */ \"@material-ui/core/Box\");\n/* harmony import */ var _material_ui_core_Box__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Box__WEBPACK_IMPORTED_MODULE_9__);\n/* harmony import */ var _material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @material-ui/core/Grid */ \"@material-ui/core/Grid\");\n/* harmony import */ var _material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_10___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_10__);\n/* harmony import */ var _material_ui_icons_LockOutlined__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @material-ui/icons/LockOutlined */ \"@material-ui/icons/LockOutlined\");\n/* harmony import */ var _material_ui_icons_LockOutlined__WEBPACK_IMPORTED_MODULE_11___default = /*#__PURE__*/__webpack_require__.n(_material_ui_icons_LockOutlined__WEBPACK_IMPORTED_MODULE_11__);\n/* harmony import */ var _material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @material-ui/core/Typography */ \"@material-ui/core/Typography\");\n/* harmony import */ var _material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_12__);\n/* harmony import */ var _material_ui_core_styles__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! @material-ui/core/styles */ \"@material-ui/core/styles\");\n/* harmony import */ var _material_ui_core_styles__WEBPACK_IMPORTED_MODULE_13___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_styles__WEBPACK_IMPORTED_MODULE_13__);\n/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! axios */ \"axios\");\n/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_14___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_14__);\n/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! react-router-dom */ \"react-router-dom\");\n/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_15___default = /*#__PURE__*/__webpack_require__.n(react_router_dom__WEBPACK_IMPORTED_MODULE_15__);\n/* harmony import */ var _Signup__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./Signup */ \"./React/Shared/Components/Signup.js\");\n/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! @material-ui/core */ \"@material-ui/core\");\n/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_17___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_17__);\nfunction asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }\n\nfunction _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"next\", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"throw\", err); } _next(undefined); }); }; }\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nfunction Copyright() {\n  var classes = useStyles();\n  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_12___default.a, {\n    variant: \"body2\",\n    color: \"textSecondary\",\n    align: \"center\"\n  }, 'Copyright © ', react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_15__[\"Link\"], {\n    to: \"/\",\n    className: classes.link\n  }, \"Chill Studies\"), ' ', new Date().getFullYear(), '.');\n}\n\nvar useStyles = Object(_material_ui_core_styles__WEBPACK_IMPORTED_MODULE_13__[\"makeStyles\"])(theme => ({\n  root: {\n    height: '100vh'\n  },\n  link: {\n    textDecoration: 'none',\n    marginTop: '5px%'\n  },\n  image: {\n    backgroundImage: 'url(https://images.unsplash.com/photo-1503676260728-1c00da094a0b?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80)',\n    backgroundRepeat: 'no-repeat',\n    backgroundColor: theme.palette.type === 'dark' ? theme.palette.grey[900] : theme.palette.grey[50],\n    backgroundSize: 'cover',\n    backgroundPosition: 'center'\n  },\n  paper: {\n    margin: theme.spacing(8, 4),\n    display: 'flex',\n    flexDirection: 'column',\n    alignItems: 'center'\n  },\n  avatar: {\n    margin: theme.spacing(1),\n    backgroundColor: theme.palette.secondary.main\n  },\n  form: {\n    width: '100%',\n    // Fix IE 11 issue.\n    marginTop: theme.spacing(1)\n  },\n  submit: {\n    margin: theme.spacing(3, 0, 2)\n  }\n}));\n\nfunction handleClick(_x, _x2) {\n  return _handleClick.apply(this, arguments);\n}\n\nfunction _handleClick() {\n  _handleClick = _asyncToGenerator(function* (e, props) {\n    e.preventDefault();\n    var email = document.getElementById('email').value;\n    var password = document.getElementById('password').value;\n\n    try {\n      var res = yield axios__WEBPACK_IMPORTED_MODULE_14___default.a.post('http://127.0.0.1:8000/api/v1/student/login', {\n        \"studentId\": email,\n        \"password\": password\n      });\n\n      if (res.status === 201) {\n        sessionStorage.setItem('auth', res.data.data.student._id);\n        props.history.push('/dashboard');\n      } else {\n        alert(\"Pls Enter Valid Details\");\n      }\n    } catch (err) {\n      alert(err);\n    }\n  });\n  return _handleClick.apply(this, arguments);\n}\n\nfunction Login(props) {\n  var classes = useStyles();\n  var [signIn, setSingIn] = react__WEBPACK_IMPORTED_MODULE_0___default.a.useState(true);\n\n  var handleSignup = () => {\n    signIn ? setSingIn(false) : setSingIn(true);\n  };\n\n  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_10___default.a, {\n    container: true,\n    component: \"main\",\n    className: classes.root\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_3___default.a, null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_10___default.a, {\n    item: true,\n    xs: false,\n    sm: 4,\n    md: 7,\n    className: classes.image\n  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_10___default.a, {\n    item: true,\n    xs: 12,\n    sm: 8,\n    md: 5,\n    component: _material_ui_core_Paper__WEBPACK_IMPORTED_MODULE_8___default.a\n  }, signIn ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_17__[\"Container\"], {\n    component: \"main\",\n    maxWidth: \"sm\"\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_3___default.a, null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(\"div\", {\n    className: classes.paper\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Avatar__WEBPACK_IMPORTED_MODULE_1___default.a, {\n    className: classes.avatar\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_LockOutlined__WEBPACK_IMPORTED_MODULE_11___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_12___default.a, {\n    component: \"h1\",\n    variant: \"h5\"\n  }, \"Sign in\"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(\"form\", {\n    className: classes.form,\n    noValidate: true\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_TextField__WEBPACK_IMPORTED_MODULE_4___default.a, {\n    variant: \"outlined\",\n    margin: \"normal\",\n    required: true,\n    fullWidth: true,\n    id: \"email\",\n    label: \"Email Address\",\n    name: \"email\",\n    autoComplete: \"email\",\n    autoFocus: true\n  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_TextField__WEBPACK_IMPORTED_MODULE_4___default.a, {\n    variant: \"outlined\",\n    margin: \"normal\",\n    required: true,\n    fullWidth: true,\n    name: \"password\",\n    label: \"Password\",\n    type: \"password\",\n    id: \"password\",\n    autoComplete: \"current-password\"\n  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_FormControlLabel__WEBPACK_IMPORTED_MODULE_5___default.a, {\n    control: react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Checkbox__WEBPACK_IMPORTED_MODULE_6___default.a, {\n      value: \"remember\",\n      color: \"primary\"\n    }),\n    label: \"Remember me\"\n  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Button__WEBPACK_IMPORTED_MODULE_2___default.a, {\n    type: \"submit\",\n    fullWidth: true,\n    variant: \"contained\",\n    color: \"primary\",\n    className: classes.submit,\n    onClick: e => {\n      handleClick(e, props);\n    }\n  }, \"Sign In\"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Button__WEBPACK_IMPORTED_MODULE_2___default.a, {\n    fullWidth: true,\n    variant: \"outlined\",\n    color: \"primary\",\n    className: classes.submit,\n    onClick: e => {\n      e.preventDefault();\n      handleSignup();\n    }\n  }, \"Sign Up\"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_10___default.a, {\n    container: true\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_10___default.a, {\n    item: true,\n    xs: true\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Link__WEBPACK_IMPORTED_MODULE_7___default.a, {\n    href: \"#\",\n    variant: \"body2\"\n  }, \"Forgot password?\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_10___default.a, {\n    item: true\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Link__WEBPACK_IMPORTED_MODULE_7___default.a, {\n    href: \"#\",\n    variant: \"body2\"\n  }, \"Don't have an account? Sign Up\"))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Box__WEBPACK_IMPORTED_MODULE_9___default.a, {\n    mt: 5\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Copyright, null))))) : react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_Signup__WEBPACK_IMPORTED_MODULE_16__[\"default\"], {\n    handleSignup: handleSignup\n  })));\n}//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9Mb2dpbi5qcy5qcyIsInNvdXJjZXMiOlsid2VicGFjazovLy8uL1JlYWN0L1NoYXJlZC9Db21wb25lbnRzL0xvZ2luLmpzPzNjMzEiXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IFJlYWN0IGZyb20gJ3JlYWN0JztcclxuaW1wb3J0IEF2YXRhciBmcm9tICdAbWF0ZXJpYWwtdWkvY29yZS9BdmF0YXInO1xyXG5pbXBvcnQgQnV0dG9uIGZyb20gJ0BtYXRlcmlhbC11aS9jb3JlL0J1dHRvbic7XHJcbmltcG9ydCBDc3NCYXNlbGluZSBmcm9tICdAbWF0ZXJpYWwtdWkvY29yZS9Dc3NCYXNlbGluZSc7XHJcbmltcG9ydCBUZXh0RmllbGQgZnJvbSAnQG1hdGVyaWFsLXVpL2NvcmUvVGV4dEZpZWxkJztcclxuaW1wb3J0IEZvcm1Db250cm9sTGFiZWwgZnJvbSAnQG1hdGVyaWFsLXVpL2NvcmUvRm9ybUNvbnRyb2xMYWJlbCc7XHJcbmltcG9ydCBDaGVja2JveCBmcm9tICdAbWF0ZXJpYWwtdWkvY29yZS9DaGVja2JveCc7XHJcbmltcG9ydCBMaW5rIGZyb20gJ0BtYXRlcmlhbC11aS9jb3JlL0xpbmsnO1xyXG5pbXBvcnQgUGFwZXIgZnJvbSAnQG1hdGVyaWFsLXVpL2NvcmUvUGFwZXInO1xyXG5pbXBvcnQgQm94IGZyb20gJ0BtYXRlcmlhbC11aS9jb3JlL0JveCc7XHJcbmltcG9ydCBHcmlkIGZyb20gJ0BtYXRlcmlhbC11aS9jb3JlL0dyaWQnO1xyXG5pbXBvcnQgTG9ja091dGxpbmVkSWNvbiBmcm9tICdAbWF0ZXJpYWwtdWkvaWNvbnMvTG9ja091dGxpbmVkJztcclxuaW1wb3J0IFR5cG9ncmFwaHkgZnJvbSAnQG1hdGVyaWFsLXVpL2NvcmUvVHlwb2dyYXBoeSc7XHJcbmltcG9ydCB7IG1ha2VTdHlsZXMgfSBmcm9tICdAbWF0ZXJpYWwtdWkvY29yZS9zdHlsZXMnO1xyXG5pbXBvcnQgYXhpb3MgZnJvbSAnYXhpb3MnO1xyXG5pbXBvcnQge0xpbmsgYXMgTGlua3RvfSBmcm9tICdyZWFjdC1yb3V0ZXItZG9tJ1xyXG5pbXBvcnQgU2lnblVwIGZyb20gJy4vU2lnbnVwJztcclxuaW1wb3J0IHsgQ29udGFpbmVyIH0gZnJvbSAnQG1hdGVyaWFsLXVpL2NvcmUnO1xyXG5cclxuZnVuY3Rpb24gQ29weXJpZ2h0KCkge1xyXG4gIGNvbnN0IGNsYXNzZXMgPSB1c2VTdHlsZXMoKTtcclxuICByZXR1cm4gKFxyXG4gICAgPFR5cG9ncmFwaHkgdmFyaWFudD1cImJvZHkyXCIgY29sb3I9XCJ0ZXh0U2Vjb25kYXJ5XCIgYWxpZ249XCJjZW50ZXJcIj5cclxuICAgICAgeydDb3B5cmlnaHQgwqkgJ31cclxuICAgICAgICA8TGlua3RvIHRvPScvJyBjbGFzc05hbWU9e2NsYXNzZXMubGlua30+XHJcbiAgICAgICAgICAgIENoaWxsIFN0dWRpZXNcclxuICAgICAgICA8L0xpbmt0bz5cclxuICAgICAgeycgJ31cclxuICAgICAge25ldyBEYXRlKCkuZ2V0RnVsbFllYXIoKX1cclxuICAgICAgeycuJ31cclxuICAgIDwvVHlwb2dyYXBoeT5cclxuICApO1xyXG59XHJcblxyXG5cclxuY29uc3QgdXNlU3R5bGVzID0gbWFrZVN0eWxlcyh0aGVtZSA9PiAoe1xyXG4gIHJvb3Q6IHtcclxuICAgIGhlaWdodDogJzEwMHZoJyxcclxuICB9LFxyXG4gIGxpbmsgOiB7XHJcbiAgICB0ZXh0RGVjb3JhdGlvbiA6ICdub25lJyxcclxuICAgIG1hcmdpblRvcDogJzVweCUnLFxyXG4gIH0sXHJcbiAgaW1hZ2U6IHtcclxuICAgIGJhY2tncm91bmRJbWFnZTogJ3VybChodHRwczovL2ltYWdlcy51bnNwbGFzaC5jb20vcGhvdG8tMTUwMzY3NjI2MDcyOC0xYzAwZGEwOTRhMGI/aXhsaWI9cmItMS4yLjEmaXhpZD1leUpoY0hCZmFXUWlPakV5TURkOSZ3PTEwMDAmcT04MCknLFxyXG4gICAgYmFja2dyb3VuZFJlcGVhdDogJ25vLXJlcGVhdCcsXHJcbiAgICBiYWNrZ3JvdW5kQ29sb3I6XHJcbiAgICAgIHRoZW1lLnBhbGV0dGUudHlwZSA9PT0gJ2RhcmsnID8gdGhlbWUucGFsZXR0ZS5ncmV5WzkwMF0gOiB0aGVtZS5wYWxldHRlLmdyZXlbNTBdLFxyXG4gICAgYmFja2dyb3VuZFNpemU6ICdjb3ZlcicsXHJcbiAgICBiYWNrZ3JvdW5kUG9zaXRpb246ICdjZW50ZXInLFxyXG4gIH0sXHJcbiAgcGFwZXI6IHtcclxuICAgIG1hcmdpbjogdGhlbWUuc3BhY2luZyg4LCA0KSxcclxuICAgIGRpc3BsYXk6ICdmbGV4JyxcclxuICAgIGZsZXhEaXJlY3Rpb246ICdjb2x1bW4nLFxyXG4gICAgYWxpZ25JdGVtczogJ2NlbnRlcicsXHJcbiAgfSxcclxuICBhdmF0YXI6IHtcclxuICAgIG1hcmdpbjogdGhlbWUuc3BhY2luZygxKSxcclxuICAgIGJhY2tncm91bmRDb2xvcjogdGhlbWUucGFsZXR0ZS5zZWNvbmRhcnkubWFpbixcclxuICB9LFxyXG4gIGZvcm06IHtcclxuICAgIHdpZHRoOiAnMTAwJScsIC8vIEZpeCBJRSAxMSBpc3N1ZS5cclxuICAgIG1hcmdpblRvcDogdGhlbWUuc3BhY2luZygxKSxcclxuICB9LFxyXG4gIHN1Ym1pdDoge1xyXG4gICAgbWFyZ2luOiB0aGVtZS5zcGFjaW5nKDMsIDAsIDIpLFxyXG4gIH0sXHJcbn0pKTtcclxuXHJcblxyXG5hc3luYyBmdW5jdGlvbiBoYW5kbGVDbGljayAoZSxwcm9wcykge1xyXG4gIGUucHJldmVudERlZmF1bHQoKTtcclxuICBjb25zdCBlbWFpbCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdlbWFpbCcpLnZhbHVlXHJcbiAgY29uc3QgcGFzc3dvcmQgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncGFzc3dvcmQnKS52YWx1ZVxyXG5cclxuICB0cnkge1xyXG4gICAgY29uc3QgcmVzID0gYXdhaXQgYXhpb3MucG9zdCgnaHR0cDovLzEyNy4wLjAuMTo4MDAwL2FwaS92MS9zdHVkZW50L2xvZ2luJyxcclxuICAgIHtcclxuICAgICAgXCJzdHVkZW50SWRcIjplbWFpbCxcclxuICAgICAgXCJwYXNzd29yZFwiOnBhc3N3b3JkXHJcbiAgICB9KVxyXG5cclxuICAgIGlmKHJlcy5zdGF0dXMgPT09IDIwMSkge1xyXG4gICAgICBzZXNzaW9uU3RvcmFnZS5zZXRJdGVtKCdhdXRoJyxyZXMuZGF0YS5kYXRhLnN0dWRlbnQuX2lkKVxyXG4gICAgICBwcm9wcy5oaXN0b3J5LnB1c2goJy9kYXNoYm9hcmQnKVxyXG4gICAgfVxyXG4gICAgZWxzZSB7XHJcbiAgICAgIGFsZXJ0KFwiUGxzIEVudGVyIFZhbGlkIERldGFpbHNcIik7XHJcbiAgICB9XHJcbiAgfSBjYXRjaChlcnIgKXtcclxuICAgIGFsZXJ0KGVycilcclxuICB9XHJcbn1cclxuXHJcbmV4cG9ydCBkZWZhdWx0IGZ1bmN0aW9uIExvZ2luKHByb3BzKSB7XHJcbiAgY29uc3QgY2xhc3NlcyA9IHVzZVN0eWxlcygpO1xyXG5cclxuICBjb25zdCBbc2lnbkluLHNldFNpbmdJbl0gPSBSZWFjdC51c2VTdGF0ZSh0cnVlKVxyXG5cclxuICBjb25zdCBoYW5kbGVTaWdudXAgPSAoKSA9PiB7XHJcbiAgICBzaWduSW4gPyBzZXRTaW5nSW4oZmFsc2UpIDogc2V0U2luZ0luKHRydWUpXHJcbiAgfVxyXG5cclxuICByZXR1cm4gKFxyXG4gICAgPEdyaWQgY29udGFpbmVyIGNvbXBvbmVudD1cIm1haW5cIiBjbGFzc05hbWU9e2NsYXNzZXMucm9vdH0+XHJcbiAgICAgIDxDc3NCYXNlbGluZSAvPlxyXG4gICAgICA8R3JpZCBpdGVtIHhzPXtmYWxzZX0gc209ezR9IG1kPXs3fSBjbGFzc05hbWU9e2NsYXNzZXMuaW1hZ2V9IC8+XHJcbiAgICAgIDxHcmlkIGl0ZW0geHM9ezEyfSBzbT17OH0gbWQ9ezV9IGNvbXBvbmVudD17UGFwZXJ9ID5cclxuICAgICAgICB7IHNpZ25JbiA/IChcclxuICAgICAgICAgIDxDb250YWluZXIgY29tcG9uZW50PVwibWFpblwiIG1heFdpZHRoPVwic21cIiA+XHJcbiAgICAgICAgICAgIDxDc3NCYXNlbGluZSAvPlxyXG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT17Y2xhc3Nlcy5wYXBlcn0+XHJcbiAgICAgICAgICAgICAgPEF2YXRhciBjbGFzc05hbWU9e2NsYXNzZXMuYXZhdGFyfT5cclxuICAgICAgICAgICAgICAgIDxMb2NrT3V0bGluZWRJY29uIC8+XHJcbiAgICAgICAgICAgICAgPC9BdmF0YXI+XHJcbiAgICAgICAgICAgICAgPFR5cG9ncmFwaHkgY29tcG9uZW50PVwiaDFcIiB2YXJpYW50PVwiaDVcIj5cclxuICAgICAgICAgICAgICAgIFNpZ24gaW5cclxuICAgICAgICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgICAgICAgPGZvcm0gY2xhc3NOYW1lPXtjbGFzc2VzLmZvcm19IG5vVmFsaWRhdGU+XHJcbiAgICAgICAgICAgICAgICA8VGV4dEZpZWxkXHJcbiAgICAgICAgICAgICAgICAgIHZhcmlhbnQ9XCJvdXRsaW5lZFwiXHJcbiAgICAgICAgICAgICAgICAgIG1hcmdpbj1cIm5vcm1hbFwiXHJcbiAgICAgICAgICAgICAgICAgIHJlcXVpcmVkXHJcbiAgICAgICAgICAgICAgICAgIGZ1bGxXaWR0aFxyXG4gICAgICAgICAgICAgICAgICBpZD1cImVtYWlsXCJcclxuICAgICAgICAgICAgICAgICAgbGFiZWw9XCJFbWFpbCBBZGRyZXNzXCJcclxuICAgICAgICAgICAgICAgICAgbmFtZT1cImVtYWlsXCJcclxuICAgICAgICAgICAgICAgICAgYXV0b0NvbXBsZXRlPVwiZW1haWxcIlxyXG4gICAgICAgICAgICAgICAgICBhdXRvRm9jdXNcclxuICAgICAgICAgICAgICAgIC8+XHJcbiAgICAgICAgICAgICAgICA8VGV4dEZpZWxkXHJcbiAgICAgICAgICAgICAgICAgIHZhcmlhbnQ9XCJvdXRsaW5lZFwiXHJcbiAgICAgICAgICAgICAgICAgIG1hcmdpbj1cIm5vcm1hbFwiXHJcbiAgICAgICAgICAgICAgICAgIHJlcXVpcmVkXHJcbiAgICAgICAgICAgICAgICAgIGZ1bGxXaWR0aFxyXG4gICAgICAgICAgICAgICAgICBuYW1lPVwicGFzc3dvcmRcIlxyXG4gICAgICAgICAgICAgICAgICBsYWJlbD1cIlBhc3N3b3JkXCJcclxuICAgICAgICAgICAgICAgICAgdHlwZT1cInBhc3N3b3JkXCJcclxuICAgICAgICAgICAgICAgICAgaWQ9XCJwYXNzd29yZFwiXHJcbiAgICAgICAgICAgICAgICAgIGF1dG9Db21wbGV0ZT1cImN1cnJlbnQtcGFzc3dvcmRcIlxyXG4gICAgICAgICAgICAgICAgLz5cclxuICAgICAgICAgICAgICAgIDxGb3JtQ29udHJvbExhYmVsXHJcbiAgICAgICAgICAgICAgICAgIGNvbnRyb2w9ezxDaGVja2JveCB2YWx1ZT1cInJlbWVtYmVyXCIgY29sb3I9XCJwcmltYXJ5XCIgLz59XHJcbiAgICAgICAgICAgICAgICAgIGxhYmVsPVwiUmVtZW1iZXIgbWVcIlxyXG4gICAgICAgICAgICAgICAgLz5cclxuICAgICAgICAgICAgICAgIDxCdXR0b25cclxuICAgICAgICAgICAgICAgICAgdHlwZT1cInN1Ym1pdFwiXHJcbiAgICAgICAgICAgICAgICAgIGZ1bGxXaWR0aFxyXG4gICAgICAgICAgICAgICAgICB2YXJpYW50PVwiY29udGFpbmVkXCJcclxuICAgICAgICAgICAgICAgICAgY29sb3I9XCJwcmltYXJ5XCJcclxuICAgICAgICAgICAgICAgICAgY2xhc3NOYW1lPXtjbGFzc2VzLnN1Ym1pdH1cclxuICAgICAgICAgICAgICAgICAgb25DbGljayA9IHsgKGUpID0+IHsgaGFuZGxlQ2xpY2soZSxwcm9wcykgfSB9XHJcbiAgICAgICAgICAgICAgICA+XHJcbiAgICAgICAgICAgICAgICAgIFNpZ24gSW5cclxuICAgICAgICAgICAgICAgIDwvQnV0dG9uPlxyXG4gICAgICAgICAgICAgICAgey8qIDxMaW5rdG8gY2xhc3NOYW1lPXtjbGFzc2VzLmxpbmt9IHRvPVwiL3NpZ251cFwiPiAqL31cclxuICAgICAgICAgICAgICAgICAgPEJ1dHRvblxyXG4gICAgICAgICAgICAgICAgICAgIGZ1bGxXaWR0aFxyXG4gICAgICAgICAgICAgICAgICAgIHZhcmlhbnQ9XCJvdXRsaW5lZFwiXHJcbiAgICAgICAgICAgICAgICAgICAgY29sb3I9XCJwcmltYXJ5XCJcclxuICAgICAgICAgICAgICAgICAgICBjbGFzc05hbWU9e2NsYXNzZXMuc3VibWl0fVxyXG4gICAgICAgICAgICAgICAgICAgIG9uQ2xpY2sgPSB7IChlKSA9PiB7XHJcbiAgICAgICAgICAgICAgICAgICAgICBlLnByZXZlbnREZWZhdWx0KClcclxuICAgICAgICAgICAgICAgICAgICAgIGhhbmRsZVNpZ251cCgpXHJcbiAgICAgICAgICAgICAgICAgICAgfSB9XHJcbiAgICAgICAgICAgICAgICAgID5cclxuICAgICAgICAgICAgICAgICAgICBTaWduIFVwXHJcbiAgICAgICAgICAgICAgICAgIDwvQnV0dG9uPlxyXG4gICAgICAgICAgICAgICAgey8qIDwvTGlua3RvPiAqL31cclxuICAgICAgICAgICAgICAgIDxHcmlkIGNvbnRhaW5lcj5cclxuICAgICAgICAgICAgICAgICAgPEdyaWQgaXRlbSB4cz5cclxuICAgICAgICAgICAgICAgICAgICA8TGluayBocmVmPVwiI1wiIHZhcmlhbnQ9XCJib2R5MlwiPlxyXG4gICAgICAgICAgICAgICAgICAgICAgRm9yZ290IHBhc3N3b3JkP1xyXG4gICAgICAgICAgICAgICAgICAgIDwvTGluaz5cclxuICAgICAgICAgICAgICAgICAgPC9HcmlkPlxyXG4gICAgICAgICAgICAgICAgICA8R3JpZCBpdGVtPlxyXG4gICAgICAgICAgICAgICAgICAgIDxMaW5rIGhyZWY9XCIjXCIgdmFyaWFudD1cImJvZHkyXCI+XHJcbiAgICAgICAgICAgICAgICAgICAgICB7XCJEb24ndCBoYXZlIGFuIGFjY291bnQ/IFNpZ24gVXBcIn1cclxuICAgICAgICAgICAgICAgICAgICA8L0xpbms+XHJcbiAgICAgICAgICAgICAgICAgIDwvR3JpZD5cclxuICAgICAgICAgICAgICAgIDwvR3JpZD5cclxuICAgICAgICAgICAgICAgIDxCb3ggbXQ9ezV9PlxyXG4gICAgICAgICAgICAgICAgICA8Q29weXJpZ2h0IC8+XHJcbiAgICAgICAgICAgICAgICA8L0JveD5cclxuICAgICAgICAgICAgICA8L2Zvcm0+XHJcbiAgICAgICAgICAgIDwvZGl2PiBcclxuICAgICAgICAgIDwvQ29udGFpbmVyPilcclxuICAgICAgICA6IFxyXG4gICAgICAgIChcclxuICAgICAgICAgIDxTaWduVXAgaGFuZGxlU2lnbnVwPXsgaGFuZGxlU2lnbnVwIH0gLz5cclxuICAgICAgICApXHJcbiAgICAgIH1cclxuICAgICAgPC9HcmlkPlxyXG4gICAgPC9HcmlkPlxyXG4gICk7XHJcbn0iXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0FBQUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUFBO0FBQUE7QUFBQTtBQUVBO0FBQUE7QUFBQTtBQVFBO0FBQ0E7QUFFQTtBQUNBO0FBQ0E7QUFEQTtBQUdBO0FBQ0E7QUFDQTtBQUZBO0FBSUE7QUFDQTtBQUNBO0FBQ0E7QUFFQTtBQUNBO0FBTkE7QUFRQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBSkE7QUFNQTtBQUNBO0FBQ0E7QUFGQTtBQUlBO0FBQ0E7QUFBQTtBQUNBO0FBRkE7QUFJQTtBQUNBO0FBREE7QUE5QkE7QUFDQTtBQW1DQTs7Ozs7QUFBQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUVBO0FBQ0E7QUFGQTtBQUNBO0FBSUE7QUFDQTtBQUNBO0FBQ0E7QUFFQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7Ozs7QUFFQTtBQUNBO0FBRUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUFBO0FBQUE7QUFBQTtBQUVBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUNBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUVBO0FBQUE7QUFBQTtBQUVBO0FBQUE7QUFDQTtBQUFBO0FBR0E7QUFBQTtBQUFBO0FBR0E7QUFBQTtBQUFBO0FBRUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBVEE7QUFZQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFUQTtBQVlBO0FBQUE7QUFBQTtBQUFBO0FBQ0E7QUFGQTtBQUtBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUFBO0FBQUE7QUFOQTtBQVlBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFSQTtBQWFBO0FBQUE7QUFDQTtBQUFBO0FBQUE7QUFDQTtBQUFBO0FBQUE7QUFJQTtBQUFBO0FBQ0E7QUFBQTtBQUFBO0FBS0E7QUFBQTtBQVFBO0FBQUE7QUFNQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///./React/Shared/Components/Login.js\n");
 
 /***/ }),
 
@@ -3306,227 +495,7 @@ function Login(props) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return SignUp; });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _material_ui_core_Avatar__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core/Avatar */ "@material-ui/core/Avatar");
-/* harmony import */ var _material_ui_core_Avatar__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Avatar__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _material_ui_core_Button__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @material-ui/core/Button */ "@material-ui/core/Button");
-/* harmony import */ var _material_ui_core_Button__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Button__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @material-ui/core/CssBaseline */ "@material-ui/core/CssBaseline");
-/* harmony import */ var _material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _material_ui_core_TextField__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @material-ui/core/TextField */ "@material-ui/core/TextField");
-/* harmony import */ var _material_ui_core_TextField__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_TextField__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _material_ui_core_FormControlLabel__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @material-ui/core/FormControlLabel */ "@material-ui/core/FormControlLabel");
-/* harmony import */ var _material_ui_core_FormControlLabel__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_FormControlLabel__WEBPACK_IMPORTED_MODULE_5__);
-/* harmony import */ var _material_ui_core_Checkbox__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @material-ui/core/Checkbox */ "@material-ui/core/Checkbox");
-/* harmony import */ var _material_ui_core_Checkbox__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Checkbox__WEBPACK_IMPORTED_MODULE_6__);
-/* harmony import */ var _material_ui_core_Link__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @material-ui/core/Link */ "@material-ui/core/Link");
-/* harmony import */ var _material_ui_core_Link__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Link__WEBPACK_IMPORTED_MODULE_7__);
-/* harmony import */ var _material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @material-ui/core/Grid */ "@material-ui/core/Grid");
-/* harmony import */ var _material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_8__);
-/* harmony import */ var _material_ui_core_Box__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @material-ui/core/Box */ "@material-ui/core/Box");
-/* harmony import */ var _material_ui_core_Box__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Box__WEBPACK_IMPORTED_MODULE_9__);
-/* harmony import */ var _material_ui_icons_LockOutlined__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @material-ui/icons/LockOutlined */ "@material-ui/icons/LockOutlined");
-/* harmony import */ var _material_ui_icons_LockOutlined__WEBPACK_IMPORTED_MODULE_10___default = /*#__PURE__*/__webpack_require__.n(_material_ui_icons_LockOutlined__WEBPACK_IMPORTED_MODULE_10__);
-/* harmony import */ var _material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @material-ui/core/Typography */ "@material-ui/core/Typography");
-/* harmony import */ var _material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_11___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_11__);
-/* harmony import */ var _material_ui_core_styles__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @material-ui/core/styles */ "@material-ui/core/styles");
-/* harmony import */ var _material_ui_core_styles__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_styles__WEBPACK_IMPORTED_MODULE_12__);
-/* harmony import */ var _material_ui_core_Container__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! @material-ui/core/Container */ "@material-ui/core/Container");
-/* harmony import */ var _material_ui_core_Container__WEBPACK_IMPORTED_MODULE_13___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Container__WEBPACK_IMPORTED_MODULE_13__);
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! axios */ "axios");
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_14___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_14__);
-/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! react-router-dom */ "react-router-dom");
-/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_15___default = /*#__PURE__*/__webpack_require__.n(react_router_dom__WEBPACK_IMPORTED_MODULE_15__);
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function Copyright() {
-  var classes = useStyles();
-  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_11___default.a, {
-    variant: "body2",
-    color: "textSecondary",
-    align: "center"
-  }, 'Copyright © ', react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Link__WEBPACK_IMPORTED_MODULE_7___default.a, {
-    color: "inherit"
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_15__["Link"], {
-    to: "/",
-    className: classes.link
-  }, "Chill Studies")), ' ', new Date().getFullYear(), '.');
-}
-
-var useStyles = Object(_material_ui_core_styles__WEBPACK_IMPORTED_MODULE_12__["makeStyles"])(theme => ({
-  paper: {
-    marginTop: theme.spacing(8),
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center'
-  },
-  avatar: {
-    margin: theme.spacing(1),
-    backgroundColor: theme.palette.secondary.main
-  },
-  form: {
-    width: '100%',
-    // Fix IE 11 issue.
-    marginTop: theme.spacing(1)
-  },
-  submit: {
-    margin: theme.spacing(3, 0, 2)
-  }
-}));
-
-function handleClick(_x, _x2) {
-  return _handleClick.apply(this, arguments);
-}
-
-function _handleClick() {
-  _handleClick = _asyncToGenerator(function* (e, props) {
-    e.preventDefault();
-    var name = document.getElementById('name').value,
-        email = document.getElementById('email').value,
-        password = document.getElementById('password').value,
-        confirmPassword = document.getElementById('confirmPassword').value;
-
-    if (name === '' || email === '' || password === '' || confirmPassword === '') {
-      alert("Provide Valid Informations");
-    } else {
-      var data = {
-        "name": name,
-        "studentId": email,
-        "password": password,
-        "passwordConfrim": confirmPassword
-      };
-
-      try {
-        var res = yield axios__WEBPACK_IMPORTED_MODULE_14___default.a.post('http://127.0.0.1:8000/api/v1/student/signup', data);
-
-        if (res.status === 201) {
-          alert('You Successfully Signed Up !!! \n Now Sign In To Continue');
-        }
-      } catch (err) {
-        alert(err);
-        console.log(err);
-      }
-
-      props.handleSignup();
-    }
-  });
-  return _handleClick.apply(this, arguments);
-}
-
-function SignUp(props) {
-  var classes = useStyles();
-  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Container__WEBPACK_IMPORTED_MODULE_13___default.a, {
-    component: "main",
-    maxWidth: "xs"
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_3___default.a, null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-    className: classes.paper
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Avatar__WEBPACK_IMPORTED_MODULE_1___default.a, {
-    className: classes.avatar
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_LockOutlined__WEBPACK_IMPORTED_MODULE_10___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_11___default.a, {
-    component: "h1",
-    variant: "h5"
-  }, "Sign Up"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("form", {
-    className: classes.form,
-    noValidate: true
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_TextField__WEBPACK_IMPORTED_MODULE_4___default.a, {
-    variant: "outlined",
-    margin: "normal",
-    required: true,
-    fullWidth: true,
-    id: "name",
-    label: "Name",
-    name: "name",
-    autoComplete: "name",
-    autoFocus: true,
-    required: true
-  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_TextField__WEBPACK_IMPORTED_MODULE_4___default.a, {
-    variant: "outlined",
-    margin: "normal",
-    required: true,
-    fullWidth: true,
-    id: "email",
-    label: "Email Address",
-    name: "email",
-    autoComplete: "email"
-  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_TextField__WEBPACK_IMPORTED_MODULE_4___default.a, {
-    variant: "outlined",
-    margin: "normal",
-    required: true,
-    fullWidth: true,
-    name: "password",
-    label: "Password",
-    type: "password",
-    id: "password",
-    autoComplete: "current-password"
-  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_TextField__WEBPACK_IMPORTED_MODULE_4___default.a, {
-    variant: "outlined",
-    margin: "normal",
-    required: true,
-    fullWidth: true,
-    name: "confirmPassword",
-    label: "Confirm Password",
-    type: "password",
-    id: "confirmPassword",
-    autoComplete: "current-password"
-  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_FormControlLabel__WEBPACK_IMPORTED_MODULE_5___default.a, {
-    control: react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Checkbox__WEBPACK_IMPORTED_MODULE_6___default.a, {
-      value: "remember",
-      color: "primary"
-    }),
-    label: "Remember me"
-  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Button__WEBPACK_IMPORTED_MODULE_2___default.a, {
-    fullWidth: true,
-    variant: "contained",
-    color: "primary",
-    className: classes.submit,
-    onClick: e => handleClick(e, props)
-  }, "Sign Up"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Button__WEBPACK_IMPORTED_MODULE_2___default.a, {
-    fullWidth: true,
-    variant: "outlined",
-    color: "primary",
-    className: classes.submit,
-    onClick: e => {
-      props.handleSignup();
-    }
-  }, "Sign In"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_8___default.a, {
-    container: true
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_8___default.a, {
-    item: true,
-    xs: true
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Link__WEBPACK_IMPORTED_MODULE_7___default.a, {
-    href: "#",
-    variant: "body2"
-  }, "Forgot password?")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_8___default.a, {
-    item: true
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Link__WEBPACK_IMPORTED_MODULE_7___default.a, {
-    href: "#",
-    variant: "body2"
-  }, "Don't have an account? Sign Up"))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Box__WEBPACK_IMPORTED_MODULE_9___default.a, {
-    mt: 8
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Copyright, null)));
-}
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"default\", function() { return SignUp; });\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ \"react\");\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var _material_ui_core_Avatar__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core/Avatar */ \"@material-ui/core/Avatar\");\n/* harmony import */ var _material_ui_core_Avatar__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Avatar__WEBPACK_IMPORTED_MODULE_1__);\n/* harmony import */ var _material_ui_core_Button__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @material-ui/core/Button */ \"@material-ui/core/Button\");\n/* harmony import */ var _material_ui_core_Button__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Button__WEBPACK_IMPORTED_MODULE_2__);\n/* harmony import */ var _material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @material-ui/core/CssBaseline */ \"@material-ui/core/CssBaseline\");\n/* harmony import */ var _material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_3__);\n/* harmony import */ var _material_ui_core_TextField__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @material-ui/core/TextField */ \"@material-ui/core/TextField\");\n/* harmony import */ var _material_ui_core_TextField__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_TextField__WEBPACK_IMPORTED_MODULE_4__);\n/* harmony import */ var _material_ui_core_FormControlLabel__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @material-ui/core/FormControlLabel */ \"@material-ui/core/FormControlLabel\");\n/* harmony import */ var _material_ui_core_FormControlLabel__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_FormControlLabel__WEBPACK_IMPORTED_MODULE_5__);\n/* harmony import */ var _material_ui_core_Checkbox__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @material-ui/core/Checkbox */ \"@material-ui/core/Checkbox\");\n/* harmony import */ var _material_ui_core_Checkbox__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Checkbox__WEBPACK_IMPORTED_MODULE_6__);\n/* harmony import */ var _material_ui_core_Link__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @material-ui/core/Link */ \"@material-ui/core/Link\");\n/* harmony import */ var _material_ui_core_Link__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Link__WEBPACK_IMPORTED_MODULE_7__);\n/* harmony import */ var _material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @material-ui/core/Grid */ \"@material-ui/core/Grid\");\n/* harmony import */ var _material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_8__);\n/* harmony import */ var _material_ui_core_Box__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @material-ui/core/Box */ \"@material-ui/core/Box\");\n/* harmony import */ var _material_ui_core_Box__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Box__WEBPACK_IMPORTED_MODULE_9__);\n/* harmony import */ var _material_ui_icons_LockOutlined__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @material-ui/icons/LockOutlined */ \"@material-ui/icons/LockOutlined\");\n/* harmony import */ var _material_ui_icons_LockOutlined__WEBPACK_IMPORTED_MODULE_10___default = /*#__PURE__*/__webpack_require__.n(_material_ui_icons_LockOutlined__WEBPACK_IMPORTED_MODULE_10__);\n/* harmony import */ var _material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @material-ui/core/Typography */ \"@material-ui/core/Typography\");\n/* harmony import */ var _material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_11___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_11__);\n/* harmony import */ var _material_ui_core_styles__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @material-ui/core/styles */ \"@material-ui/core/styles\");\n/* harmony import */ var _material_ui_core_styles__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_styles__WEBPACK_IMPORTED_MODULE_12__);\n/* harmony import */ var _material_ui_core_Container__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! @material-ui/core/Container */ \"@material-ui/core/Container\");\n/* harmony import */ var _material_ui_core_Container__WEBPACK_IMPORTED_MODULE_13___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_Container__WEBPACK_IMPORTED_MODULE_13__);\n/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! axios */ \"axios\");\n/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_14___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_14__);\n/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! react-router-dom */ \"react-router-dom\");\n/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_15___default = /*#__PURE__*/__webpack_require__.n(react_router_dom__WEBPACK_IMPORTED_MODULE_15__);\nfunction asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }\n\nfunction _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"next\", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, \"throw\", err); } _next(undefined); }); }; }\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nfunction Copyright() {\n  var classes = useStyles();\n  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_11___default.a, {\n    variant: \"body2\",\n    color: \"textSecondary\",\n    align: \"center\"\n  }, 'Copyright © ', react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Link__WEBPACK_IMPORTED_MODULE_7___default.a, {\n    color: \"inherit\"\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_15__[\"Link\"], {\n    to: \"/\",\n    className: classes.link\n  }, \"Chill Studies\")), ' ', new Date().getFullYear(), '.');\n}\n\nvar useStyles = Object(_material_ui_core_styles__WEBPACK_IMPORTED_MODULE_12__[\"makeStyles\"])(theme => ({\n  paper: {\n    marginTop: theme.spacing(8),\n    display: 'flex',\n    flexDirection: 'column',\n    alignItems: 'center'\n  },\n  avatar: {\n    margin: theme.spacing(1),\n    backgroundColor: theme.palette.secondary.main\n  },\n  form: {\n    width: '100%',\n    // Fix IE 11 issue.\n    marginTop: theme.spacing(1)\n  },\n  submit: {\n    margin: theme.spacing(3, 0, 2)\n  }\n}));\n\nfunction handleClick(_x, _x2) {\n  return _handleClick.apply(this, arguments);\n}\n\nfunction _handleClick() {\n  _handleClick = _asyncToGenerator(function* (e, props) {\n    e.preventDefault();\n    var name = document.getElementById('name').value,\n        email = document.getElementById('email').value,\n        password = document.getElementById('password').value,\n        confirmPassword = document.getElementById('confirmPassword').value;\n\n    if (name === '' || email === '' || password === '' || confirmPassword === '') {\n      alert(\"Provide Valid Informations\");\n    } else {\n      var data = {\n        \"name\": name,\n        \"studentId\": email,\n        \"password\": password,\n        \"passwordConfrim\": confirmPassword\n      };\n\n      try {\n        var res = yield axios__WEBPACK_IMPORTED_MODULE_14___default.a.post('http://127.0.0.1:8000/api/v1/student/signup', data);\n\n        if (res.status === 201) {\n          alert('You Successfully Signed Up !!! \\n Now Sign In To Continue');\n        }\n      } catch (err) {\n        alert(err);\n        console.log(err);\n      }\n\n      props.handleSignup();\n    }\n  });\n  return _handleClick.apply(this, arguments);\n}\n\nfunction SignUp(props) {\n  var classes = useStyles();\n  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Container__WEBPACK_IMPORTED_MODULE_13___default.a, {\n    component: \"main\",\n    maxWidth: \"xs\"\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_CssBaseline__WEBPACK_IMPORTED_MODULE_3___default.a, null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(\"div\", {\n    className: classes.paper\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Avatar__WEBPACK_IMPORTED_MODULE_1___default.a, {\n    className: classes.avatar\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_icons_LockOutlined__WEBPACK_IMPORTED_MODULE_10___default.a, null)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Typography__WEBPACK_IMPORTED_MODULE_11___default.a, {\n    component: \"h1\",\n    variant: \"h5\"\n  }, \"Sign Up\"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(\"form\", {\n    className: classes.form,\n    noValidate: true\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_TextField__WEBPACK_IMPORTED_MODULE_4___default.a, {\n    variant: \"outlined\",\n    margin: \"normal\",\n    required: true,\n    fullWidth: true,\n    id: \"name\",\n    label: \"Name\",\n    name: \"name\",\n    autoComplete: \"name\",\n    autoFocus: true,\n    required: true\n  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_TextField__WEBPACK_IMPORTED_MODULE_4___default.a, {\n    variant: \"outlined\",\n    margin: \"normal\",\n    required: true,\n    fullWidth: true,\n    id: \"email\",\n    label: \"Email Address\",\n    name: \"email\",\n    autoComplete: \"email\"\n  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_TextField__WEBPACK_IMPORTED_MODULE_4___default.a, {\n    variant: \"outlined\",\n    margin: \"normal\",\n    required: true,\n    fullWidth: true,\n    name: \"password\",\n    label: \"Password\",\n    type: \"password\",\n    id: \"password\",\n    autoComplete: \"current-password\"\n  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_TextField__WEBPACK_IMPORTED_MODULE_4___default.a, {\n    variant: \"outlined\",\n    margin: \"normal\",\n    required: true,\n    fullWidth: true,\n    name: \"confirmPassword\",\n    label: \"Confirm Password\",\n    type: \"password\",\n    id: \"confirmPassword\",\n    autoComplete: \"current-password\"\n  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_FormControlLabel__WEBPACK_IMPORTED_MODULE_5___default.a, {\n    control: react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Checkbox__WEBPACK_IMPORTED_MODULE_6___default.a, {\n      value: \"remember\",\n      color: \"primary\"\n    }),\n    label: \"Remember me\"\n  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Button__WEBPACK_IMPORTED_MODULE_2___default.a, {\n    fullWidth: true,\n    variant: \"contained\",\n    color: \"primary\",\n    className: classes.submit,\n    onClick: e => handleClick(e, props)\n  }, \"Sign Up\"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Button__WEBPACK_IMPORTED_MODULE_2___default.a, {\n    fullWidth: true,\n    variant: \"outlined\",\n    color: \"primary\",\n    className: classes.submit,\n    onClick: e => {\n      props.handleSignup();\n    }\n  }, \"Sign In\"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_8___default.a, {\n    container: true\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_8___default.a, {\n    item: true,\n    xs: true\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Link__WEBPACK_IMPORTED_MODULE_7___default.a, {\n    href: \"#\",\n    variant: \"body2\"\n  }, \"Forgot password?\")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Grid__WEBPACK_IMPORTED_MODULE_8___default.a, {\n    item: true\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Link__WEBPACK_IMPORTED_MODULE_7___default.a, {\n    href: \"#\",\n    variant: \"body2\"\n  }, \"Don't have an account? Sign Up\"))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Box__WEBPACK_IMPORTED_MODULE_9___default.a, {\n    mt: 8\n  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Copyright, null)));\n}//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9TaWdudXAuanMuanMiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy9TaWdudXAuanM/Zjg0NyJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgUmVhY3QgZnJvbSAncmVhY3QnO1xyXG5pbXBvcnQgQXZhdGFyIGZyb20gJ0BtYXRlcmlhbC11aS9jb3JlL0F2YXRhcic7XHJcbmltcG9ydCBCdXR0b24gZnJvbSAnQG1hdGVyaWFsLXVpL2NvcmUvQnV0dG9uJztcclxuaW1wb3J0IENzc0Jhc2VsaW5lIGZyb20gJ0BtYXRlcmlhbC11aS9jb3JlL0Nzc0Jhc2VsaW5lJztcclxuaW1wb3J0IFRleHRGaWVsZCBmcm9tICdAbWF0ZXJpYWwtdWkvY29yZS9UZXh0RmllbGQnO1xyXG5pbXBvcnQgRm9ybUNvbnRyb2xMYWJlbCBmcm9tICdAbWF0ZXJpYWwtdWkvY29yZS9Gb3JtQ29udHJvbExhYmVsJztcclxuaW1wb3J0IENoZWNrYm94IGZyb20gJ0BtYXRlcmlhbC11aS9jb3JlL0NoZWNrYm94JztcclxuaW1wb3J0IExpbmsgZnJvbSAnQG1hdGVyaWFsLXVpL2NvcmUvTGluayc7XHJcbmltcG9ydCBHcmlkIGZyb20gJ0BtYXRlcmlhbC11aS9jb3JlL0dyaWQnO1xyXG5pbXBvcnQgQm94IGZyb20gJ0BtYXRlcmlhbC11aS9jb3JlL0JveCc7XHJcbmltcG9ydCBMb2NrT3V0bGluZWRJY29uIGZyb20gJ0BtYXRlcmlhbC11aS9pY29ucy9Mb2NrT3V0bGluZWQnO1xyXG5pbXBvcnQgVHlwb2dyYXBoeSBmcm9tICdAbWF0ZXJpYWwtdWkvY29yZS9UeXBvZ3JhcGh5JztcclxuaW1wb3J0IHsgbWFrZVN0eWxlcyB9IGZyb20gJ0BtYXRlcmlhbC11aS9jb3JlL3N0eWxlcyc7XHJcbmltcG9ydCBDb250YWluZXIgZnJvbSAnQG1hdGVyaWFsLXVpL2NvcmUvQ29udGFpbmVyJztcclxuaW1wb3J0IGF4aW9zIGZyb20gJ2F4aW9zJ1xyXG5pbXBvcnQge0xpbmsgYXMgTGlua3RvIH0gZnJvbSAncmVhY3Qtcm91dGVyLWRvbSdcclxuXHJcbmZ1bmN0aW9uIENvcHlyaWdodCgpIHtcclxuICBjb25zdCBjbGFzc2VzID0gdXNlU3R5bGVzKCk7XHJcbiAgcmV0dXJuIChcclxuICAgIDxUeXBvZ3JhcGh5IHZhcmlhbnQ9XCJib2R5MlwiIGNvbG9yPVwidGV4dFNlY29uZGFyeVwiIGFsaWduPVwiY2VudGVyXCI+XHJcbiAgICAgIHsnQ29weXJpZ2h0IMKpICd9XHJcbiAgICAgIDxMaW5rIGNvbG9yPVwiaW5oZXJpdFwiPlxyXG4gICAgICAgIDxMaW5rdG8gdG89Jy8nIGNsYXNzTmFtZT17Y2xhc3Nlcy5saW5rfT5cclxuICAgICAgICAgICAgQ2hpbGwgU3R1ZGllc1xyXG4gICAgICAgIDwvTGlua3RvPlxyXG4gICAgICA8L0xpbms+eycgJ31cclxuICAgICAge25ldyBEYXRlKCkuZ2V0RnVsbFllYXIoKX1cclxuICAgICAgeycuJ31cclxuICAgIDwvVHlwb2dyYXBoeT5cclxuICApO1xyXG59XHJcbmNvbnN0IHVzZVN0eWxlcyA9IG1ha2VTdHlsZXModGhlbWUgPT4gKHtcclxuICBwYXBlcjoge1xyXG4gICAgbWFyZ2luVG9wOiB0aGVtZS5zcGFjaW5nKDgpLFxyXG4gICAgZGlzcGxheTogJ2ZsZXgnLFxyXG4gICAgZmxleERpcmVjdGlvbjogJ2NvbHVtbicsXHJcbiAgICBhbGlnbkl0ZW1zOiAnY2VudGVyJyxcclxuICB9LFxyXG4gIGF2YXRhcjoge1xyXG4gICAgbWFyZ2luOiB0aGVtZS5zcGFjaW5nKDEpLFxyXG4gICAgYmFja2dyb3VuZENvbG9yOiB0aGVtZS5wYWxldHRlLnNlY29uZGFyeS5tYWluLFxyXG4gIH0sXHJcbiAgZm9ybToge1xyXG4gICAgd2lkdGg6ICcxMDAlJywgLy8gRml4IElFIDExIGlzc3VlLlxyXG4gICAgbWFyZ2luVG9wOiB0aGVtZS5zcGFjaW5nKDEpLFxyXG4gIH0sXHJcbiAgc3VibWl0OiB7XHJcbiAgICBtYXJnaW46IHRoZW1lLnNwYWNpbmcoMywgMCwgMiksXHJcbiAgfSxcclxufSkpO1xyXG5cclxuYXN5bmMgZnVuY3Rpb24gaGFuZGxlQ2xpY2soZSxwcm9wcykge1xyXG4gIGUucHJldmVudERlZmF1bHQoKTtcclxuXHJcbiAgY29uc3QgbmFtZSA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCduYW1lJykudmFsdWUsXHJcbiAgICBlbWFpbCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdlbWFpbCcpLnZhbHVlLFxyXG4gICAgcGFzc3dvcmQgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncGFzc3dvcmQnKS52YWx1ZSxcclxuICAgIGNvbmZpcm1QYXNzd29yZCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdjb25maXJtUGFzc3dvcmQnKS52YWx1ZVxyXG5cclxuICBpZihuYW1lID09PSAnJyB8fCBlbWFpbCA9PT0gJycgfHwgcGFzc3dvcmQgPT09ICcnIHx8IGNvbmZpcm1QYXNzd29yZCA9PT0gJycgKSB7XHJcbiAgICBhbGVydChcIlByb3ZpZGUgVmFsaWQgSW5mb3JtYXRpb25zXCIpO1xyXG4gIH0gZWxzZSB7XHJcbiAgICBjb25zdCBkYXRhID0ge1xyXG4gICAgICBcIm5hbWVcIjogbmFtZSxcclxuICAgICAgXCJzdHVkZW50SWRcIjogZW1haWwsXHJcbiAgICAgIFwicGFzc3dvcmRcIjogcGFzc3dvcmQsXHJcbiAgICAgIFwicGFzc3dvcmRDb25mcmltXCI6IGNvbmZpcm1QYXNzd29yZFxyXG4gICAgfVxyXG4gICAgdHJ5e1xyXG4gICAgICBjb25zdCByZXMgPSBhd2FpdCBheGlvcy5wb3N0KCdodHRwOi8vMTI3LjAuMC4xOjgwMDAvYXBpL3YxL3N0dWRlbnQvc2lnbnVwJywgZGF0YSApXHJcbiAgICAgIGlmKHJlcy5zdGF0dXMgPT09IDIwMSkge1xyXG4gICAgICAgIGFsZXJ0KCdZb3UgU3VjY2Vzc2Z1bGx5IFNpZ25lZCBVcCAhISEgXFxuIE5vdyBTaWduIEluIFRvIENvbnRpbnVlJyk7XHJcbiAgICAgIH1cclxuICAgIH1cclxuICAgIGNhdGNoKGVycikge1xyXG4gICAgICBhbGVydChlcnIpXHJcbiAgICAgIGNvbnNvbGUubG9nKGVycilcclxuICAgIH1cclxuICAgIHByb3BzLmhhbmRsZVNpZ251cCgpXHJcbiAgfVxyXG59XHJcblxyXG5leHBvcnQgZGVmYXVsdCBmdW5jdGlvbiBTaWduVXAocHJvcHMpIHtcclxuICBjb25zdCBjbGFzc2VzID0gdXNlU3R5bGVzKCk7XHJcblxyXG4gIHJldHVybiAoXHJcbiAgICA8Q29udGFpbmVyIGNvbXBvbmVudD1cIm1haW5cIiBtYXhXaWR0aD1cInhzXCI+XHJcbiAgICAgIDxDc3NCYXNlbGluZSAvPlxyXG4gICAgICA8ZGl2IGNsYXNzTmFtZT17Y2xhc3Nlcy5wYXBlcn0+XHJcbiAgICAgICAgPEF2YXRhciBjbGFzc05hbWU9e2NsYXNzZXMuYXZhdGFyfT5cclxuICAgICAgICAgIDxMb2NrT3V0bGluZWRJY29uIC8+XHJcbiAgICAgICAgPC9BdmF0YXI+XHJcbiAgICAgICAgPFR5cG9ncmFwaHkgY29tcG9uZW50PVwiaDFcIiB2YXJpYW50PVwiaDVcIj5cclxuICAgICAgICAgIFNpZ24gVXBcclxuICAgICAgICA8L1R5cG9ncmFwaHk+XHJcbiAgICAgICAgPGZvcm0gY2xhc3NOYW1lPXtjbGFzc2VzLmZvcm19IG5vVmFsaWRhdGU+XHJcbiAgICAgICAgPFRleHRGaWVsZFxyXG4gICAgICAgICAgICB2YXJpYW50PVwib3V0bGluZWRcIlxyXG4gICAgICAgICAgICBtYXJnaW49XCJub3JtYWxcIlxyXG4gICAgICAgICAgICByZXF1aXJlZFxyXG4gICAgICAgICAgICBmdWxsV2lkdGhcclxuICAgICAgICAgICAgaWQ9XCJuYW1lXCJcclxuICAgICAgICAgICAgbGFiZWw9XCJOYW1lXCJcclxuICAgICAgICAgICAgbmFtZT1cIm5hbWVcIlxyXG4gICAgICAgICAgICBhdXRvQ29tcGxldGU9XCJuYW1lXCJcclxuICAgICAgICAgICAgYXV0b0ZvY3VzXHJcbiAgICAgICAgICAgIHJlcXVpcmVkXHJcbiAgICAgICAgICAvPlxyXG4gICAgICAgICAgPFRleHRGaWVsZFxyXG4gICAgICAgICAgICB2YXJpYW50PVwib3V0bGluZWRcIlxyXG4gICAgICAgICAgICBtYXJnaW49XCJub3JtYWxcIlxyXG4gICAgICAgICAgICByZXF1aXJlZFxyXG4gICAgICAgICAgICBmdWxsV2lkdGhcclxuICAgICAgICAgICAgaWQ9XCJlbWFpbFwiXHJcbiAgICAgICAgICAgIGxhYmVsPVwiRW1haWwgQWRkcmVzc1wiXHJcbiAgICAgICAgICAgIG5hbWU9XCJlbWFpbFwiXHJcbiAgICAgICAgICAgIGF1dG9Db21wbGV0ZT1cImVtYWlsXCJcclxuICAgICAgICAgIC8+XHJcbiAgICAgICAgICA8VGV4dEZpZWxkXHJcbiAgICAgICAgICAgIHZhcmlhbnQ9XCJvdXRsaW5lZFwiXHJcbiAgICAgICAgICAgIG1hcmdpbj1cIm5vcm1hbFwiXHJcbiAgICAgICAgICAgIHJlcXVpcmVkXHJcbiAgICAgICAgICAgIGZ1bGxXaWR0aFxyXG4gICAgICAgICAgICBuYW1lPVwicGFzc3dvcmRcIlxyXG4gICAgICAgICAgICBsYWJlbD1cIlBhc3N3b3JkXCJcclxuICAgICAgICAgICAgdHlwZT1cInBhc3N3b3JkXCJcclxuICAgICAgICAgICAgaWQ9XCJwYXNzd29yZFwiXHJcbiAgICAgICAgICAgIGF1dG9Db21wbGV0ZT1cImN1cnJlbnQtcGFzc3dvcmRcIlxyXG4gICAgICAgICAgLz5cclxuICAgICAgICAgICA8VGV4dEZpZWxkXHJcbiAgICAgICAgICAgIHZhcmlhbnQ9XCJvdXRsaW5lZFwiXHJcbiAgICAgICAgICAgIG1hcmdpbj1cIm5vcm1hbFwiXHJcbiAgICAgICAgICAgIHJlcXVpcmVkXHJcbiAgICAgICAgICAgIGZ1bGxXaWR0aFxyXG4gICAgICAgICAgICBuYW1lPVwiY29uZmlybVBhc3N3b3JkXCJcclxuICAgICAgICAgICAgbGFiZWw9XCJDb25maXJtIFBhc3N3b3JkXCJcclxuICAgICAgICAgICAgdHlwZT1cInBhc3N3b3JkXCJcclxuICAgICAgICAgICAgaWQ9XCJjb25maXJtUGFzc3dvcmRcIlxyXG4gICAgICAgICAgICBhdXRvQ29tcGxldGU9XCJjdXJyZW50LXBhc3N3b3JkXCJcclxuICAgICAgICAgIC8+XHJcbiAgICAgICAgICA8Rm9ybUNvbnRyb2xMYWJlbFxyXG4gICAgICAgICAgICBjb250cm9sPXs8Q2hlY2tib3ggdmFsdWU9XCJyZW1lbWJlclwiIGNvbG9yPVwicHJpbWFyeVwiIC8+fVxyXG4gICAgICAgICAgICBsYWJlbD1cIlJlbWVtYmVyIG1lXCJcclxuICAgICAgICAgIC8+XHJcbiAgICAgICAgICA8QnV0dG9uXHJcbiAgICAgICAgICAgICAgZnVsbFdpZHRoXHJcbiAgICAgICAgICAgICAgdmFyaWFudD1cImNvbnRhaW5lZFwiXHJcbiAgICAgICAgICAgICAgY29sb3I9XCJwcmltYXJ5XCJcclxuICAgICAgICAgICAgICBjbGFzc05hbWU9e2NsYXNzZXMuc3VibWl0fVxyXG4gICAgICAgICAgICAgIG9uQ2xpY2sgPSB7IChlKSA9PiBoYW5kbGVDbGljayhlLHByb3BzKX0gXHJcbiAgICAgICAgICAgID5cclxuICAgICAgICAgICAgICBTaWduIFVwXHJcbiAgICAgICAgICA8L0J1dHRvbj5cclxuICAgICAgICAgIDxCdXR0b25cclxuICAgICAgICAgICAgICBmdWxsV2lkdGhcclxuICAgICAgICAgICAgICB2YXJpYW50PVwib3V0bGluZWRcIlxyXG4gICAgICAgICAgICAgIGNvbG9yPVwicHJpbWFyeVwiXHJcbiAgICAgICAgICAgICAgY2xhc3NOYW1lPXtjbGFzc2VzLnN1Ym1pdH1cclxuICAgICAgICAgICAgICBvbkNsaWNrID0geyAoZSkgPT4geyBwcm9wcy5oYW5kbGVTaWdudXAoKSB9fSBcclxuICAgICAgICAgICAgPlxyXG4gICAgICAgICAgICAgIFNpZ24gSW5cclxuICAgICAgICAgIDwvQnV0dG9uPlxyXG4gICAgICAgICAgPEdyaWQgY29udGFpbmVyPlxyXG4gICAgICAgICAgICA8R3JpZCBpdGVtIHhzPlxyXG4gICAgICAgICAgICAgIDxMaW5rIGhyZWY9XCIjXCIgdmFyaWFudD1cImJvZHkyXCI+XHJcbiAgICAgICAgICAgICAgICBGb3Jnb3QgcGFzc3dvcmQ/XHJcbiAgICAgICAgICAgICAgPC9MaW5rPlxyXG4gICAgICAgICAgICA8L0dyaWQ+XHJcbiAgICAgICAgICAgIDxHcmlkIGl0ZW0+XHJcbiAgICAgICAgICAgICAgPExpbmsgaHJlZj1cIiNcIiB2YXJpYW50PVwiYm9keTJcIj5cclxuICAgICAgICAgICAgICAgIHtcIkRvbid0IGhhdmUgYW4gYWNjb3VudD8gU2lnbiBVcFwifVxyXG4gICAgICAgICAgICAgIDwvTGluaz5cclxuICAgICAgICAgICAgPC9HcmlkPlxyXG4gICAgICAgICAgPC9HcmlkPlxyXG4gICAgICAgIDwvZm9ybT5cclxuICAgICAgPC9kaXY+XHJcbiAgICAgIDxCb3ggbXQ9ezh9PlxyXG4gICAgICAgIDxDb3B5cmlnaHQgLz5cclxuICAgICAgPC9Cb3g+XHJcbiAgICA8L0NvbnRhaW5lcj5cclxuICApO1xyXG59Il0sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztBQUFBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUFBO0FBQUE7QUFBQTtBQUVBO0FBQUE7QUFDQTtBQUFBO0FBQUE7QUFRQTtBQUNBO0FBQUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBSkE7QUFNQTtBQUNBO0FBQ0E7QUFGQTtBQUlBO0FBQ0E7QUFBQTtBQUNBO0FBRkE7QUFJQTtBQUNBO0FBREE7QUFmQTtBQUNBO0FBbUJBOzs7OztBQUFBO0FBQ0E7QUFFQTtBQUFBO0FBQUE7QUFBQTtBQUNBO0FBSUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUpBO0FBQ0E7QUFLQTtBQUNBO0FBQ0E7QUFBQTtBQUNBO0FBQ0E7QUFDQTtBQUVBO0FBQ0E7QUFDQTtBQUNBO0FBQUE7QUFDQTtBQUNBOzs7O0FBRUE7QUFDQTtBQUVBO0FBQ0E7QUFBQTtBQUFBO0FBRUE7QUFBQTtBQUNBO0FBQUE7QUFHQTtBQUFBO0FBQUE7QUFHQTtBQUFBO0FBQUE7QUFFQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQVZBO0FBYUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQVJBO0FBV0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBVEE7QUFZQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFUQTtBQVlBO0FBQUE7QUFBQTtBQUFBO0FBQ0E7QUFGQTtBQUtBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFMQTtBQVVBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFBQTtBQUFBO0FBTEE7QUFTQTtBQUFBO0FBQ0E7QUFBQTtBQUFBO0FBQ0E7QUFBQTtBQUFBO0FBSUE7QUFBQTtBQUNBO0FBQUE7QUFBQTtBQU9BO0FBQUE7QUFLQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///./React/Shared/Components/Signup.js\n");
 
 /***/ }),
 
@@ -3538,31 +507,7 @@ function SignUp(props) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _material_ui_core_styles__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @material-ui/core/styles */ "@material-ui/core/styles");
-/* harmony import */ var _material_ui_core_styles__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_styles__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _material_ui_core_colors__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core/colors */ "@material-ui/core/colors");
-/* harmony import */ var _material_ui_core_colors__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_colors__WEBPACK_IMPORTED_MODULE_1__);
-
- // Create a theme instance.
-
-var theme = Object(_material_ui_core_styles__WEBPACK_IMPORTED_MODULE_0__["createMuiTheme"])({
-  palette: {
-    primary: {
-      main: '#556cd6'
-    },
-    secondary: {
-      main: '#19857b'
-    },
-    error: {
-      main: _material_ui_core_colors__WEBPACK_IMPORTED_MODULE_1__["red"].A400
-    },
-    background: {
-      default: '#fff'
-    }
-  }
-});
-/* harmony default export */ __webpack_exports__["default"] = (theme);
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _material_ui_core_styles__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @material-ui/core/styles */ \"@material-ui/core/styles\");\n/* harmony import */ var _material_ui_core_styles__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_styles__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var _material_ui_core_colors__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core/colors */ \"@material-ui/core/colors\");\n/* harmony import */ var _material_ui_core_colors__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core_colors__WEBPACK_IMPORTED_MODULE_1__);\n\n // Create a theme instance.\n\nvar theme = Object(_material_ui_core_styles__WEBPACK_IMPORTED_MODULE_0__[\"createMuiTheme\"])({\n  palette: {\n    primary: {\n      main: '#556cd6'\n    },\n    secondary: {\n      main: '#19857b'\n    },\n    error: {\n      main: _material_ui_core_colors__WEBPACK_IMPORTED_MODULE_1__[\"red\"].A400\n    },\n    background: {\n      default: '#fff'\n    }\n  }\n});\n/* harmony default export */ __webpack_exports__[\"default\"] = (theme);//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TaGFyZWQvQ29tcG9uZW50cy90aGVtZS5qcy5qcyIsInNvdXJjZXMiOlsid2VicGFjazovLy8uL1JlYWN0L1NoYXJlZC9Db21wb25lbnRzL3RoZW1lLmpzPzkyNTYiXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgY3JlYXRlTXVpVGhlbWUgfSBmcm9tICdAbWF0ZXJpYWwtdWkvY29yZS9zdHlsZXMnO1xyXG5pbXBvcnQgeyByZWQgfSBmcm9tICdAbWF0ZXJpYWwtdWkvY29yZS9jb2xvcnMnO1xyXG5cclxuLy8gQ3JlYXRlIGEgdGhlbWUgaW5zdGFuY2UuXHJcbmNvbnN0IHRoZW1lID0gY3JlYXRlTXVpVGhlbWUoe1xyXG4gIHBhbGV0dGU6IHtcclxuICAgIHByaW1hcnk6IHtcclxuICAgICAgbWFpbjogJyM1NTZjZDYnLFxyXG4gICAgfSxcclxuICAgIHNlY29uZGFyeToge1xyXG4gICAgICBtYWluOiAnIzE5ODU3YicsXHJcbiAgICB9LFxyXG4gICAgZXJyb3I6IHtcclxuICAgICAgbWFpbjogcmVkLkE0MDAsXHJcbiAgICB9LFxyXG4gICAgYmFja2dyb3VuZDoge1xyXG4gICAgICBkZWZhdWx0OiAnI2ZmZicsXHJcbiAgICB9LFxyXG4gIH0sXHJcbn0pO1xyXG5cclxuZXhwb3J0IGRlZmF1bHQgdGhlbWU7XHJcbiJdLCJtYXBwaW5ncyI6IkFBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQ0E7QUFDQTtBQUVBO0FBQ0E7QUFDQTtBQUNBO0FBREE7QUFHQTtBQUNBO0FBREE7QUFHQTtBQUNBO0FBREE7QUFHQTtBQUNBO0FBREE7QUFWQTtBQURBO0FBaUJBIiwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///./React/Shared/Components/theme.js\n");
 
 /***/ }),
 
@@ -3574,126 +519,7 @@ var theme = Object(_material_ui_core_styles__WEBPACK_IMPORTED_MODULE_0__["create
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _Components_Course_GeneralMaterials_Activity__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../Components/Course/GeneralMaterials/Activity */ "./React/Shared/Components/Course/GeneralMaterials/Activity.js");
-/* harmony import */ var _Components_Course_GeneralMaterials_Content__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../Components/Course/GeneralMaterials/Content */ "./React/Shared/Components/Course/GeneralMaterials/Content.js");
-/* harmony import */ var _Components_Course_GeneralMaterials_Definitions__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../Components/Course/GeneralMaterials/Definitions */ "./React/Shared/Components/Course/GeneralMaterials/Definitions.js");
-/* harmony import */ var _Components_Course_GeneralMaterials_Summary__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../Components/Course/GeneralMaterials/Summary */ "./React/Shared/Components/Course/GeneralMaterials/Summary.js");
-/* harmony import */ var _Components_Course_GeneralMaterials_Visual__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../Components/Course/GeneralMaterials/Visual */ "./React/Shared/Components/Course/GeneralMaterials/Visual.js");
-/* harmony import */ var _Components_Course_GeneralMaterials_Overview__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../Components/Course/GeneralMaterials/Overview */ "./React/Shared/Components/Course/GeneralMaterials/Overview.js");
-/* harmony import */ var _Components_Course_LSMaterials_AcivityVerbal__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../Components/Course/LSMaterials/AcivityVerbal */ "./React/Shared/Components/Course/LSMaterials/AcivityVerbal.js");
-/* harmony import */ var _Components_Course_LSMaterials_AcivityVerbal__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_AcivityVerbal__WEBPACK_IMPORTED_MODULE_6__);
-/* harmony import */ var _Components_Course_LSMaterials_ActivityVisual__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../Components/Course/LSMaterials/ActivityVisual */ "./React/Shared/Components/Course/LSMaterials/ActivityVisual.js");
-/* harmony import */ var _Components_Course_LSMaterials_ActivityVisual__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_ActivityVisual__WEBPACK_IMPORTED_MODULE_7__);
-/* harmony import */ var _Components_Course_LSMaterials_ContentVerbalDetailed__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../Components/Course/LSMaterials/ContentVerbalDetailed */ "./React/Shared/Components/Course/LSMaterials/ContentVerbalDetailed.js");
-/* harmony import */ var _Components_Course_LSMaterials_ContentVerbalDetailed__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_ContentVerbalDetailed__WEBPACK_IMPORTED_MODULE_8__);
-/* harmony import */ var _Components_Course_LSMaterials_ContentVerbalOverview__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../Components/Course/LSMaterials/ContentVerbalOverview */ "./React/Shared/Components/Course/LSMaterials/ContentVerbalOverview.js");
-/* harmony import */ var _Components_Course_LSMaterials_ContentVerbalOverview__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_ContentVerbalOverview__WEBPACK_IMPORTED_MODULE_9__);
-/* harmony import */ var _Components_Course_LSMaterials_ContentVisualDetailed__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../Components/Course/LSMaterials/ContentVisualDetailed */ "./React/Shared/Components/Course/LSMaterials/ContentVisualDetailed.js");
-/* harmony import */ var _Components_Course_LSMaterials_ContentVisualDetailed__WEBPACK_IMPORTED_MODULE_10___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_ContentVisualDetailed__WEBPACK_IMPORTED_MODULE_10__);
-/* harmony import */ var _Components_Course_LSMaterials_ContentVisualOverview__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../Components/Course/LSMaterials/ContentVisualOverview */ "./React/Shared/Components/Course/LSMaterials/ContentVisualOverview.js");
-/* harmony import */ var _Components_Course_LSMaterials_ContentVisualOverview__WEBPACK_IMPORTED_MODULE_11___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_ContentVisualOverview__WEBPACK_IMPORTED_MODULE_11__);
-/* harmony import */ var _Components_Course_LSMaterials_DefinitionVerbalDetailed__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../Components/Course/LSMaterials/DefinitionVerbalDetailed */ "./React/Shared/Components/Course/LSMaterials/DefinitionVerbalDetailed.js");
-/* harmony import */ var _Components_Course_LSMaterials_DefinitionVerbalOverview__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../Components/Course/LSMaterials/DefinitionVerbalOverview */ "./React/Shared/Components/Course/LSMaterials/DefinitionVerbalOverview.js");
-/* harmony import */ var _Components_Course_LSMaterials_DefinitionVerbalOverview__WEBPACK_IMPORTED_MODULE_13___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_DefinitionVerbalOverview__WEBPACK_IMPORTED_MODULE_13__);
-/* harmony import */ var _Components_Course_LSMaterials_DefinitionVisualDetailed__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../Components/Course/LSMaterials/DefinitionVisualDetailed */ "./React/Shared/Components/Course/LSMaterials/DefinitionVisualDetailed.js");
-/* harmony import */ var _Components_Course_LSMaterials_DefinitionVisualDetailed__WEBPACK_IMPORTED_MODULE_14___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_DefinitionVisualDetailed__WEBPACK_IMPORTED_MODULE_14__);
-/* harmony import */ var _Components_Course_LSMaterials_DefinitionVisualOverview__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../Components/Course/LSMaterials/DefinitionVisualOverview */ "./React/Shared/Components/Course/LSMaterials/DefinitionVisualOverview.js");
-/* harmony import */ var _Components_Course_LSMaterials_DefinitionVisualOverview__WEBPACK_IMPORTED_MODULE_15___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_DefinitionVisualOverview__WEBPACK_IMPORTED_MODULE_15__);
-/* harmony import */ var _Components_Course_LSMaterials_OverviewVerbal__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ../Components/Course/LSMaterials/OverviewVerbal */ "./React/Shared/Components/Course/LSMaterials/OverviewVerbal.js");
-/* harmony import */ var _Components_Course_LSMaterials_OverviewVisual__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ../Components/Course/LSMaterials/OverviewVisual */ "./React/Shared/Components/Course/LSMaterials/OverviewVisual.js");
-/* harmony import */ var _Components_Course_LSMaterials_SummaryVerbal__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ../Components/Course/LSMaterials/SummaryVerbal */ "./React/Shared/Components/Course/LSMaterials/SummaryVerbal.js");
-/* harmony import */ var _Components_Course_LSMaterials_SummaryVerbal__WEBPACK_IMPORTED_MODULE_18___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_SummaryVerbal__WEBPACK_IMPORTED_MODULE_18__);
-/* harmony import */ var _Components_Course_LSMaterials_SummaryVisual__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ../Components/Course/LSMaterials/SummaryVisual */ "./React/Shared/Components/Course/LSMaterials/SummaryVisual.js");
-/* harmony import */ var _Components_Course_LSMaterials_SummaryVisual__WEBPACK_IMPORTED_MODULE_19___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_SummaryVisual__WEBPACK_IMPORTED_MODULE_19__);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-var categories = [{
-  name: 'Activity',
-  component: _Components_Course_GeneralMaterials_Activity__WEBPACK_IMPORTED_MODULE_0__["default"]
-}, {
-  name: 'Content',
-  component: _Components_Course_GeneralMaterials_Content__WEBPACK_IMPORTED_MODULE_1__["default"]
-}, {
-  name: 'Definitons',
-  component: _Components_Course_GeneralMaterials_Definitions__WEBPACK_IMPORTED_MODULE_2__["default"]
-}, {
-  name: 'Summary',
-  component: _Components_Course_GeneralMaterials_Summary__WEBPACK_IMPORTED_MODULE_3__["default"]
-}, {
-  name: 'Visual',
-  component: _Components_Course_GeneralMaterials_Visual__WEBPACK_IMPORTED_MODULE_4__["default"]
-}, {
-  name: 'Overview',
-  component: _Components_Course_GeneralMaterials_Overview__WEBPACK_IMPORTED_MODULE_5__["default"]
-}, {
-  name: 'Overview-Verbal',
-  component: _Components_Course_LSMaterials_OverviewVerbal__WEBPACK_IMPORTED_MODULE_16__["default"]
-}, {
-  name: 'Overview-Visual',
-  component: _Components_Course_LSMaterials_OverviewVisual__WEBPACK_IMPORTED_MODULE_17__["default"]
-}, {
-  name: 'Summary-Visual',
-  component: _Components_Course_LSMaterials_SummaryVisual__WEBPACK_IMPORTED_MODULE_19___default.a
-}, {
-  name: 'Summary-Verbal',
-  component: _Components_Course_LSMaterials_SummaryVerbal__WEBPACK_IMPORTED_MODULE_18___default.a
-}, {
-  name: 'Activity-Verbal',
-  component: _Components_Course_LSMaterials_ActivityVisual__WEBPACK_IMPORTED_MODULE_7___default.a
-}, {
-  name: 'Activity-Visual',
-  component: _Components_Course_LSMaterials_AcivityVerbal__WEBPACK_IMPORTED_MODULE_6___default.a
-}, {
-  name: 'Content-Verbal-Detailed',
-  component: _Components_Course_LSMaterials_ContentVerbalDetailed__WEBPACK_IMPORTED_MODULE_8___default.a
-}, {
-  name: 'Content-Verbal-Overview',
-  component: _Components_Course_LSMaterials_ContentVerbalOverview__WEBPACK_IMPORTED_MODULE_9___default.a
-}, {
-  name: 'Content-Visual-Detailed',
-  component: _Components_Course_LSMaterials_ContentVisualDetailed__WEBPACK_IMPORTED_MODULE_10___default.a
-}, {
-  name: 'Content-Visual-Overview',
-  component: _Components_Course_LSMaterials_ContentVisualOverview__WEBPACK_IMPORTED_MODULE_11___default.a
-}, {
-  name: 'Definition-Verbal-Detailed',
-  component: _Components_Course_LSMaterials_DefinitionVerbalDetailed__WEBPACK_IMPORTED_MODULE_12__["default"]
-}, {
-  name: 'Definition-Verbal-Overview',
-  component: _Components_Course_LSMaterials_DefinitionVerbalOverview__WEBPACK_IMPORTED_MODULE_13___default.a
-}, {
-  name: 'Definition-Visual-Detailed',
-  component: _Components_Course_LSMaterials_DefinitionVisualDetailed__WEBPACK_IMPORTED_MODULE_14___default.a
-}, {
-  name: 'Definition-Visual-Overview',
-  component: _Components_Course_LSMaterials_DefinitionVisualOverview__WEBPACK_IMPORTED_MODULE_15___default.a
-}, {
-  name: 'Summary-Verbal',
-  component: _Components_Course_LSMaterials_SummaryVerbal__WEBPACK_IMPORTED_MODULE_18___default.a
-}, {
-  name: 'Summary-Visual',
-  component: _Components_Course_LSMaterials_SummaryVisual__WEBPACK_IMPORTED_MODULE_19___default.a
-}];
-/* harmony default export */ __webpack_exports__["default"] = (categories);
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _Components_Course_GeneralMaterials_Activity__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../Components/Course/GeneralMaterials/Activity */ \"./React/Shared/Components/Course/GeneralMaterials/Activity.js\");\n/* harmony import */ var _Components_Course_GeneralMaterials_Content__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../Components/Course/GeneralMaterials/Content */ \"./React/Shared/Components/Course/GeneralMaterials/Content.js\");\n/* harmony import */ var _Components_Course_GeneralMaterials_Definitions__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../Components/Course/GeneralMaterials/Definitions */ \"./React/Shared/Components/Course/GeneralMaterials/Definitions.js\");\n/* harmony import */ var _Components_Course_GeneralMaterials_Summary__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../Components/Course/GeneralMaterials/Summary */ \"./React/Shared/Components/Course/GeneralMaterials/Summary.js\");\n/* harmony import */ var _Components_Course_GeneralMaterials_Visual__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../Components/Course/GeneralMaterials/Visual */ \"./React/Shared/Components/Course/GeneralMaterials/Visual.js\");\n/* harmony import */ var _Components_Course_GeneralMaterials_Overview__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../Components/Course/GeneralMaterials/Overview */ \"./React/Shared/Components/Course/GeneralMaterials/Overview.js\");\n/* harmony import */ var _Components_Course_LSMaterials_AcivityVerbal__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../Components/Course/LSMaterials/AcivityVerbal */ \"./React/Shared/Components/Course/LSMaterials/AcivityVerbal.js\");\n/* harmony import */ var _Components_Course_LSMaterials_AcivityVerbal__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_AcivityVerbal__WEBPACK_IMPORTED_MODULE_6__);\n/* harmony import */ var _Components_Course_LSMaterials_ActivityVisual__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../Components/Course/LSMaterials/ActivityVisual */ \"./React/Shared/Components/Course/LSMaterials/ActivityVisual.js\");\n/* harmony import */ var _Components_Course_LSMaterials_ActivityVisual__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_ActivityVisual__WEBPACK_IMPORTED_MODULE_7__);\n/* harmony import */ var _Components_Course_LSMaterials_ContentVerbalDetailed__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../Components/Course/LSMaterials/ContentVerbalDetailed */ \"./React/Shared/Components/Course/LSMaterials/ContentVerbalDetailed.js\");\n/* harmony import */ var _Components_Course_LSMaterials_ContentVerbalDetailed__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_ContentVerbalDetailed__WEBPACK_IMPORTED_MODULE_8__);\n/* harmony import */ var _Components_Course_LSMaterials_ContentVerbalOverview__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../Components/Course/LSMaterials/ContentVerbalOverview */ \"./React/Shared/Components/Course/LSMaterials/ContentVerbalOverview.js\");\n/* harmony import */ var _Components_Course_LSMaterials_ContentVerbalOverview__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_ContentVerbalOverview__WEBPACK_IMPORTED_MODULE_9__);\n/* harmony import */ var _Components_Course_LSMaterials_ContentVisualDetailed__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../Components/Course/LSMaterials/ContentVisualDetailed */ \"./React/Shared/Components/Course/LSMaterials/ContentVisualDetailed.js\");\n/* harmony import */ var _Components_Course_LSMaterials_ContentVisualDetailed__WEBPACK_IMPORTED_MODULE_10___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_ContentVisualDetailed__WEBPACK_IMPORTED_MODULE_10__);\n/* harmony import */ var _Components_Course_LSMaterials_ContentVisualOverview__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../Components/Course/LSMaterials/ContentVisualOverview */ \"./React/Shared/Components/Course/LSMaterials/ContentVisualOverview.js\");\n/* harmony import */ var _Components_Course_LSMaterials_ContentVisualOverview__WEBPACK_IMPORTED_MODULE_11___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_ContentVisualOverview__WEBPACK_IMPORTED_MODULE_11__);\n/* harmony import */ var _Components_Course_LSMaterials_DefinitionVerbalDetailed__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../Components/Course/LSMaterials/DefinitionVerbalDetailed */ \"./React/Shared/Components/Course/LSMaterials/DefinitionVerbalDetailed.js\");\n/* harmony import */ var _Components_Course_LSMaterials_DefinitionVerbalOverview__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../Components/Course/LSMaterials/DefinitionVerbalOverview */ \"./React/Shared/Components/Course/LSMaterials/DefinitionVerbalOverview.js\");\n/* harmony import */ var _Components_Course_LSMaterials_DefinitionVisualDetailed__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../Components/Course/LSMaterials/DefinitionVisualDetailed */ \"./React/Shared/Components/Course/LSMaterials/DefinitionVisualDetailed.js\");\n/* harmony import */ var _Components_Course_LSMaterials_DefinitionVisualDetailed__WEBPACK_IMPORTED_MODULE_14___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_DefinitionVisualDetailed__WEBPACK_IMPORTED_MODULE_14__);\n/* harmony import */ var _Components_Course_LSMaterials_DefinitionVisualOverview__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../Components/Course/LSMaterials/DefinitionVisualOverview */ \"./React/Shared/Components/Course/LSMaterials/DefinitionVisualOverview.js\");\n/* harmony import */ var _Components_Course_LSMaterials_DefinitionVisualOverview__WEBPACK_IMPORTED_MODULE_15___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_DefinitionVisualOverview__WEBPACK_IMPORTED_MODULE_15__);\n/* harmony import */ var _Components_Course_LSMaterials_OverviewVerbal__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ../Components/Course/LSMaterials/OverviewVerbal */ \"./React/Shared/Components/Course/LSMaterials/OverviewVerbal.js\");\n/* harmony import */ var _Components_Course_LSMaterials_OverviewVisual__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ../Components/Course/LSMaterials/OverviewVisual */ \"./React/Shared/Components/Course/LSMaterials/OverviewVisual.js\");\n/* harmony import */ var _Components_Course_LSMaterials_SummaryVerbal__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ../Components/Course/LSMaterials/SummaryVerbal */ \"./React/Shared/Components/Course/LSMaterials/SummaryVerbal.js\");\n/* harmony import */ var _Components_Course_LSMaterials_SummaryVerbal__WEBPACK_IMPORTED_MODULE_18___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_SummaryVerbal__WEBPACK_IMPORTED_MODULE_18__);\n/* harmony import */ var _Components_Course_LSMaterials_SummaryVisual__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ../Components/Course/LSMaterials/SummaryVisual */ \"./React/Shared/Components/Course/LSMaterials/SummaryVisual.js\");\n/* harmony import */ var _Components_Course_LSMaterials_SummaryVisual__WEBPACK_IMPORTED_MODULE_19___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_SummaryVisual__WEBPACK_IMPORTED_MODULE_19__);\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nvar categories = [{\n  name: 'Activity',\n  component: _Components_Course_GeneralMaterials_Activity__WEBPACK_IMPORTED_MODULE_0__[\"default\"]\n}, {\n  name: 'Content',\n  component: _Components_Course_GeneralMaterials_Content__WEBPACK_IMPORTED_MODULE_1__[\"default\"]\n}, {\n  name: 'Definitons',\n  component: _Components_Course_GeneralMaterials_Definitions__WEBPACK_IMPORTED_MODULE_2__[\"default\"]\n}, {\n  name: 'Summary',\n  component: _Components_Course_GeneralMaterials_Summary__WEBPACK_IMPORTED_MODULE_3__[\"default\"]\n}, {\n  name: 'Visual',\n  component: _Components_Course_GeneralMaterials_Visual__WEBPACK_IMPORTED_MODULE_4__[\"default\"]\n}, {\n  name: 'Overview',\n  component: _Components_Course_GeneralMaterials_Overview__WEBPACK_IMPORTED_MODULE_5__[\"default\"]\n}, {\n  name: 'Overview-Verbal',\n  component: _Components_Course_LSMaterials_OverviewVerbal__WEBPACK_IMPORTED_MODULE_16__[\"default\"]\n}, {\n  name: 'Overview-Visual',\n  component: _Components_Course_LSMaterials_OverviewVisual__WEBPACK_IMPORTED_MODULE_17__[\"default\"]\n}, {\n  name: 'Summary-Visual',\n  component: _Components_Course_LSMaterials_SummaryVisual__WEBPACK_IMPORTED_MODULE_19___default.a\n}, {\n  name: 'Summary-Verbal',\n  component: _Components_Course_LSMaterials_SummaryVerbal__WEBPACK_IMPORTED_MODULE_18___default.a\n}, {\n  name: 'Activity-Verbal',\n  component: _Components_Course_LSMaterials_ActivityVisual__WEBPACK_IMPORTED_MODULE_7___default.a\n}, {\n  name: 'Activity-Visual',\n  component: _Components_Course_LSMaterials_AcivityVerbal__WEBPACK_IMPORTED_MODULE_6___default.a\n}, {\n  name: 'Content-Verbal-Detailed',\n  component: _Components_Course_LSMaterials_ContentVerbalDetailed__WEBPACK_IMPORTED_MODULE_8___default.a\n}, {\n  name: 'Content-Verbal-Overview',\n  component: _Components_Course_LSMaterials_ContentVerbalOverview__WEBPACK_IMPORTED_MODULE_9___default.a\n}, {\n  name: 'Content-Visual-Detailed',\n  component: _Components_Course_LSMaterials_ContentVisualDetailed__WEBPACK_IMPORTED_MODULE_10___default.a\n}, {\n  name: 'Content-Visual-Overview',\n  component: _Components_Course_LSMaterials_ContentVisualOverview__WEBPACK_IMPORTED_MODULE_11___default.a\n}, {\n  name: 'Definition-Verbal-Detailed',\n  component: _Components_Course_LSMaterials_DefinitionVerbalDetailed__WEBPACK_IMPORTED_MODULE_12__[\"default\"]\n}, {\n  name: 'Definition-Verbal-Overview',\n  component: _Components_Course_LSMaterials_DefinitionVerbalOverview__WEBPACK_IMPORTED_MODULE_13__[\"default\"]\n}, {\n  name: 'Definition-Visual-Detailed',\n  component: _Components_Course_LSMaterials_DefinitionVisualDetailed__WEBPACK_IMPORTED_MODULE_14___default.a\n}, {\n  name: 'Definition-Visual-Overview',\n  component: _Components_Course_LSMaterials_DefinitionVisualOverview__WEBPACK_IMPORTED_MODULE_15___default.a\n}, {\n  name: 'Summary-Verbal',\n  component: _Components_Course_LSMaterials_SummaryVerbal__WEBPACK_IMPORTED_MODULE_18___default.a\n}, {\n  name: 'Summary-Visual',\n  component: _Components_Course_LSMaterials_SummaryVisual__WEBPACK_IMPORTED_MODULE_19___default.a\n}];\n/* harmony default export */ __webpack_exports__[\"default\"] = (categories);//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TaGFyZWQvRGF0YS9jYXRlZ29yaWVzLmpzLmpzIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vLy4vUmVhY3QvU2hhcmVkL0RhdGEvY2F0ZWdvcmllcy5qcz9kNDI3Il0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCBBY3Rpdml0eSBmcm9tICcuLi9Db21wb25lbnRzL0NvdXJzZS9HZW5lcmFsTWF0ZXJpYWxzL0FjdGl2aXR5J1xyXG5pbXBvcnQgQ29udGVudCBmcm9tICcuLi9Db21wb25lbnRzL0NvdXJzZS9HZW5lcmFsTWF0ZXJpYWxzL0NvbnRlbnQnXHJcbmltcG9ydCBEZWZpbml0aW9ucyBmcm9tICcuLi9Db21wb25lbnRzL0NvdXJzZS9HZW5lcmFsTWF0ZXJpYWxzL0RlZmluaXRpb25zJ1xyXG5pbXBvcnQgU3VtbWFyeSBmcm9tICcuLi9Db21wb25lbnRzL0NvdXJzZS9HZW5lcmFsTWF0ZXJpYWxzL1N1bW1hcnknXHJcbmltcG9ydCBWaXN1YWwgZnJvbSAnLi4vQ29tcG9uZW50cy9Db3Vyc2UvR2VuZXJhbE1hdGVyaWFscy9WaXN1YWwnXHJcbmltcG9ydCBPdmVydmlldyBmcm9tICcuLi9Db21wb25lbnRzL0NvdXJzZS9HZW5lcmFsTWF0ZXJpYWxzL092ZXJ2aWV3J1xyXG5pbXBvcnQgQWN0aXZpdHlWaXN1YWwgZnJvbSAnLi4vQ29tcG9uZW50cy9Db3Vyc2UvTFNNYXRlcmlhbHMvQWNpdml0eVZlcmJhbCdcclxuaW1wb3J0IEFjaXZpdHlWZXJiYWwgZnJvbSAnLi4vQ29tcG9uZW50cy9Db3Vyc2UvTFNNYXRlcmlhbHMvQWN0aXZpdHlWaXN1YWwnXHJcbmltcG9ydCBDb250ZW50VmVyYmFsRGV0YWlsZWQgZnJvbSAnLi4vQ29tcG9uZW50cy9Db3Vyc2UvTFNNYXRlcmlhbHMvQ29udGVudFZlcmJhbERldGFpbGVkJ1xyXG5pbXBvcnQgQ29udGVudFZlcmJhbE92ZXJ2aWV3IGZyb20gJy4uL0NvbXBvbmVudHMvQ291cnNlL0xTTWF0ZXJpYWxzL0NvbnRlbnRWZXJiYWxPdmVydmlldydcclxuaW1wb3J0IENvbnRlbnRWaXN1YWxEZXRhaWxlZCBmcm9tICcuLi9Db21wb25lbnRzL0NvdXJzZS9MU01hdGVyaWFscy9Db250ZW50VmlzdWFsRGV0YWlsZWQnXHJcbmltcG9ydCBDb250ZW50VmlzdWFsT3ZlcnZpZXcgZnJvbSAnLi4vQ29tcG9uZW50cy9Db3Vyc2UvTFNNYXRlcmlhbHMvQ29udGVudFZpc3VhbE92ZXJ2aWV3J1xyXG5pbXBvcnQgRGVmaW5pdGlvblZlcmJhbERldGFpbGVkIGZyb20gJy4uL0NvbXBvbmVudHMvQ291cnNlL0xTTWF0ZXJpYWxzL0RlZmluaXRpb25WZXJiYWxEZXRhaWxlZCdcclxuaW1wb3J0IERlZmluaXRpb25WZXJiYWxPdmVydmlldyBmcm9tICcuLi9Db21wb25lbnRzL0NvdXJzZS9MU01hdGVyaWFscy9EZWZpbml0aW9uVmVyYmFsT3ZlcnZpZXcnXHJcbmltcG9ydCBEZWZpbml0aW9uVmlzdWFsRGV0YWlsZWQgZnJvbSAnLi4vQ29tcG9uZW50cy9Db3Vyc2UvTFNNYXRlcmlhbHMvRGVmaW5pdGlvblZpc3VhbERldGFpbGVkJ1xyXG5pbXBvcnQgRGVmaW5pdGlvblZpc3VhbE92ZXJ2aWV3IGZyb20gJy4uL0NvbXBvbmVudHMvQ291cnNlL0xTTWF0ZXJpYWxzL0RlZmluaXRpb25WaXN1YWxPdmVydmlldydcclxuaW1wb3J0IE92ZXJ2aWV3VmVyYmFsIGZyb20gJy4uL0NvbXBvbmVudHMvQ291cnNlL0xTTWF0ZXJpYWxzL092ZXJ2aWV3VmVyYmFsJ1xyXG5pbXBvcnQgT3ZlcnZpZXdWaXN1YWwgZnJvbSAnLi4vQ29tcG9uZW50cy9Db3Vyc2UvTFNNYXRlcmlhbHMvT3ZlcnZpZXdWaXN1YWwnXHJcbmltcG9ydCBTdW1tYXJ5VmVyYmFsIGZyb20gJy4uL0NvbXBvbmVudHMvQ291cnNlL0xTTWF0ZXJpYWxzL1N1bW1hcnlWZXJiYWwnXHJcbmltcG9ydCBTdW1tYXJ5VmlzdWFsIGZyb20gJy4uL0NvbXBvbmVudHMvQ291cnNlL0xTTWF0ZXJpYWxzL1N1bW1hcnlWaXN1YWwnXHJcblxyXG5jb25zdCBjYXRlZ29yaWVzID0gW1xyXG4gICAge1xyXG4gICAgICBuYW1lOiAnQWN0aXZpdHknLFxyXG4gICAgICBjb21wb25lbnQgOiBBY3Rpdml0eVxyXG4gICAgfSxcclxuICAgIHtcclxuICAgICAgICBuYW1lOiAnQ29udGVudCcsXHJcbiAgICAgICAgY29tcG9uZW50IDogQ29udGVudFxyXG4gICAgfSxcclxuICAgIHtcclxuICAgICAgICBuYW1lOiAnRGVmaW5pdG9ucycsXHJcbiAgICAgICAgY29tcG9uZW50IDogRGVmaW5pdGlvbnNcclxuICAgIH0sXHJcbiAgICB7XHJcbiAgICAgICAgbmFtZTogJ1N1bW1hcnknLFxyXG4gICAgICAgIGNvbXBvbmVudCA6IFN1bW1hcnlcclxuICAgIH0sXHJcbiAgICB7XHJcbiAgICAgICAgbmFtZTogJ1Zpc3VhbCcsXHJcbiAgICAgICAgY29tcG9uZW50IDogVmlzdWFsXHJcbiAgICB9LFxyXG4gICAge1xyXG4gICAgICAgIG5hbWU6ICdPdmVydmlldycsXHJcbiAgICAgICAgY29tcG9uZW50IDogT3ZlcnZpZXdcclxuICAgIH0sXHJcbiAgICB7XHJcbiAgICAgICAgbmFtZTogJ092ZXJ2aWV3LVZlcmJhbCcsXHJcbiAgICAgICAgY29tcG9uZW50IDogT3ZlcnZpZXdWZXJiYWxcclxuICAgIH0sXHJcbiAgICB7XHJcbiAgICAgICAgbmFtZTogJ092ZXJ2aWV3LVZpc3VhbCcsXHJcbiAgICAgICAgY29tcG9uZW50IDogT3ZlcnZpZXdWaXN1YWxcclxuICAgIH0sXHJcbiAgICB7XHJcbiAgICAgICAgbmFtZTogJ1N1bW1hcnktVmlzdWFsJyxcclxuICAgICAgICBjb21wb25lbnQgOiBTdW1tYXJ5VmlzdWFsXHJcbiAgICB9LFxyXG4gICAge1xyXG4gICAgICAgIG5hbWU6ICdTdW1tYXJ5LVZlcmJhbCcsXHJcbiAgICAgICAgY29tcG9uZW50IDogU3VtbWFyeVZlcmJhbFxyXG4gICAgfSxcclxuICAgIHtcclxuICAgICAgICBuYW1lOiAnQWN0aXZpdHktVmVyYmFsJyxcclxuICAgICAgICBjb21wb25lbnQgOiBBY2l2aXR5VmVyYmFsXHJcbiAgICB9LFxyXG4gICAge1xyXG4gICAgICAgIG5hbWU6ICdBY3Rpdml0eS1WaXN1YWwnLFxyXG4gICAgICAgIGNvbXBvbmVudCA6IEFjdGl2aXR5VmlzdWFsXHJcbiAgICB9LFxyXG4gICAge1xyXG4gICAgICAgIG5hbWU6ICdDb250ZW50LVZlcmJhbC1EZXRhaWxlZCcsXHJcbiAgICAgICAgY29tcG9uZW50IDogQ29udGVudFZlcmJhbERldGFpbGVkXHJcbiAgICB9LFxyXG4gICAge1xyXG4gICAgICAgIG5hbWU6ICdDb250ZW50LVZlcmJhbC1PdmVydmlldycsXHJcbiAgICAgICAgY29tcG9uZW50IDogQ29udGVudFZlcmJhbE92ZXJ2aWV3XHJcbiAgICB9LFxyXG4gICAge1xyXG4gICAgICAgIG5hbWU6ICdDb250ZW50LVZpc3VhbC1EZXRhaWxlZCcsXHJcbiAgICAgICAgY29tcG9uZW50IDogQ29udGVudFZpc3VhbERldGFpbGVkXHJcbiAgICB9LFxyXG4gICAge1xyXG4gICAgICAgIG5hbWU6ICdDb250ZW50LVZpc3VhbC1PdmVydmlldycsXHJcbiAgICAgICAgY29tcG9uZW50IDogQ29udGVudFZpc3VhbE92ZXJ2aWV3XHJcbiAgICB9LFxyXG4gICAge1xyXG4gICAgICAgIG5hbWU6ICdEZWZpbml0aW9uLVZlcmJhbC1EZXRhaWxlZCcsXHJcbiAgICAgICAgY29tcG9uZW50IDogRGVmaW5pdGlvblZlcmJhbERldGFpbGVkXHJcbiAgICB9LFxyXG4gICAge1xyXG4gICAgICAgIG5hbWU6ICdEZWZpbml0aW9uLVZlcmJhbC1PdmVydmlldycsXHJcbiAgICAgICAgY29tcG9uZW50IDogRGVmaW5pdGlvblZlcmJhbE92ZXJ2aWV3XHJcbiAgICB9LFxyXG4gICAge1xyXG4gICAgICAgIG5hbWU6ICdEZWZpbml0aW9uLVZpc3VhbC1EZXRhaWxlZCcsXHJcbiAgICAgICAgY29tcG9uZW50IDogRGVmaW5pdGlvblZpc3VhbERldGFpbGVkXHJcbiAgICB9LFxyXG4gICAge1xyXG4gICAgICAgIG5hbWU6ICdEZWZpbml0aW9uLVZpc3VhbC1PdmVydmlldycsXHJcbiAgICAgICAgY29tcG9uZW50IDogRGVmaW5pdGlvblZpc3VhbE92ZXJ2aWV3XHJcbiAgICB9LFxyXG4gICAge1xyXG4gICAgICAgIG5hbWU6ICdTdW1tYXJ5LVZlcmJhbCcsXHJcbiAgICAgICAgY29tcG9uZW50IDogU3VtbWFyeVZlcmJhbFxyXG4gICAgfSxcclxuICAgIHtcclxuICAgICAgICBuYW1lOiAnU3VtbWFyeS1WaXN1YWwnLFxyXG4gICAgICAgIGNvbXBvbmVudCA6IFN1bW1hcnlWaXN1YWxcclxuICAgIH0sXHJcbl1cclxuXHJcbmV4cG9ydCBkZWZhdWx0IGNhdGVnb3JpZXMiXSwibWFwcGluZ3MiOiJBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUVBO0FBRUE7QUFDQTtBQUZBO0FBS0E7QUFDQTtBQUZBO0FBS0E7QUFDQTtBQUZBO0FBS0E7QUFDQTtBQUZBO0FBS0E7QUFDQTtBQUZBO0FBS0E7QUFDQTtBQUZBO0FBS0E7QUFDQTtBQUZBO0FBS0E7QUFDQTtBQUZBO0FBS0E7QUFDQTtBQUZBO0FBS0E7QUFDQTtBQUZBO0FBS0E7QUFDQTtBQUZBO0FBS0E7QUFDQTtBQUZBO0FBS0E7QUFDQTtBQUZBO0FBS0E7QUFDQTtBQUZBO0FBS0E7QUFDQTtBQUZBO0FBS0E7QUFDQTtBQUZBO0FBS0E7QUFDQTtBQUZBO0FBS0E7QUFDQTtBQUZBO0FBS0E7QUFDQTtBQUZBO0FBS0E7QUFDQTtBQUZBO0FBS0E7QUFDQTtBQUZBO0FBS0E7QUFDQTtBQUZBO0FBTUEiLCJzb3VyY2VSb290IjoiIn0=\n//# sourceURL=webpack-internal:///./React/Shared/Data/categories.js\n");
 
 /***/ }),
 
@@ -3705,33 +531,7 @@ var categories = [{
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-__webpack_require__.r(__webpack_exports__);
-var courses = [{
-  name: 'Java',
-  image: 'https://c4.wallpaperflare.com/wallpaper/510/989/208/web-development-development-java-wallpaper-preview.jpg',
-  desc: 'Java Beginner Pack'
-}, {
-  name: 'JavaScript',
-  image: 'https://i1.wp.com/www.nishantvaity.com/wp-content/uploads/2019/05/javascript.jpg?fit=650%2C400&ssl=1',
-  desc: 'JavaScript Beginner Pack'
-}, {
-  name: 'HTML',
-  image: 'https://dinesh-ghimire.com.np/wp-content/uploads/2019/02/html5.png',
-  desc: 'HTML Beginner Pack'
-}, {
-  name: 'CSS',
-  image: 'https://colorlib.com/wp/wp-content/uploads/sites/2/creative-css3-tutorials.jpg',
-  desc: 'CSS Beginner Pack'
-}, {
-  name: 'ReactJs',
-  image: 'https://embedwistia-a.akamaihd.net/deliveries/bdfbccc31132d5f0a48bbf0caacced1e.webp?image_crop_resized=1280x800',
-  desc: 'ReactJs Beginner Pack'
-}, {
-  name: 'NodeJs',
-  image: 'https://cdnblog.natrocdn.com/wp-content/uploads/2019/10/node-js-nedir-768x427.jpg',
-  desc: 'NodeJs Beginner Pack'
-}];
-/* harmony default export */ __webpack_exports__["default"] = (courses);
+eval("__webpack_require__.r(__webpack_exports__);\nvar courses = [{\n  name: 'Java',\n  image: 'https://c4.wallpaperflare.com/wallpaper/510/989/208/web-development-development-java-wallpaper-preview.jpg',\n  desc: 'Java Beginner Pack'\n}, {\n  name: 'JavaScript',\n  image: 'https://i1.wp.com/www.nishantvaity.com/wp-content/uploads/2019/05/javascript.jpg?fit=650%2C400&ssl=1',\n  desc: 'JavaScript Beginner Pack'\n}, {\n  name: 'HTML',\n  image: 'https://dinesh-ghimire.com.np/wp-content/uploads/2019/02/html5.png',\n  desc: 'HTML Beginner Pack'\n}, {\n  name: 'CSS',\n  image: 'https://colorlib.com/wp/wp-content/uploads/sites/2/creative-css3-tutorials.jpg',\n  desc: 'CSS Beginner Pack'\n}, {\n  name: 'ReactJs',\n  image: 'https://embedwistia-a.akamaihd.net/deliveries/bdfbccc31132d5f0a48bbf0caacced1e.webp?image_crop_resized=1280x800',\n  desc: 'ReactJs Beginner Pack'\n}, {\n  name: 'NodeJs',\n  image: 'https://cdnblog.natrocdn.com/wp-content/uploads/2019/10/node-js-nedir-768x427.jpg',\n  desc: 'NodeJs Beginner Pack'\n}];\n/* harmony default export */ __webpack_exports__[\"default\"] = (courses);//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TaGFyZWQvRGF0YS9jb3Vyc2VzLmpzLmpzIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vLy4vUmVhY3QvU2hhcmVkL0RhdGEvY291cnNlcy5qcz8yMjIwIl0sInNvdXJjZXNDb250ZW50IjpbImNvbnN0IGNvdXJzZXMgPSBbXHJcbiAgICB7XHJcbiAgICAgIG5hbWU6ICdKYXZhJyxcclxuICAgICAgaW1hZ2U6ICdodHRwczovL2M0LndhbGxwYXBlcmZsYXJlLmNvbS93YWxscGFwZXIvNTEwLzk4OS8yMDgvd2ViLWRldmVsb3BtZW50LWRldmVsb3BtZW50LWphdmEtd2FsbHBhcGVyLXByZXZpZXcuanBnJyxcclxuICAgICAgZGVzYyA6ICdKYXZhIEJlZ2lubmVyIFBhY2snXHJcbiAgICB9LFxyXG4gICAge1xyXG4gICAgICAgIG5hbWU6ICdKYXZhU2NyaXB0JyxcclxuICAgICAgICBpbWFnZTogJ2h0dHBzOi8vaTEud3AuY29tL3d3dy5uaXNoYW50dmFpdHkuY29tL3dwLWNvbnRlbnQvdXBsb2Fkcy8yMDE5LzA1L2phdmFzY3JpcHQuanBnP2ZpdD02NTAlMkM0MDAmc3NsPTEnLFxyXG4gICAgICAgIGRlc2MgOiAnSmF2YVNjcmlwdCBCZWdpbm5lciBQYWNrJ1xyXG4gICAgfSxcclxuICAgIHtcclxuICAgICAgICBuYW1lOiAnSFRNTCcsXHJcbiAgICAgICAgaW1hZ2U6ICdodHRwczovL2RpbmVzaC1naGltaXJlLmNvbS5ucC93cC1jb250ZW50L3VwbG9hZHMvMjAxOS8wMi9odG1sNS5wbmcnLFxyXG4gICAgICAgIGRlc2MgOiAnSFRNTCBCZWdpbm5lciBQYWNrJ1xyXG4gICAgfSxcclxuICAgIHtcclxuICAgICAgICBuYW1lOiAnQ1NTJyxcclxuICAgICAgICBpbWFnZTogJ2h0dHBzOi8vY29sb3JsaWIuY29tL3dwL3dwLWNvbnRlbnQvdXBsb2Fkcy9zaXRlcy8yL2NyZWF0aXZlLWNzczMtdHV0b3JpYWxzLmpwZycsXHJcbiAgICAgICAgZGVzYyA6ICdDU1MgQmVnaW5uZXIgUGFjaydcclxuICAgIH0sXHJcbiAgICB7XHJcbiAgICAgICAgbmFtZTogJ1JlYWN0SnMnLFxyXG4gICAgICAgIGltYWdlOiAnaHR0cHM6Ly9lbWJlZHdpc3RpYS1hLmFrYW1haWhkLm5ldC9kZWxpdmVyaWVzL2JkZmJjY2MzMTEzMmQ1ZjBhNDhiYmYwY2FhY2NlZDFlLndlYnA/aW1hZ2VfY3JvcF9yZXNpemVkPTEyODB4ODAwJyxcclxuICAgICAgICBkZXNjIDogJ1JlYWN0SnMgQmVnaW5uZXIgUGFjaydcclxuICAgIH0sXHJcbiAgICB7XHJcbiAgICAgICAgbmFtZTogJ05vZGVKcycsXHJcbiAgICAgICAgaW1hZ2U6ICdodHRwczovL2NkbmJsb2cubmF0cm9jZG4uY29tL3dwLWNvbnRlbnQvdXBsb2Fkcy8yMDE5LzEwL25vZGUtanMtbmVkaXItNzY4eDQyNy5qcGcnLFxyXG4gICAgICAgIGRlc2MgOiAnTm9kZUpzIEJlZ2lubmVyIFBhY2snXHJcbiAgICB9LFxyXG5cclxuXVxyXG5cclxuZXhwb3J0IGRlZmF1bHQgY291cnNlcyJdLCJtYXBwaW5ncyI6IkFBQUE7QUFBQTtBQUVBO0FBQ0E7QUFDQTtBQUhBO0FBTUE7QUFDQTtBQUNBO0FBSEE7QUFNQTtBQUNBO0FBQ0E7QUFIQTtBQU1BO0FBQ0E7QUFDQTtBQUhBO0FBTUE7QUFDQTtBQUNBO0FBSEE7QUFNQTtBQUNBO0FBQ0E7QUFIQTtBQVFBIiwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///./React/Shared/Data/courses.js\n");
 
 /***/ }),
 
@@ -3743,72 +543,7 @@ var courses = [{
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ([{
-  type: "rirs",
-  name: "Reflective Intuitive Reading Sequential",
-  contents: ['Overview-Verbal', 'Content-Verbal-Detailed', 'Summary-Verbal', 'Activity-Verbal']
-}, {
-  type: "rsrs",
-  name: "Reflective Sensing Reading Sequential",
-  contents: ['Overview-Verbal', 'Definition-Verbal-Detailed', 'Summary-Verbal', 'Activity-Verbal']
-}, {
-  type: "rivs",
-  name: "Reflective Intuitive Visual Sequential",
-  contents: ['Overview-Visual', 'Content-Visual-Detailed', 'Summary-Visual', 'Activity-Visual']
-}, {
-  type: "rsvs",
-  name: "Reflective Sensing Visual Sequential",
-  contents: ['Overview-Visual', 'Content-Visual-Detailed', 'Summary-Visual', 'Activity-Visual']
-}, {
-  type: "rirg",
-  name: "Reflective Intuitive Reading Global",
-  contents: ['Overview-Verbal', 'Definition-Verbal-Overview', 'Summary-Verbal', 'Activity-Verbal']
-}, {
-  type: "rsrg",
-  name: "Reflective Sensing Reading Global",
-  contents: ['Overview-Verbal', 'Definition-Verbal-Overview', 'Summary-Verbal', 'Activity-Verbal']
-}, {
-  type: "rivg",
-  name: "Reflective  Intuitive  Visual Global",
-  contents: ['Overview-Visual', 'Content-Visual-Overview', 'Summary-Visual', 'Activity-Visual']
-}, {
-  type: "rsvg",
-  name: "Reflective Sensing Visual Global",
-  contents: ['Overview-Visual', 'Definition-Visual-Overview', 'Summary-Visual', 'Activity-Visual']
-}, {
-  type: "asrs",
-  name: "Active Sensing Reading Sequential",
-  contents: ['Overview-Verbal', 'Definition-Verbal-Detailed', 'Activity-Verbal', 'Summary-Verbal']
-}, {
-  type: "airg",
-  name: "Active Intuitive Reading Global",
-  contents: ['Overview-Verbal', 'Content-Verbal-Overview', 'Activity-Verbal', 'Summary-Verbal']
-}, {
-  type: "airs",
-  name: "Active Intuitive Reading Sequential",
-  contents: ['Overview-Verbal', 'Content-Verbal-Detailed', 'Activity-Verbal', 'Summary-Verbal']
-}, {
-  type: "asrg",
-  name: "Active Sensing Reading Global",
-  contents: ['Overview-Verbal', 'Definition-Verbal-Overview', 'Activity-Verbal', 'Summary-Verbal']
-}, {
-  type: "aivg",
-  name: "Active Intuitive Visual Global",
-  contents: ['Overview-Visual', 'Definition-Visual-Overview', 'Activity-Visual', 'Summary-Visual']
-}, {
-  type: "aivs",
-  name: "Active Intuitive Visual Sequential",
-  contents: ['Overview-Visual', 'Definition-Visual-Detailed', 'Activity-Visual', 'Summary-Visual']
-}, {
-  type: "asvg",
-  name: "Active Sensing Visual Global",
-  contents: ['Overview-Visual', 'Content-Visual-Overview', 'Activity-Visual', 'Summary-Visual']
-}, {
-  type: "asvs",
-  name: "Active Sensing Visual Sequential",
-  contents: ['Overview-Visual', 'Content-Visual-Detailed', 'Activity-Visual', 'Summary-Visual']
-}]);
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony default export */ __webpack_exports__[\"default\"] = ([{\n  type: \"rirs\",\n  name: \"Reflective Intuitive Reading Sequential\",\n  contents: ['Overview-Verbal', 'Content-Verbal-Detailed', 'Summary-Verbal', 'Activity-Verbal']\n}, {\n  type: \"rsrs\",\n  name: \"Reflective Sensing Reading Sequential\",\n  contents: ['Overview-Verbal', 'Definition-Verbal-Detailed', 'Summary-Verbal', 'Activity-Verbal']\n}, {\n  type: \"rivs\",\n  name: \"Reflective Intuitive Visual Sequential\",\n  contents: ['Overview-Visual', 'Content-Visual-Detailed', 'Summary-Visual', 'Activity-Visual']\n}, {\n  type: \"rsvs\",\n  name: \"Reflective Sensing Visual Sequential\",\n  contents: ['Overview-Visual', 'Content-Visual-Detailed', 'Summary-Visual', 'Activity-Visual']\n}, {\n  type: \"rirg\",\n  name: \"Reflective Intuitive Reading Global\",\n  contents: ['Overview-Verbal', 'Definition-Verbal-Overview', 'Summary-Verbal', 'Activity-Verbal']\n}, {\n  type: \"rsrg\",\n  name: \"Reflective Sensing Reading Global\",\n  contents: ['Overview-Verbal', 'Definition-Verbal-Overview', 'Summary-Verbal', 'Activity-Verbal']\n}, {\n  type: \"rivg\",\n  name: \"Reflective  Intuitive  Visual Global\",\n  contents: ['Overview-Visual', 'Content-Visual-Overview', 'Summary-Visual', 'Activity-Visual']\n}, {\n  type: \"rsvg\",\n  name: \"Reflective Sensing Visual Global\",\n  contents: ['Overview-Visual', 'Definition-Visual-Overview', 'Summary-Visual', 'Activity-Visual']\n}, {\n  type: \"asrs\",\n  name: \"Active Sensing Reading Sequential\",\n  contents: ['Overview-Verbal', 'Definition-Verbal-Detailed', 'Activity-Verbal', 'Summary-Verbal']\n}, {\n  type: \"airg\",\n  name: \"Active Intuitive Reading Global\",\n  contents: ['Overview-Verbal', 'Content-Verbal-Overview', 'Activity-Verbal', 'Summary-Verbal']\n}, {\n  type: \"airs\",\n  name: \"Active Intuitive Reading Sequential\",\n  contents: ['Overview-Verbal', 'Content-Verbal-Detailed', 'Activity-Verbal', 'Summary-Verbal']\n}, {\n  type: \"asrg\",\n  name: \"Active Sensing Reading Global\",\n  contents: ['Overview-Verbal', 'Definition-Verbal-Overview', 'Activity-Verbal', 'Summary-Verbal']\n}, {\n  type: \"aivg\",\n  name: \"Active Intuitive Visual Global\",\n  contents: ['Overview-Visual', 'Definition-Visual-Overview', 'Activity-Visual', 'Summary-Visual']\n}, {\n  type: \"aivs\",\n  name: \"Active Intuitive Visual Sequential\",\n  contents: ['Overview-Visual', 'Definition-Visual-Detailed', 'Activity-Visual', 'Summary-Visual']\n}, {\n  type: \"asvg\",\n  name: \"Active Sensing Visual Global\",\n  contents: ['Overview-Visual', 'Content-Visual-Overview', 'Activity-Visual', 'Summary-Visual']\n}, {\n  type: \"asvs\",\n  name: \"Active Sensing Visual Sequential\",\n  contents: ['Overview-Visual', 'Content-Visual-Detailed', 'Activity-Visual', 'Summary-Visual']\n}]);//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TaGFyZWQvRGF0YS9sZWFybmluZ1N0eWxlcy5qcy5qcyIsInNvdXJjZXMiOlsid2VicGFjazovLy8uL1JlYWN0L1NoYXJlZC9EYXRhL2xlYXJuaW5nU3R5bGVzLmpzPzUyN2EiXSwic291cmNlc0NvbnRlbnQiOlsiZXhwb3J0IGRlZmF1bHQgW1xyXG4gIHtcclxuICAgIHR5cGU6IFwicmlyc1wiLFxyXG4gICAgbmFtZTogXCJSZWZsZWN0aXZlIEludHVpdGl2ZSBSZWFkaW5nIFNlcXVlbnRpYWxcIixcclxuICAgIGNvbnRlbnRzIDogWydPdmVydmlldy1WZXJiYWwnLCdDb250ZW50LVZlcmJhbC1EZXRhaWxlZCcsJ1N1bW1hcnktVmVyYmFsJywnQWN0aXZpdHktVmVyYmFsJ11cclxuICB9LFxyXG4gIHtcclxuICAgIHR5cGU6IFwicnNyc1wiLFxyXG4gICAgbmFtZTogXCJSZWZsZWN0aXZlIFNlbnNpbmcgUmVhZGluZyBTZXF1ZW50aWFsXCIsXHJcbiAgICBjb250ZW50cyA6IFsnT3ZlcnZpZXctVmVyYmFsJywnRGVmaW5pdGlvbi1WZXJiYWwtRGV0YWlsZWQnLCdTdW1tYXJ5LVZlcmJhbCcsJ0FjdGl2aXR5LVZlcmJhbCddXHJcbiAgfSxcclxuICB7XHJcbiAgICB0eXBlOiBcInJpdnNcIixcclxuICAgIG5hbWU6IFwiUmVmbGVjdGl2ZSBJbnR1aXRpdmUgVmlzdWFsIFNlcXVlbnRpYWxcIixcclxuICAgIGNvbnRlbnRzIDogWydPdmVydmlldy1WaXN1YWwnLCdDb250ZW50LVZpc3VhbC1EZXRhaWxlZCcsJ1N1bW1hcnktVmlzdWFsJywnQWN0aXZpdHktVmlzdWFsJ11cclxuICB9LFxyXG4gIHtcclxuICAgIHR5cGU6IFwicnN2c1wiLFxyXG4gICAgbmFtZTogXCJSZWZsZWN0aXZlIFNlbnNpbmcgVmlzdWFsIFNlcXVlbnRpYWxcIixcclxuICAgIGNvbnRlbnRzIDogWydPdmVydmlldy1WaXN1YWwnLCdDb250ZW50LVZpc3VhbC1EZXRhaWxlZCcsJ1N1bW1hcnktVmlzdWFsJywnQWN0aXZpdHktVmlzdWFsJ11cclxuICB9LFxyXG4gIHtcclxuICAgIHR5cGU6IFwicmlyZ1wiLFxyXG4gICAgbmFtZTogXCJSZWZsZWN0aXZlIEludHVpdGl2ZSBSZWFkaW5nIEdsb2JhbFwiLFxyXG4gICAgY29udGVudHMgOiBbJ092ZXJ2aWV3LVZlcmJhbCcsJ0RlZmluaXRpb24tVmVyYmFsLU92ZXJ2aWV3JywnU3VtbWFyeS1WZXJiYWwnLCdBY3Rpdml0eS1WZXJiYWwnXVxyXG4gIH0sXHJcbiAge1xyXG4gICAgdHlwZTogXCJyc3JnXCIsXHJcbiAgICBuYW1lOiBcIlJlZmxlY3RpdmUgU2Vuc2luZyBSZWFkaW5nIEdsb2JhbFwiLFxyXG4gICAgY29udGVudHMgOiBbJ092ZXJ2aWV3LVZlcmJhbCcsJ0RlZmluaXRpb24tVmVyYmFsLU92ZXJ2aWV3JywnU3VtbWFyeS1WZXJiYWwnLCdBY3Rpdml0eS1WZXJiYWwnXVxyXG4gIH0sXHJcbiAge1xyXG4gICAgdHlwZTogXCJyaXZnXCIsXHJcbiAgICBuYW1lOiBcIlJlZmxlY3RpdmUgIEludHVpdGl2ZSAgVmlzdWFsIEdsb2JhbFwiLFxyXG4gICAgY29udGVudHMgOiBbJ092ZXJ2aWV3LVZpc3VhbCcsJ0NvbnRlbnQtVmlzdWFsLU92ZXJ2aWV3JywnU3VtbWFyeS1WaXN1YWwnLCdBY3Rpdml0eS1WaXN1YWwnXVxyXG4gIH0sXHJcbiAge1xyXG4gICAgdHlwZTogXCJyc3ZnXCIsXHJcbiAgICBuYW1lOiBcIlJlZmxlY3RpdmUgU2Vuc2luZyBWaXN1YWwgR2xvYmFsXCIsXHJcbiAgICBjb250ZW50cyA6IFsnT3ZlcnZpZXctVmlzdWFsJywnRGVmaW5pdGlvbi1WaXN1YWwtT3ZlcnZpZXcnLCdTdW1tYXJ5LVZpc3VhbCcsJ0FjdGl2aXR5LVZpc3VhbCddXHJcbiAgfSxcclxuICB7XHJcbiAgICB0eXBlOiBcImFzcnNcIixcclxuICAgIG5hbWU6IFwiQWN0aXZlIFNlbnNpbmcgUmVhZGluZyBTZXF1ZW50aWFsXCIsXHJcbiAgICBjb250ZW50cyA6IFsnT3ZlcnZpZXctVmVyYmFsJywnRGVmaW5pdGlvbi1WZXJiYWwtRGV0YWlsZWQnLCdBY3Rpdml0eS1WZXJiYWwnLCdTdW1tYXJ5LVZlcmJhbCddXHJcbiAgfSxcclxuICB7XHJcbiAgICB0eXBlOiBcImFpcmdcIixcclxuICAgIG5hbWU6IFwiQWN0aXZlIEludHVpdGl2ZSBSZWFkaW5nIEdsb2JhbFwiLFxyXG4gICAgY29udGVudHMgOiBbJ092ZXJ2aWV3LVZlcmJhbCcsJ0NvbnRlbnQtVmVyYmFsLU92ZXJ2aWV3JywnQWN0aXZpdHktVmVyYmFsJywnU3VtbWFyeS1WZXJiYWwnXVxyXG4gIH0sXHJcbiAge1xyXG4gICAgdHlwZTogXCJhaXJzXCIsXHJcbiAgICBuYW1lOiBcIkFjdGl2ZSBJbnR1aXRpdmUgUmVhZGluZyBTZXF1ZW50aWFsXCIsXHJcbiAgICBjb250ZW50cyA6IFsnT3ZlcnZpZXctVmVyYmFsJywnQ29udGVudC1WZXJiYWwtRGV0YWlsZWQnLCdBY3Rpdml0eS1WZXJiYWwnLCdTdW1tYXJ5LVZlcmJhbCddXHJcbiAgfSxcclxuICB7XHJcbiAgICB0eXBlOiBcImFzcmdcIixcclxuICAgIG5hbWU6IFwiQWN0aXZlIFNlbnNpbmcgUmVhZGluZyBHbG9iYWxcIixcclxuICAgIGNvbnRlbnRzIDogWydPdmVydmlldy1WZXJiYWwnLCdEZWZpbml0aW9uLVZlcmJhbC1PdmVydmlldycsJ0FjdGl2aXR5LVZlcmJhbCcsJ1N1bW1hcnktVmVyYmFsJ11cclxuICB9LFxyXG4gXHJcbiAge1xyXG4gICAgdHlwZTogXCJhaXZnXCIsXHJcbiAgICBuYW1lOiBcIkFjdGl2ZSBJbnR1aXRpdmUgVmlzdWFsIEdsb2JhbFwiLFxyXG4gICAgY29udGVudHMgOiBbJ092ZXJ2aWV3LVZpc3VhbCcsJ0RlZmluaXRpb24tVmlzdWFsLU92ZXJ2aWV3JywnQWN0aXZpdHktVmlzdWFsJywnU3VtbWFyeS1WaXN1YWwnXVxyXG4gIH0sXHJcbiAge1xyXG4gICAgdHlwZTogXCJhaXZzXCIsXHJcbiAgICBuYW1lOiBcIkFjdGl2ZSBJbnR1aXRpdmUgVmlzdWFsIFNlcXVlbnRpYWxcIixcclxuICAgIGNvbnRlbnRzIDogWydPdmVydmlldy1WaXN1YWwnLCdEZWZpbml0aW9uLVZpc3VhbC1EZXRhaWxlZCcsJ0FjdGl2aXR5LVZpc3VhbCcsJ1N1bW1hcnktVmlzdWFsJ11cclxuICB9LFxyXG4gIHtcclxuICAgIHR5cGU6IFwiYXN2Z1wiLFxyXG4gICAgbmFtZTogXCJBY3RpdmUgU2Vuc2luZyBWaXN1YWwgR2xvYmFsXCIsXHJcbiAgICBjb250ZW50cyA6IFsnT3ZlcnZpZXctVmlzdWFsJywnQ29udGVudC1WaXN1YWwtT3ZlcnZpZXcnLCdBY3Rpdml0eS1WaXN1YWwnLCdTdW1tYXJ5LVZpc3VhbCddXHJcbiAgfSxcclxuICB7XHJcbiAgICB0eXBlOiBcImFzdnNcIixcclxuICAgIG5hbWU6IFwiQWN0aXZlIFNlbnNpbmcgVmlzdWFsIFNlcXVlbnRpYWxcIixcclxuICAgIGNvbnRlbnRzIDogWydPdmVydmlldy1WaXN1YWwnLCdDb250ZW50LVZpc3VhbC1EZXRhaWxlZCcsJ0FjdGl2aXR5LVZpc3VhbCcsJ1N1bW1hcnktVmlzdWFsJ11cclxuICB9XHJcbl07XHJcbiJdLCJtYXBwaW5ncyI6IkFBQUE7QUFBQTtBQUVBO0FBQ0E7QUFDQTtBQUhBO0FBTUE7QUFDQTtBQUNBO0FBSEE7QUFNQTtBQUNBO0FBQ0E7QUFIQTtBQU1BO0FBQ0E7QUFDQTtBQUhBO0FBTUE7QUFDQTtBQUNBO0FBSEE7QUFNQTtBQUNBO0FBQ0E7QUFIQTtBQU1BO0FBQ0E7QUFDQTtBQUhBO0FBTUE7QUFDQTtBQUNBO0FBSEE7QUFNQTtBQUNBO0FBQ0E7QUFIQTtBQU1BO0FBQ0E7QUFDQTtBQUhBO0FBTUE7QUFDQTtBQUNBO0FBSEE7QUFNQTtBQUNBO0FBQ0E7QUFIQTtBQU9BO0FBQ0E7QUFDQTtBQUhBO0FBTUE7QUFDQTtBQUNBO0FBSEE7QUFNQTtBQUNBO0FBQ0E7QUFIQTtBQU1BO0FBQ0E7QUFDQTtBQUhBIiwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///./React/Shared/Data/learningStyles.js\n");
 
 /***/ }),
 
@@ -3820,55 +555,7 @@ __webpack_require__.r(__webpack_exports__);
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _Components_Login__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../Components/Login */ "./React/Shared/Components/Login.js");
-/* harmony import */ var _Components_Signup__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../Components/Signup */ "./React/Shared/Components/Signup.js");
-/* harmony import */ var _Components_Course_Home__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../Components/Course/Home */ "./React/Shared/Components/Course/Home.js");
-/* harmony import */ var _Components_Course_Page__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../Components/Course/Page */ "./React/Shared/Components/Course/Page.js");
-/* harmony import */ var _Components_Course_LS_LS__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../Components/Course/LS/LS */ "./React/Shared/Components/Course/LS/LS.js");
-
-
-
-
-
-var routes = [{
-  path: "/",
-  component: _Components_Login__WEBPACK_IMPORTED_MODULE_0__["default"],
-  exact: true
-}, {
-  path: "/signup",
-  component: _Components_Signup__WEBPACK_IMPORTED_MODULE_1__["default"],
-  exact: true
-}, {
-  path: "/course/:course/ls:ls_type",
-  component: _Components_Course_LS_LS__WEBPACK_IMPORTED_MODULE_4__["default"],
-  exact: true
-}, {
-  path: "/course/:course/home",
-  component: _Components_Course_Home__WEBPACK_IMPORTED_MODULE_2__["default"],
-  exact: true
-}, {
-  path: "/course/:course/ls/:ls_type",
-  component: _Components_Course_Home__WEBPACK_IMPORTED_MODULE_2__["default"],
-  exact: true
-}, {
-  path: "/course/:course/ls/:ls_type/:category",
-  component: _Components_Course_Page__WEBPACK_IMPORTED_MODULE_3__["default"],
-  exact: true
-}, {
-  path: "/dashboard",
-  component: _Components_Course_Home__WEBPACK_IMPORTED_MODULE_2__["default"],
-  exact: true
-}, {
-  path: "/course/:course",
-  component: _Components_Course_Home__WEBPACK_IMPORTED_MODULE_2__["default"],
-  exact: true
-}, {
-  path: "/course/:course/:category",
-  component: _Components_Course_Page__WEBPACK_IMPORTED_MODULE_3__["default"],
-  exact: true
-}];
-/* harmony default export */ __webpack_exports__["default"] = (routes);
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _Components_Login__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../Components/Login */ \"./React/Shared/Components/Login.js\");\n/* harmony import */ var _Components_Signup__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../Components/Signup */ \"./React/Shared/Components/Signup.js\");\n/* harmony import */ var _Components_Course_Home__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../Components/Course/Home */ \"./React/Shared/Components/Course/Home.js\");\n/* harmony import */ var _Components_Course_Page__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../Components/Course/Page */ \"./React/Shared/Components/Course/Page.js\");\n/* harmony import */ var _Components_Course_LS_LS__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../Components/Course/LS/LS */ \"./React/Shared/Components/Course/LS/LS.js\");\n\n\n\n\n\nvar routes = [{\n  path: \"/\",\n  component: _Components_Login__WEBPACK_IMPORTED_MODULE_0__[\"default\"],\n  exact: true\n}, {\n  path: \"/signup\",\n  component: _Components_Signup__WEBPACK_IMPORTED_MODULE_1__[\"default\"],\n  exact: true\n}, {\n  path: \"/course/:course/ls:ls_type\",\n  component: _Components_Course_LS_LS__WEBPACK_IMPORTED_MODULE_4__[\"default\"],\n  exact: true\n}, {\n  path: \"/course/:course/home\",\n  component: _Components_Course_Home__WEBPACK_IMPORTED_MODULE_2__[\"default\"],\n  exact: true\n}, {\n  path: \"/course/:course/ls/:ls_type\",\n  component: _Components_Course_Home__WEBPACK_IMPORTED_MODULE_2__[\"default\"],\n  exact: true\n}, {\n  path: \"/course/:course/ls/:ls_type/:category\",\n  component: _Components_Course_Page__WEBPACK_IMPORTED_MODULE_3__[\"default\"],\n  exact: true\n}, {\n  path: \"/dashboard\",\n  component: _Components_Course_Home__WEBPACK_IMPORTED_MODULE_2__[\"default\"],\n  exact: true\n}, {\n  path: \"/course/:course\",\n  component: _Components_Course_Home__WEBPACK_IMPORTED_MODULE_2__[\"default\"],\n  exact: true\n}, {\n  path: \"/course/:course/:category\",\n  component: _Components_Course_Page__WEBPACK_IMPORTED_MODULE_3__[\"default\"],\n  exact: true\n}];\n/* harmony default export */ __webpack_exports__[\"default\"] = (routes);//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9SZWFjdC9TaGFyZWQvRGF0YS9yb3V0ZXMuanMuanMiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vLi9SZWFjdC9TaGFyZWQvRGF0YS9yb3V0ZXMuanM/ZTI2NCJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgTG9naW4gZnJvbSAnLi4vQ29tcG9uZW50cy9Mb2dpbidcclxuaW1wb3J0IFNpZ251cCBmcm9tICcuLi9Db21wb25lbnRzL1NpZ251cCdcclxuaW1wb3J0IEhvbWUgZnJvbSAnLi4vQ29tcG9uZW50cy9Db3Vyc2UvSG9tZSdcclxuaW1wb3J0IFBhZ2UgZnJvbSAnLi4vQ29tcG9uZW50cy9Db3Vyc2UvUGFnZSdcclxuaW1wb3J0IExTIGZyb20gJy4uL0NvbXBvbmVudHMvQ291cnNlL0xTL0xTJ1xyXG5cclxuXHJcbmNvbnN0IHJvdXRlcyA9IFtcclxuICAgIHtcclxuICAgICAgcGF0aDogXCIvXCIsXHJcbiAgICAgIGNvbXBvbmVudDogTG9naW4sXHJcbiAgICAgIGV4YWN0IDogdHJ1ZVxyXG4gICAgfSxcclxuICAgIHtcclxuICAgICAgICBwYXRoOiBcIi9zaWdudXBcIixcclxuICAgICAgICBjb21wb25lbnQ6IFNpZ251cCxcclxuICAgICAgICBleGFjdCA6IHRydWVcclxuICAgIH0sXHJcbiAgICB7XHJcbiAgICAgICAgcGF0aDogXCIvY291cnNlLzpjb3Vyc2UvbHM6bHNfdHlwZVwiLFxyXG4gICAgICAgIGNvbXBvbmVudCA6IExTLFxyXG4gICAgICAgIGV4YWN0IDogdHJ1ZVxyXG4gICAgfSxcclxuICAgIHtcclxuICAgICAgICBwYXRoOiBcIi9jb3Vyc2UvOmNvdXJzZS9ob21lXCIsXHJcbiAgICAgICAgY29tcG9uZW50IDogSG9tZSxcclxuICAgICAgICBleGFjdCA6IHRydWVcclxuICAgIH0sXHJcbiAgICB7XHJcbiAgICAgICAgcGF0aDogXCIvY291cnNlLzpjb3Vyc2UvbHMvOmxzX3R5cGVcIixcclxuICAgICAgICBjb21wb25lbnQgOiBIb21lLFxyXG4gICAgICAgIGV4YWN0IDogdHJ1ZVxyXG4gICAgfSxcclxuICAgIHtcclxuICAgICAgICBwYXRoOiBcIi9jb3Vyc2UvOmNvdXJzZS9scy86bHNfdHlwZS86Y2F0ZWdvcnlcIixcclxuICAgICAgICBjb21wb25lbnQgOiBQYWdlLFxyXG4gICAgICAgIGV4YWN0IDogdHJ1ZVxyXG4gICAgfSxcclxuICAgIHtcclxuICAgICAgICBwYXRoOiBcIi9kYXNoYm9hcmRcIixcclxuICAgICAgICBjb21wb25lbnQ6IEhvbWUsXHJcbiAgICAgICAgZXhhY3QgOiB0cnVlXHJcbiAgICB9LFxyXG4gICAge1xyXG4gICAgICAgIHBhdGg6IFwiL2NvdXJzZS86Y291cnNlXCIsXHJcbiAgICAgICAgY29tcG9uZW50OiBIb21lLFxyXG4gICAgICAgIGV4YWN0IDogdHJ1ZVxyXG4gICAgfSxcclxuICAgIHtcclxuICAgICAgICBwYXRoOiBcIi9jb3Vyc2UvOmNvdXJzZS86Y2F0ZWdvcnlcIixcclxuICAgICAgICBjb21wb25lbnQ6IFBhZ2UsXHJcbiAgICAgICAgZXhhY3QgOiB0cnVlXHJcbiAgICB9XHJcbl1cclxuXHJcbmV4cG9ydCBkZWZhdWx0IHJvdXRlcyJdLCJtYXBwaW5ncyI6IkFBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUdBO0FBRUE7QUFDQTtBQUNBO0FBSEE7QUFNQTtBQUNBO0FBQ0E7QUFIQTtBQU1BO0FBQ0E7QUFDQTtBQUhBO0FBTUE7QUFDQTtBQUNBO0FBSEE7QUFNQTtBQUNBO0FBQ0E7QUFIQTtBQU1BO0FBQ0E7QUFDQTtBQUhBO0FBTUE7QUFDQTtBQUNBO0FBSEE7QUFNQTtBQUNBO0FBQ0E7QUFIQTtBQU1BO0FBQ0E7QUFDQTtBQUhBO0FBT0EiLCJzb3VyY2VSb290IjoiIn0=\n//# sourceURL=webpack-internal:///./React/Shared/Data/routes.js\n");
 
 /***/ }),
 
@@ -3880,35 +567,7 @@ var routes = [{
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var express__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! express */ "express");
-/* harmony import */ var express__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(express__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _React_Server_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./React/Server/index */ "./React/Server/index.js");
-
-
-var cors = __webpack_require__(/*! cors */ "cors");
-
-var morgan = __webpack_require__(/*! morgan */ "morgan");
-
-var globalErrorHandler = __webpack_require__(/*! ./APIs/Controllers/ErrorController */ "./APIs/Controllers/ErrorController.js");
-
-var AppErr = __webpack_require__(/*! ./APIs/utils/appError */ "./APIs/utils/appError.js");
-
-var studentRouter = __webpack_require__(/*! ./APIs/Routers/studentRouter */ "./APIs/Routers/studentRouter.js");
-
-
-var app = express__WEBPACK_IMPORTED_MODULE_0___default()();
-app.use(express__WEBPACK_IMPORTED_MODULE_0___default.a.json());
-app.use(morgan("dev"));
-app.use(cors()); //===============Routers=====================
-
-app.use("/api/v1/student", studentRouter);
-app.use("/", _React_Server_index__WEBPACK_IMPORTED_MODULE_1__["default"]);
-app.all("*", (req, res, next) => {
-  next(new AppErr("Can't find a route - BAD URL", 404));
-});
-app.use(globalErrorHandler);
-/* harmony default export */ __webpack_exports__["default"] = (app);
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var express__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! express */ \"express\");\n/* harmony import */ var express__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(express__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var _React_Server_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./React/Server/index */ \"./React/Server/index.js\");\n\n\nvar cors = __webpack_require__(/*! cors */ \"cors\");\n\nvar morgan = __webpack_require__(/*! morgan */ \"morgan\");\n\nvar globalErrorHandler = __webpack_require__(/*! ./APIs/Controllers/ErrorController */ \"./APIs/Controllers/ErrorController.js\");\n\nvar AppErr = __webpack_require__(/*! ./APIs/utils/appError */ \"./APIs/utils/appError.js\");\n\nvar studentRouter = __webpack_require__(/*! ./APIs/Routers/studentRouter */ \"./APIs/Routers/studentRouter.js\");\n\n\nvar app = express__WEBPACK_IMPORTED_MODULE_0___default()();\napp.use(express__WEBPACK_IMPORTED_MODULE_0___default.a.json());\napp.use(morgan(\"dev\"));\napp.use(cors()); //===============Routers=====================\n\napp.use(\"/api/v1/student\", studentRouter);\napp.use(\"/\", _React_Server_index__WEBPACK_IMPORTED_MODULE_1__[\"default\"]);\napp.all(\"*\", (req, res, next) => {\n  next(new AppErr(\"Can't find a route - BAD URL\", 404));\n});\napp.use(globalErrorHandler);\n/* harmony default export */ __webpack_exports__[\"default\"] = (app);//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9hcHAuanMuanMiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vLi9hcHAuanM/OWE3OCJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgZXhwcmVzcyBmcm9tIFwiZXhwcmVzc1wiO1xyXG5jb25zdCBjb3JzID0gcmVxdWlyZShcImNvcnNcIik7XHJcbmNvbnN0IG1vcmdhbiA9IHJlcXVpcmUoXCJtb3JnYW5cIik7XHJcbmNvbnN0IGdsb2JhbEVycm9ySGFuZGxlciA9IHJlcXVpcmUoXCIuL0FQSXMvQ29udHJvbGxlcnMvRXJyb3JDb250cm9sbGVyXCIpO1xyXG5jb25zdCBBcHBFcnIgPSByZXF1aXJlKFwiLi9BUElzL3V0aWxzL2FwcEVycm9yXCIpO1xyXG5jb25zdCBzdHVkZW50Um91dGVyID0gcmVxdWlyZShcIi4vQVBJcy9Sb3V0ZXJzL3N0dWRlbnRSb3V0ZXJcIik7XHJcblxyXG5pbXBvcnQgUm91dGVyIGZyb20gXCIuL1JlYWN0L1NlcnZlci9pbmRleFwiO1xyXG5cclxuY29uc3QgYXBwID0gZXhwcmVzcygpO1xyXG5hcHAudXNlKGV4cHJlc3MuanNvbigpKTtcclxuYXBwLnVzZShtb3JnYW4oXCJkZXZcIikpO1xyXG5hcHAudXNlKGNvcnMoKSk7XHJcblxyXG4vLz09PT09PT09PT09PT09PVJvdXRlcnM9PT09PT09PT09PT09PT09PT09PT1cclxuYXBwLnVzZShcIi9hcGkvdjEvc3R1ZGVudFwiLCBzdHVkZW50Um91dGVyKTtcclxuXHJcbmFwcC51c2UoXCIvXCIsIFJvdXRlcik7XHJcblxyXG5hcHAuYWxsKFwiKlwiLCAocmVxLCByZXMsIG5leHQpID0+IHtcclxuICBuZXh0KG5ldyBBcHBFcnIoXCJDYW4ndCBmaW5kIGEgcm91dGUgLSBCQUQgVVJMXCIsIDQwNCkpO1xyXG59KTtcclxuXHJcbmFwcC51c2UoZ2xvYmFsRXJyb3JIYW5kbGVyKTtcclxuXHJcbmV4cG9ydCBkZWZhdWx0IGFwcDtcclxuIl0sIm1hcHBpbmdzIjoiQUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQ0E7QUFBQTtBQUNBO0FBQUE7QUFDQTtBQUFBO0FBQ0E7QUFBQTtBQUNBO0FBQUE7QUFDQTtBQUNBO0FBRUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUVBO0FBRUE7QUFFQTtBQUNBO0FBQ0E7QUFFQTtBQUVBIiwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///./app.js\n");
 
 /***/ }),
 
@@ -3919,62 +578,7 @@ app.use(globalErrorHandler);
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var KNN = __webpack_require__(/*! ml-knn */ "ml-knn");
-
-var fs = __webpack_require__(/*! fs */ "fs");
-
-function csvJSON(csv) {
-  var lines = csv.split("\n");
-  var result = [];
-  var headers = lines[0].trim().split(",");
-
-  for (var i = 1; i < lines.length; i++) {
-    var obj = {};
-    var currentline = lines[i].trim().split(",");
-
-    for (var j = 0; j < headers.length; j++) {
-      obj[headers[j]] = currentline[j];
-    }
-
-    result.push(obj);
-  } //return result; //JavaScript object
-
-
-  return JSON.parse(JSON.stringify(result)); //JSON
-}
-
-exports.getType = input => {
-  var knn;
-  var type;
-  var csvFilePath = __dirname + '/../knn/dataset.csv'; // Data
-
-  var names = ['ABC_%', 'D_%', 'C_%', 'AAC_%', 'A_%', 'V_%', 'ABC_T', 'D_T', 'C_T', 'AAC_T', 'A_T', 'LS'];
-  var data = [],
-      X = [],
-      Y = [];
-  var csv = fs.readFileSync(csvFilePath, 'utf-8');
-  data = csvJSON(csv);
-  var types = new Set();
-  data.forEach(row => {
-    if (row.LS === undefined) console.log(row);
-    types.add(row.LS);
-  });
-  typesArray = [...types]; // console.log(typesArray)
-
-  data.forEach(row => {
-    var rowArray, typeNumber;
-    rowArray = Object.values(row).map(key => parseFloat(key)).slice(0, 11); // typeNumber = typesArray.indexOf(row.LS); 
-
-    type = row.LS;
-    X.push(rowArray);
-    Y.push(type);
-  });
-  knn = new KNN(X, Y, {
-    k: 1
-  });
-  type = knn.predict(input);
-  return type;
-};
+eval("var KNN = __webpack_require__(/*! ml-knn */ \"ml-knn\");\n\nvar fs = __webpack_require__(/*! fs */ \"fs\");\n\nfunction csvJSON(csv) {\n  var lines = csv.split(\"\\n\");\n  var result = [];\n  var headers = lines[0].trim().split(\",\");\n\n  for (var i = 1; i < lines.length; i++) {\n    var obj = {};\n    var currentline = lines[i].trim().split(\",\");\n\n    for (var j = 0; j < headers.length; j++) {\n      obj[headers[j]] = currentline[j];\n    }\n\n    result.push(obj);\n  } //return result; //JavaScript object\n\n\n  return JSON.parse(JSON.stringify(result)); //JSON\n}\n\nexports.getType = input => {\n  var knn;\n  var type;\n  var csvFilePath = __dirname + '/../knn/dataset.csv'; // Data\n\n  var names = ['ABC_%', 'D_%', 'C_%', 'AAC_%', 'A_%', 'V_%', 'ABC_T', 'D_T', 'C_T', 'AAC_T', 'A_T', 'LS'];\n  var data = [],\n      X = [],\n      Y = [];\n  var csv = fs.readFileSync(csvFilePath, 'utf-8');\n  data = csvJSON(csv);\n  var types = new Set();\n  data.forEach(row => {\n    if (row.LS === undefined) console.log(row);\n    types.add(row.LS);\n  });\n  typesArray = [...types]; // console.log(typesArray)\n\n  data.forEach(row => {\n    var rowArray, typeNumber;\n    rowArray = Object.values(row).map(key => parseFloat(key)).slice(0, 11); // typeNumber = typesArray.indexOf(row.LS); \n\n    type = row.LS;\n    X.push(rowArray);\n    Y.push(type);\n  });\n  knn = new KNN(X, Y, {\n    k: 1\n  });\n  type = knn.predict(input);\n  return type;\n};//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9rbm4va25uLmpzLmpzIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vLy4va25uL2tubi5qcz8wZWE3Il0sInNvdXJjZXNDb250ZW50IjpbImNvbnN0IEtOTiA9IHJlcXVpcmUoJ21sLWtubicpO1xyXG5jb25zdCBmcyA9IHJlcXVpcmUoJ2ZzJylcclxuXHJcblxyXG5mdW5jdGlvbiBjc3ZKU09OKGNzdil7XHJcblxyXG4gICAgdmFyIGxpbmVzPWNzdi5zcGxpdChcIlxcblwiKTtcclxuICBcclxuICAgIHZhciByZXN1bHQgPSBbXTtcclxuICBcclxuICAgIHZhciBoZWFkZXJzPWxpbmVzWzBdLnRyaW0oKS5zcGxpdChcIixcIik7XHJcbiAgXHJcbiAgICBmb3IodmFyIGk9MTtpPGxpbmVzLmxlbmd0aDtpKyspe1xyXG4gIFxyXG4gICAgICAgIHZhciBvYmogPSB7fTtcclxuICAgICAgICB2YXIgY3VycmVudGxpbmU9bGluZXNbaV0udHJpbSgpLnNwbGl0KFwiLFwiKTtcclxuICBcclxuICAgICAgICBmb3IodmFyIGo9MDtqPGhlYWRlcnMubGVuZ3RoO2orKyl7XHJcbiAgICAgICAgICAgIG9ialtoZWFkZXJzW2pdXSA9IGN1cnJlbnRsaW5lW2pdO1xyXG4gICAgICAgIH1cclxuICBcclxuICAgICAgICByZXN1bHQucHVzaChvYmopO1xyXG4gIFxyXG4gICAgfVxyXG4gICAgXHJcbiAgICAvL3JldHVybiByZXN1bHQ7IC8vSmF2YVNjcmlwdCBvYmplY3RcclxuICAgIHJldHVybiBKU09OLnBhcnNlKEpTT04uc3RyaW5naWZ5KHJlc3VsdCkpOyAvL0pTT05cclxuICB9XHJcblxyXG5leHBvcnRzLmdldFR5cGUgPSAoaW5wdXQpID0+IHtcclxuXHJcbiAgICBsZXQga25uO1xyXG4gICAgbGV0IHR5cGU7XHJcbiAgICBjb25zdCBjc3ZGaWxlUGF0aCA9IF9fZGlybmFtZSsnLy4uL2tubi9kYXRhc2V0LmNzdic7IC8vIERhdGFcclxuICAgIGNvbnN0IG5hbWVzID0gWydBQkNfJScsJ0RfJScsJ0NfJScsJ0FBQ18lJywnQV8lJywnVl8lJywnQUJDX1QnLCdEX1QnLCdDX1QnLCdBQUNfVCcsJ0FfVCcsJ0xTJ107XHJcbiAgICBsZXQgZGF0YSA9IFtdLCBYID0gW10sIFkgPSBbXTtcclxuXHJcbiAgICBjb25zdCBjc3YgPSBmcy5yZWFkRmlsZVN5bmMoY3N2RmlsZVBhdGgsJ3V0Zi04JylcclxuXHJcbiAgICBkYXRhID0gY3N2SlNPTihjc3YpXHJcblxyXG4gICAgbGV0IHR5cGVzID0gbmV3IFNldCgpOyBcclxuXHJcbiAgICBkYXRhLmZvckVhY2goKHJvdykgPT4ge1xyXG4gICAgICAgIGlmKHJvdy5MUyA9PT0gdW5kZWZpbmVkKSBjb25zb2xlLmxvZyhyb3cpXHJcbiAgICAgICAgdHlwZXMuYWRkKHJvdy5MUyk7XHJcbiAgICB9KTtcclxuXHJcbiAgICB0eXBlc0FycmF5ID0gWy4uLnR5cGVzXTsgXHJcblxyXG4gICAgLy8gY29uc29sZS5sb2codHlwZXNBcnJheSlcclxuXHJcbiAgICBkYXRhLmZvckVhY2goKHJvdykgPT4ge1xyXG5cclxuICAgICAgICBsZXQgcm93QXJyYXksIHR5cGVOdW1iZXI7XHJcblxyXG4gICAgICAgIHJvd0FycmF5ID0gT2JqZWN0LnZhbHVlcyhyb3cpLm1hcChrZXkgPT4gcGFyc2VGbG9hdChrZXkpKS5zbGljZSgwLDExKVxyXG5cclxuICAgICAgICAvLyB0eXBlTnVtYmVyID0gdHlwZXNBcnJheS5pbmRleE9mKHJvdy5MUyk7IFxyXG5cclxuICAgICAgICB0eXBlID0gcm93LkxTXHJcblxyXG4gICAgICAgIFgucHVzaChyb3dBcnJheSk7XHJcbiAgICAgICAgWS5wdXNoKHR5cGUpO1xyXG4gICAgfSk7XHJcblxyXG4gICAga25uID0gbmV3IEtOTihYLCBZLCB7azogMX0pO1xyXG5cclxuICAgIHR5cGUgPSBrbm4ucHJlZGljdChpbnB1dCk7XHJcblxyXG4gICAgcmV0dXJuIHR5cGVcclxufSJdLCJtYXBwaW5ncyI6IkFBQUE7QUFDQTtBQUFBO0FBQ0E7QUFFQTtBQUVBO0FBRUE7QUFFQTtBQUNBO0FBQ0E7QUFFQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBRUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFFQTtBQUNBO0FBQ0E7QUFDQTtBQUFBO0FBQ0E7QUFBQTtBQUFBO0FBRUE7QUFFQTtBQUVBO0FBRUE7QUFDQTtBQUNBO0FBQ0E7QUFFQTtBQUNBO0FBR0E7QUFFQTtBQUVBO0FBQ0E7QUFHQTtBQUVBO0FBQ0E7QUFDQTtBQUVBO0FBQUE7QUFBQTtBQUVBO0FBRUE7QUFDQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///./knn/knn.js\n");
 
 /***/ }),
 
@@ -3986,33 +590,7 @@ exports.getType = input => {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _app__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./app */ "./app.js");
-
-
-var dotenv = __webpack_require__(/*! dotenv */ "dotenv");
-
-var mongoose = __webpack_require__(/*! mongoose */ "mongoose");
-
-dotenv.config({
-  path: "./config.env"
-});
-var DB = process.env.DB_CON.replace("<password>", process.env.DB_PASS);
-console.log(DB);
-mongoose.connect(DB, {
-  useNewUrlParser: true,
-  useCreateIndex: true,
-  useFindAndModify: false,
-  useUnifiedTopology: true
-}).then(() => {
-  console.log("Database connection Done !");
-}).catch(err => {
-  console.log(err);
-});
-var port = process.env.CON_PORT;
-_app__WEBPACK_IMPORTED_MODULE_0__["default"].listen(port, () => {
-  console.log("Server Started at http://localhost:8000");
-});
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _app__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./app */ \"./app.js\");\n\n\nvar dotenv = __webpack_require__(/*! dotenv */ \"dotenv\");\n\nvar mongoose = __webpack_require__(/*! mongoose */ \"mongoose\");\n\ndotenv.config({\n  path: \"./config.env\"\n});\nvar DB = process.env.DB_CON.replace(\"<password>\", process.env.DB_PASS);\nconsole.log(DB);\nmongoose.connect(DB, {\n  useNewUrlParser: true,\n  useCreateIndex: true,\n  useFindAndModify: false,\n  useUnifiedTopology: true\n}).then(() => {\n  console.log(\"Database connection Done !\");\n}).catch(err => {\n  console.log(err);\n});\nvar port = process.env.CON_PORT;\n_app__WEBPACK_IMPORTED_MODULE_0__[\"default\"].listen(port, () => {\n  console.log(\"Server Started at http://localhost:8000\");\n});//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9zZXJ2ZXIuanMuanMiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vLi9zZXJ2ZXIuanM/MWQ2OSJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgYXBwIGZyb20gJy4vYXBwJ1xuY29uc3QgZG90ZW52ID0gcmVxdWlyZShcImRvdGVudlwiKTtcbmNvbnN0IG1vbmdvb3NlID0gcmVxdWlyZShcIm1vbmdvb3NlXCIpO1xuZG90ZW52LmNvbmZpZyh7IHBhdGg6IFwiLi9jb25maWcuZW52XCIgfSk7XG5cbmNvbnN0IERCID0gcHJvY2Vzcy5lbnYuREJfQ09OLnJlcGxhY2UoXCI8cGFzc3dvcmQ+XCIsIHByb2Nlc3MuZW52LkRCX1BBU1MpO1xuXG5jb25zb2xlLmxvZyhEQik7XG5cbm1vbmdvb3NlXG4gIC5jb25uZWN0KERCLCB7XG4gICAgdXNlTmV3VXJsUGFyc2VyOiB0cnVlLFxuICAgIHVzZUNyZWF0ZUluZGV4OiB0cnVlLFxuICAgIHVzZUZpbmRBbmRNb2RpZnk6IGZhbHNlLFxuICAgIHVzZVVuaWZpZWRUb3BvbG9neTogdHJ1ZVxuICB9KVxuICAudGhlbigoKSA9PiB7XG4gICAgY29uc29sZS5sb2coXCJEYXRhYmFzZSBjb25uZWN0aW9uIERvbmUgIVwiKTtcbiAgfSlcbiAgLmNhdGNoKGVyciA9PiB7XG4gICAgY29uc29sZS5sb2coZXJyKTtcbiAgfSk7XG5cbmNvbnN0IHBvcnQgPSBwcm9jZXNzLmVudi5DT05fUE9SVDtcblxuYXBwLmxpc3Rlbihwb3J0LCAoKSA9PiB7XG4gIGNvbnNvbGUubG9nKGBTZXJ2ZXIgU3RhcnRlZCBhdCBodHRwOi8vbG9jYWxob3N0OjgwMDBgKTtcbn0pO1xuIl0sIm1hcHBpbmdzIjoiQUFBQTtBQUFBO0FBQUE7QUFDQTtBQUFBO0FBQ0E7QUFBQTtBQUNBO0FBQUE7QUFBQTtBQUFBO0FBRUE7QUFFQTtBQUVBO0FBRUE7QUFDQTtBQUNBO0FBQ0E7QUFKQTtBQU9BO0FBQ0E7QUFFQTtBQUNBO0FBRUE7QUFFQTtBQUNBO0FBQ0EiLCJzb3VyY2VSb290IjoiIn0=\n//# sourceURL=webpack-internal:///./server.js\n");
 
 /***/ }),
 
@@ -4023,7 +601,7 @@ _app__WEBPACK_IMPORTED_MODULE_0__["default"].listen(port, () => {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("@material-ui/core");
+eval("module.exports = require(\"@material-ui/core\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiQG1hdGVyaWFsLXVpL2NvcmUuanMiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vZXh0ZXJuYWwgXCJAbWF0ZXJpYWwtdWkvY29yZVwiP2I2OTkiXSwic291cmNlc0NvbnRlbnQiOlsibW9kdWxlLmV4cG9ydHMgPSByZXF1aXJlKFwiQG1hdGVyaWFsLXVpL2NvcmVcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///@material-ui/core\n");
 
 /***/ }),
 
@@ -4034,7 +612,7 @@ module.exports = require("@material-ui/core");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("@material-ui/core/AppBar");
+eval("module.exports = require(\"@material-ui/core/AppBar\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiQG1hdGVyaWFsLXVpL2NvcmUvQXBwQmFyLmpzIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vL2V4dGVybmFsIFwiQG1hdGVyaWFsLXVpL2NvcmUvQXBwQmFyXCI/OTFjZCJdLCJzb3VyY2VzQ29udGVudCI6WyJtb2R1bGUuZXhwb3J0cyA9IHJlcXVpcmUoXCJAbWF0ZXJpYWwtdWkvY29yZS9BcHBCYXJcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///@material-ui/core/AppBar\n");
 
 /***/ }),
 
@@ -4045,7 +623,7 @@ module.exports = require("@material-ui/core/AppBar");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("@material-ui/core/Avatar");
+eval("module.exports = require(\"@material-ui/core/Avatar\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiQG1hdGVyaWFsLXVpL2NvcmUvQXZhdGFyLmpzIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vL2V4dGVybmFsIFwiQG1hdGVyaWFsLXVpL2NvcmUvQXZhdGFyXCI/MDBkNSJdLCJzb3VyY2VzQ29udGVudCI6WyJtb2R1bGUuZXhwb3J0cyA9IHJlcXVpcmUoXCJAbWF0ZXJpYWwtdWkvY29yZS9BdmF0YXJcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///@material-ui/core/Avatar\n");
 
 /***/ }),
 
@@ -4056,7 +634,7 @@ module.exports = require("@material-ui/core/Avatar");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("@material-ui/core/Box");
+eval("module.exports = require(\"@material-ui/core/Box\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiQG1hdGVyaWFsLXVpL2NvcmUvQm94LmpzIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vL2V4dGVybmFsIFwiQG1hdGVyaWFsLXVpL2NvcmUvQm94XCI/NTA2ZiJdLCJzb3VyY2VzQ29udGVudCI6WyJtb2R1bGUuZXhwb3J0cyA9IHJlcXVpcmUoXCJAbWF0ZXJpYWwtdWkvY29yZS9Cb3hcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///@material-ui/core/Box\n");
 
 /***/ }),
 
@@ -4067,7 +645,7 @@ module.exports = require("@material-ui/core/Box");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("@material-ui/core/Button");
+eval("module.exports = require(\"@material-ui/core/Button\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiQG1hdGVyaWFsLXVpL2NvcmUvQnV0dG9uLmpzIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vL2V4dGVybmFsIFwiQG1hdGVyaWFsLXVpL2NvcmUvQnV0dG9uXCI/NTcwZiJdLCJzb3VyY2VzQ29udGVudCI6WyJtb2R1bGUuZXhwb3J0cyA9IHJlcXVpcmUoXCJAbWF0ZXJpYWwtdWkvY29yZS9CdXR0b25cIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///@material-ui/core/Button\n");
 
 /***/ }),
 
@@ -4078,7 +656,7 @@ module.exports = require("@material-ui/core/Button");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("@material-ui/core/Card");
+eval("module.exports = require(\"@material-ui/core/Card\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiQG1hdGVyaWFsLXVpL2NvcmUvQ2FyZC5qcyIsInNvdXJjZXMiOlsid2VicGFjazovLy9leHRlcm5hbCBcIkBtYXRlcmlhbC11aS9jb3JlL0NhcmRcIj9iMGYxIl0sInNvdXJjZXNDb250ZW50IjpbIm1vZHVsZS5leHBvcnRzID0gcmVxdWlyZShcIkBtYXRlcmlhbC11aS9jb3JlL0NhcmRcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///@material-ui/core/Card\n");
 
 /***/ }),
 
@@ -4089,7 +667,7 @@ module.exports = require("@material-ui/core/Card");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("@material-ui/core/CardContent");
+eval("module.exports = require(\"@material-ui/core/CardContent\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiQG1hdGVyaWFsLXVpL2NvcmUvQ2FyZENvbnRlbnQuanMiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vZXh0ZXJuYWwgXCJAbWF0ZXJpYWwtdWkvY29yZS9DYXJkQ29udGVudFwiPzRkNGEiXSwic291cmNlc0NvbnRlbnQiOlsibW9kdWxlLmV4cG9ydHMgPSByZXF1aXJlKFwiQG1hdGVyaWFsLXVpL2NvcmUvQ2FyZENvbnRlbnRcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///@material-ui/core/CardContent\n");
 
 /***/ }),
 
@@ -4100,7 +678,7 @@ module.exports = require("@material-ui/core/CardContent");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("@material-ui/core/CardMedia");
+eval("module.exports = require(\"@material-ui/core/CardMedia\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiQG1hdGVyaWFsLXVpL2NvcmUvQ2FyZE1lZGlhLmpzIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vL2V4dGVybmFsIFwiQG1hdGVyaWFsLXVpL2NvcmUvQ2FyZE1lZGlhXCI/MTYzNCJdLCJzb3VyY2VzQ29udGVudCI6WyJtb2R1bGUuZXhwb3J0cyA9IHJlcXVpcmUoXCJAbWF0ZXJpYWwtdWkvY29yZS9DYXJkTWVkaWFcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///@material-ui/core/CardMedia\n");
 
 /***/ }),
 
@@ -4111,7 +689,7 @@ module.exports = require("@material-ui/core/CardMedia");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("@material-ui/core/Checkbox");
+eval("module.exports = require(\"@material-ui/core/Checkbox\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiQG1hdGVyaWFsLXVpL2NvcmUvQ2hlY2tib3guanMiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vZXh0ZXJuYWwgXCJAbWF0ZXJpYWwtdWkvY29yZS9DaGVja2JveFwiP2YyYjkiXSwic291cmNlc0NvbnRlbnQiOlsibW9kdWxlLmV4cG9ydHMgPSByZXF1aXJlKFwiQG1hdGVyaWFsLXVpL2NvcmUvQ2hlY2tib3hcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///@material-ui/core/Checkbox\n");
 
 /***/ }),
 
@@ -4122,7 +700,7 @@ module.exports = require("@material-ui/core/Checkbox");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("@material-ui/core/Container");
+eval("module.exports = require(\"@material-ui/core/Container\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiQG1hdGVyaWFsLXVpL2NvcmUvQ29udGFpbmVyLmpzIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vL2V4dGVybmFsIFwiQG1hdGVyaWFsLXVpL2NvcmUvQ29udGFpbmVyXCI/MDgyZiJdLCJzb3VyY2VzQ29udGVudCI6WyJtb2R1bGUuZXhwb3J0cyA9IHJlcXVpcmUoXCJAbWF0ZXJpYWwtdWkvY29yZS9Db250YWluZXJcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///@material-ui/core/Container\n");
 
 /***/ }),
 
@@ -4133,7 +711,7 @@ module.exports = require("@material-ui/core/Container");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("@material-ui/core/CssBaseline");
+eval("module.exports = require(\"@material-ui/core/CssBaseline\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiQG1hdGVyaWFsLXVpL2NvcmUvQ3NzQmFzZWxpbmUuanMiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vZXh0ZXJuYWwgXCJAbWF0ZXJpYWwtdWkvY29yZS9Dc3NCYXNlbGluZVwiP2U2N2EiXSwic291cmNlc0NvbnRlbnQiOlsibW9kdWxlLmV4cG9ydHMgPSByZXF1aXJlKFwiQG1hdGVyaWFsLXVpL2NvcmUvQ3NzQmFzZWxpbmVcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///@material-ui/core/CssBaseline\n");
 
 /***/ }),
 
@@ -4144,7 +722,7 @@ module.exports = require("@material-ui/core/CssBaseline");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("@material-ui/core/FormControlLabel");
+eval("module.exports = require(\"@material-ui/core/FormControlLabel\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiQG1hdGVyaWFsLXVpL2NvcmUvRm9ybUNvbnRyb2xMYWJlbC5qcyIsInNvdXJjZXMiOlsid2VicGFjazovLy9leHRlcm5hbCBcIkBtYXRlcmlhbC11aS9jb3JlL0Zvcm1Db250cm9sTGFiZWxcIj8xZGQzIl0sInNvdXJjZXNDb250ZW50IjpbIm1vZHVsZS5leHBvcnRzID0gcmVxdWlyZShcIkBtYXRlcmlhbC11aS9jb3JlL0Zvcm1Db250cm9sTGFiZWxcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///@material-ui/core/FormControlLabel\n");
 
 /***/ }),
 
@@ -4155,7 +733,7 @@ module.exports = require("@material-ui/core/FormControlLabel");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("@material-ui/core/Grid");
+eval("module.exports = require(\"@material-ui/core/Grid\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiQG1hdGVyaWFsLXVpL2NvcmUvR3JpZC5qcyIsInNvdXJjZXMiOlsid2VicGFjazovLy9leHRlcm5hbCBcIkBtYXRlcmlhbC11aS9jb3JlL0dyaWRcIj9mNmZjIl0sInNvdXJjZXNDb250ZW50IjpbIm1vZHVsZS5leHBvcnRzID0gcmVxdWlyZShcIkBtYXRlcmlhbC11aS9jb3JlL0dyaWRcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///@material-ui/core/Grid\n");
 
 /***/ }),
 
@@ -4166,7 +744,7 @@ module.exports = require("@material-ui/core/Grid");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("@material-ui/core/Link");
+eval("module.exports = require(\"@material-ui/core/Link\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiQG1hdGVyaWFsLXVpL2NvcmUvTGluay5qcyIsInNvdXJjZXMiOlsid2VicGFjazovLy9leHRlcm5hbCBcIkBtYXRlcmlhbC11aS9jb3JlL0xpbmtcIj9iMjFkIl0sInNvdXJjZXNDb250ZW50IjpbIm1vZHVsZS5leHBvcnRzID0gcmVxdWlyZShcIkBtYXRlcmlhbC11aS9jb3JlL0xpbmtcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///@material-ui/core/Link\n");
 
 /***/ }),
 
@@ -4177,7 +755,7 @@ module.exports = require("@material-ui/core/Link");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("@material-ui/core/Paper");
+eval("module.exports = require(\"@material-ui/core/Paper\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiQG1hdGVyaWFsLXVpL2NvcmUvUGFwZXIuanMiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vZXh0ZXJuYWwgXCJAbWF0ZXJpYWwtdWkvY29yZS9QYXBlclwiPzBlZjIiXSwic291cmNlc0NvbnRlbnQiOlsibW9kdWxlLmV4cG9ydHMgPSByZXF1aXJlKFwiQG1hdGVyaWFsLXVpL2NvcmUvUGFwZXJcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///@material-ui/core/Paper\n");
 
 /***/ }),
 
@@ -4188,7 +766,7 @@ module.exports = require("@material-ui/core/Paper");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("@material-ui/core/TextField");
+eval("module.exports = require(\"@material-ui/core/TextField\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiQG1hdGVyaWFsLXVpL2NvcmUvVGV4dEZpZWxkLmpzIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vL2V4dGVybmFsIFwiQG1hdGVyaWFsLXVpL2NvcmUvVGV4dEZpZWxkXCI/OTExYSJdLCJzb3VyY2VzQ29udGVudCI6WyJtb2R1bGUuZXhwb3J0cyA9IHJlcXVpcmUoXCJAbWF0ZXJpYWwtdWkvY29yZS9UZXh0RmllbGRcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///@material-ui/core/TextField\n");
 
 /***/ }),
 
@@ -4199,7 +777,7 @@ module.exports = require("@material-ui/core/TextField");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("@material-ui/core/Toolbar");
+eval("module.exports = require(\"@material-ui/core/Toolbar\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiQG1hdGVyaWFsLXVpL2NvcmUvVG9vbGJhci5qcyIsInNvdXJjZXMiOlsid2VicGFjazovLy9leHRlcm5hbCBcIkBtYXRlcmlhbC11aS9jb3JlL1Rvb2xiYXJcIj8zNmUyIl0sInNvdXJjZXNDb250ZW50IjpbIm1vZHVsZS5leHBvcnRzID0gcmVxdWlyZShcIkBtYXRlcmlhbC11aS9jb3JlL1Rvb2xiYXJcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///@material-ui/core/Toolbar\n");
 
 /***/ }),
 
@@ -4210,7 +788,7 @@ module.exports = require("@material-ui/core/Toolbar");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("@material-ui/core/Typography");
+eval("module.exports = require(\"@material-ui/core/Typography\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiQG1hdGVyaWFsLXVpL2NvcmUvVHlwb2dyYXBoeS5qcyIsInNvdXJjZXMiOlsid2VicGFjazovLy9leHRlcm5hbCBcIkBtYXRlcmlhbC11aS9jb3JlL1R5cG9ncmFwaHlcIj8wYmViIl0sInNvdXJjZXNDb250ZW50IjpbIm1vZHVsZS5leHBvcnRzID0gcmVxdWlyZShcIkBtYXRlcmlhbC11aS9jb3JlL1R5cG9ncmFwaHlcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///@material-ui/core/Typography\n");
 
 /***/ }),
 
@@ -4221,7 +799,7 @@ module.exports = require("@material-ui/core/Typography");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("@material-ui/core/colors");
+eval("module.exports = require(\"@material-ui/core/colors\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiQG1hdGVyaWFsLXVpL2NvcmUvY29sb3JzLmpzIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vL2V4dGVybmFsIFwiQG1hdGVyaWFsLXVpL2NvcmUvY29sb3JzXCI/N2UzOCJdLCJzb3VyY2VzQ29udGVudCI6WyJtb2R1bGUuZXhwb3J0cyA9IHJlcXVpcmUoXCJAbWF0ZXJpYWwtdWkvY29yZS9jb2xvcnNcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///@material-ui/core/colors\n");
 
 /***/ }),
 
@@ -4232,7 +810,7 @@ module.exports = require("@material-ui/core/colors");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("@material-ui/core/styles");
+eval("module.exports = require(\"@material-ui/core/styles\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiQG1hdGVyaWFsLXVpL2NvcmUvc3R5bGVzLmpzIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vL2V4dGVybmFsIFwiQG1hdGVyaWFsLXVpL2NvcmUvc3R5bGVzXCI/NDEwMiJdLCJzb3VyY2VzQ29udGVudCI6WyJtb2R1bGUuZXhwb3J0cyA9IHJlcXVpcmUoXCJAbWF0ZXJpYWwtdWkvY29yZS9zdHlsZXNcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///@material-ui/core/styles\n");
 
 /***/ }),
 
@@ -4243,7 +821,7 @@ module.exports = require("@material-ui/core/styles");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("@material-ui/icons/ArrowForwardIosRounded");
+eval("module.exports = require(\"@material-ui/icons/ArrowForwardIosRounded\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiQG1hdGVyaWFsLXVpL2ljb25zL0Fycm93Rm9yd2FyZElvc1JvdW5kZWQuanMiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vZXh0ZXJuYWwgXCJAbWF0ZXJpYWwtdWkvaWNvbnMvQXJyb3dGb3J3YXJkSW9zUm91bmRlZFwiPzljN2IiXSwic291cmNlc0NvbnRlbnQiOlsibW9kdWxlLmV4cG9ydHMgPSByZXF1aXJlKFwiQG1hdGVyaWFsLXVpL2ljb25zL0Fycm93Rm9yd2FyZElvc1JvdW5kZWRcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///@material-ui/icons/ArrowForwardIosRounded\n");
 
 /***/ }),
 
@@ -4254,7 +832,7 @@ module.exports = require("@material-ui/icons/ArrowForwardIosRounded");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("@material-ui/icons/CheckCircleSharp");
+eval("module.exports = require(\"@material-ui/icons/CheckCircleSharp\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiQG1hdGVyaWFsLXVpL2ljb25zL0NoZWNrQ2lyY2xlU2hhcnAuanMiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vZXh0ZXJuYWwgXCJAbWF0ZXJpYWwtdWkvaWNvbnMvQ2hlY2tDaXJjbGVTaGFycFwiP2ZmNDIiXSwic291cmNlc0NvbnRlbnQiOlsibW9kdWxlLmV4cG9ydHMgPSByZXF1aXJlKFwiQG1hdGVyaWFsLXVpL2ljb25zL0NoZWNrQ2lyY2xlU2hhcnBcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///@material-ui/icons/CheckCircleSharp\n");
 
 /***/ }),
 
@@ -4265,7 +843,7 @@ module.exports = require("@material-ui/icons/CheckCircleSharp");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("@material-ui/icons/KeyboardArrowRightOutlined");
+eval("module.exports = require(\"@material-ui/icons/KeyboardArrowRightOutlined\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiQG1hdGVyaWFsLXVpL2ljb25zL0tleWJvYXJkQXJyb3dSaWdodE91dGxpbmVkLmpzIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vL2V4dGVybmFsIFwiQG1hdGVyaWFsLXVpL2ljb25zL0tleWJvYXJkQXJyb3dSaWdodE91dGxpbmVkXCI/NzZlZiJdLCJzb3VyY2VzQ29udGVudCI6WyJtb2R1bGUuZXhwb3J0cyA9IHJlcXVpcmUoXCJAbWF0ZXJpYWwtdWkvaWNvbnMvS2V5Ym9hcmRBcnJvd1JpZ2h0T3V0bGluZWRcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///@material-ui/icons/KeyboardArrowRightOutlined\n");
 
 /***/ }),
 
@@ -4276,7 +854,7 @@ module.exports = require("@material-ui/icons/KeyboardArrowRightOutlined");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("@material-ui/icons/LockOutlined");
+eval("module.exports = require(\"@material-ui/icons/LockOutlined\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiQG1hdGVyaWFsLXVpL2ljb25zL0xvY2tPdXRsaW5lZC5qcyIsInNvdXJjZXMiOlsid2VicGFjazovLy9leHRlcm5hbCBcIkBtYXRlcmlhbC11aS9pY29ucy9Mb2NrT3V0bGluZWRcIj8wMWZmIl0sInNvdXJjZXNDb250ZW50IjpbIm1vZHVsZS5leHBvcnRzID0gcmVxdWlyZShcIkBtYXRlcmlhbC11aS9pY29ucy9Mb2NrT3V0bGluZWRcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///@material-ui/icons/LockOutlined\n");
 
 /***/ }),
 
@@ -4287,7 +865,7 @@ module.exports = require("@material-ui/icons/LockOutlined");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("axios");
+eval("module.exports = require(\"axios\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiYXhpb3MuanMiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vZXh0ZXJuYWwgXCJheGlvc1wiPzcwYzYiXSwic291cmNlc0NvbnRlbnQiOlsibW9kdWxlLmV4cG9ydHMgPSByZXF1aXJlKFwiYXhpb3NcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///axios\n");
 
 /***/ }),
 
@@ -4298,7 +876,7 @@ module.exports = require("axios");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("bcrypt");
+eval("module.exports = require(\"bcrypt\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiYmNyeXB0LmpzIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vL2V4dGVybmFsIFwiYmNyeXB0XCI/Y2Y5YyJdLCJzb3VyY2VzQ29udGVudCI6WyJtb2R1bGUuZXhwb3J0cyA9IHJlcXVpcmUoXCJiY3J5cHRcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///bcrypt\n");
 
 /***/ }),
 
@@ -4309,7 +887,7 @@ module.exports = require("bcrypt");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("cors");
+eval("module.exports = require(\"cors\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiY29ycy5qcyIsInNvdXJjZXMiOlsid2VicGFjazovLy9leHRlcm5hbCBcImNvcnNcIj83ZTllIl0sInNvdXJjZXNDb250ZW50IjpbIm1vZHVsZS5leHBvcnRzID0gcmVxdWlyZShcImNvcnNcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///cors\n");
 
 /***/ }),
 
@@ -4320,7 +898,7 @@ module.exports = require("cors");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("crypto");
+eval("module.exports = require(\"crypto\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiY3J5cHRvLmpzIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vL2V4dGVybmFsIFwiY3J5cHRvXCI/NGM3NiJdLCJzb3VyY2VzQ29udGVudCI6WyJtb2R1bGUuZXhwb3J0cyA9IHJlcXVpcmUoXCJjcnlwdG9cIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///crypto\n");
 
 /***/ }),
 
@@ -4331,7 +909,7 @@ module.exports = require("crypto");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("dotenv");
+eval("module.exports = require(\"dotenv\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiZG90ZW52LmpzIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vL2V4dGVybmFsIFwiZG90ZW52XCI/ZTcwZiJdLCJzb3VyY2VzQ29udGVudCI6WyJtb2R1bGUuZXhwb3J0cyA9IHJlcXVpcmUoXCJkb3RlbnZcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///dotenv\n");
 
 /***/ }),
 
@@ -4342,7 +920,7 @@ module.exports = require("dotenv");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("express");
+eval("module.exports = require(\"express\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiZXhwcmVzcy5qcyIsInNvdXJjZXMiOlsid2VicGFjazovLy9leHRlcm5hbCBcImV4cHJlc3NcIj8yMmZlIl0sInNvdXJjZXNDb250ZW50IjpbIm1vZHVsZS5leHBvcnRzID0gcmVxdWlyZShcImV4cHJlc3NcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///express\n");
 
 /***/ }),
 
@@ -4353,7 +931,7 @@ module.exports = require("express");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("fs");
+eval("module.exports = require(\"fs\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiZnMuanMiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vZXh0ZXJuYWwgXCJmc1wiP2E0MGQiXSwic291cmNlc0NvbnRlbnQiOlsibW9kdWxlLmV4cG9ydHMgPSByZXF1aXJlKFwiZnNcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///fs\n");
 
 /***/ }),
 
@@ -4364,7 +942,7 @@ module.exports = require("fs");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("jsonwebtoken");
+eval("module.exports = require(\"jsonwebtoken\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoianNvbndlYnRva2VuLmpzIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vL2V4dGVybmFsIFwianNvbndlYnRva2VuXCI/NjQ5MCJdLCJzb3VyY2VzQ29udGVudCI6WyJtb2R1bGUuZXhwb3J0cyA9IHJlcXVpcmUoXCJqc29ud2VidG9rZW5cIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///jsonwebtoken\n");
 
 /***/ }),
 
@@ -4375,7 +953,7 @@ module.exports = require("jsonwebtoken");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("ml-knn");
+eval("module.exports = require(\"ml-knn\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoibWwta25uLmpzIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vL2V4dGVybmFsIFwibWwta25uXCI/YWQ0OSJdLCJzb3VyY2VzQ29udGVudCI6WyJtb2R1bGUuZXhwb3J0cyA9IHJlcXVpcmUoXCJtbC1rbm5cIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///ml-knn\n");
 
 /***/ }),
 
@@ -4386,7 +964,7 @@ module.exports = require("ml-knn");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("mongoose");
+eval("module.exports = require(\"mongoose\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoibW9uZ29vc2UuanMiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vZXh0ZXJuYWwgXCJtb25nb29zZVwiP2ZmZDciXSwic291cmNlc0NvbnRlbnQiOlsibW9kdWxlLmV4cG9ydHMgPSByZXF1aXJlKFwibW9uZ29vc2VcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///mongoose\n");
 
 /***/ }),
 
@@ -4397,7 +975,7 @@ module.exports = require("mongoose");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("morgan");
+eval("module.exports = require(\"morgan\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoibW9yZ2FuLmpzIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vL2V4dGVybmFsIFwibW9yZ2FuXCI/MzIwNiJdLCJzb3VyY2VzQ29udGVudCI6WyJtb2R1bGUuZXhwb3J0cyA9IHJlcXVpcmUoXCJtb3JnYW5cIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///morgan\n");
 
 /***/ }),
 
@@ -4408,7 +986,7 @@ module.exports = require("morgan");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("nodemailer");
+eval("module.exports = require(\"nodemailer\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoibm9kZW1haWxlci5qcyIsInNvdXJjZXMiOlsid2VicGFjazovLy9leHRlcm5hbCBcIm5vZGVtYWlsZXJcIj8zZDU1Il0sInNvdXJjZXNDb250ZW50IjpbIm1vZHVsZS5leHBvcnRzID0gcmVxdWlyZShcIm5vZGVtYWlsZXJcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///nodemailer\n");
 
 /***/ }),
 
@@ -4419,7 +997,7 @@ module.exports = require("nodemailer");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("path");
+eval("module.exports = require(\"path\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoicGF0aC5qcyIsInNvdXJjZXMiOlsid2VicGFjazovLy9leHRlcm5hbCBcInBhdGhcIj83NGJiIl0sInNvdXJjZXNDb250ZW50IjpbIm1vZHVsZS5leHBvcnRzID0gcmVxdWlyZShcInBhdGhcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///path\n");
 
 /***/ }),
 
@@ -4430,7 +1008,7 @@ module.exports = require("path");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("react");
+eval("module.exports = require(\"react\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoicmVhY3QuanMiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vZXh0ZXJuYWwgXCJyZWFjdFwiPzU4OGUiXSwic291cmNlc0NvbnRlbnQiOlsibW9kdWxlLmV4cG9ydHMgPSByZXF1aXJlKFwicmVhY3RcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///react\n");
 
 /***/ }),
 
@@ -4441,7 +1019,7 @@ module.exports = require("react");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("react-dom/server");
+eval("module.exports = require(\"react-dom/server\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoicmVhY3QtZG9tL3NlcnZlci5qcyIsInNvdXJjZXMiOlsid2VicGFjazovLy9leHRlcm5hbCBcInJlYWN0LWRvbS9zZXJ2ZXJcIj85NDM5Il0sInNvdXJjZXNDb250ZW50IjpbIm1vZHVsZS5leHBvcnRzID0gcmVxdWlyZShcInJlYWN0LWRvbS9zZXJ2ZXJcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///react-dom/server\n");
 
 /***/ }),
 
@@ -4452,7 +1030,7 @@ module.exports = require("react-dom/server");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("react-router-dom");
+eval("module.exports = require(\"react-router-dom\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoicmVhY3Qtcm91dGVyLWRvbS5qcyIsInNvdXJjZXMiOlsid2VicGFjazovLy9leHRlcm5hbCBcInJlYWN0LXJvdXRlci1kb21cIj81M2I5Il0sInNvdXJjZXNDb250ZW50IjpbIm1vZHVsZS5leHBvcnRzID0gcmVxdWlyZShcInJlYWN0LXJvdXRlci1kb21cIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///react-router-dom\n");
 
 /***/ }),
 
@@ -4463,7 +1041,7 @@ module.exports = require("react-router-dom");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("serialize-javascript");
+eval("module.exports = require(\"serialize-javascript\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoic2VyaWFsaXplLWphdmFzY3JpcHQuanMiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vZXh0ZXJuYWwgXCJzZXJpYWxpemUtamF2YXNjcmlwdFwiPzE2ZjkiXSwic291cmNlc0NvbnRlbnQiOlsibW9kdWxlLmV4cG9ydHMgPSByZXF1aXJlKFwic2VyaWFsaXplLWphdmFzY3JpcHRcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///serialize-javascript\n");
 
 /***/ }),
 
@@ -4474,7 +1052,7 @@ module.exports = require("serialize-javascript");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("util");
+eval("module.exports = require(\"util\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoidXRpbC5qcyIsInNvdXJjZXMiOlsid2VicGFjazovLy9leHRlcm5hbCBcInV0aWxcIj9iZTBiIl0sInNvdXJjZXNDb250ZW50IjpbIm1vZHVsZS5leHBvcnRzID0gcmVxdWlyZShcInV0aWxcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///util\n");
 
 /***/ }),
 
@@ -4485,9 +1063,8 @@ module.exports = require("util");
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("validator");
+eval("module.exports = require(\"validator\");//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoidmFsaWRhdG9yLmpzIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vL2V4dGVybmFsIFwidmFsaWRhdG9yXCI/YjBjZiJdLCJzb3VyY2VzQ29udGVudCI6WyJtb2R1bGUuZXhwb3J0cyA9IHJlcXVpcmUoXCJ2YWxpZGF0b3JcIik7Il0sIm1hcHBpbmdzIjoiQUFBQSIsInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///validator\n");
 
 /***/ })
 
 /******/ });
-//# sourceMappingURL=server.js.map
