@@ -139,8 +139,8 @@ export default function DefinitionVisualDetailed(props) {
                     color="textSecondary"
                     component="p"
                   >
-                    The Above Diagram Shows the classification of Integer datatypes in
-                    Java
+                    The Above Diagram Shows the classification of Integer
+                    datatypes in Java
                   </Typography>
                 </CardContent>
               </CardActionArea>
@@ -209,8 +209,8 @@ export default function DefinitionVisualDetailed(props) {
                     color="textSecondary"
                     component="p"
                   >
-                    The Above Diagram Shows the classification of floatingpoint datatypes in
-                    Java
+                    The Above Diagram Shows the classification of floatingpoint
+                    datatypes in Java
                   </Typography>
                 </CardContent>
               </CardActionArea>

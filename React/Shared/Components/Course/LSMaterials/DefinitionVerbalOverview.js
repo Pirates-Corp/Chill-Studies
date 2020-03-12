@@ -110,7 +110,7 @@ export default function DefinitionVerbalOverview(props) {
             Byte data type is an 8-bit signed two's complement integer
           </Typography>
         </ListItem>
-        
+
         <ListItem>
           <ListItemIcon>
             <ArrowForwardIosRoundedIcon />
@@ -125,7 +125,7 @@ export default function DefinitionVerbalOverview(props) {
             Short data type is a 16-bit signed two's complement integer
           </Typography>
         </ListItem>
-       
+
         <ListItem>
           <ListItemIcon>
             <ArrowForwardIosRoundedIcon />
@@ -140,7 +140,7 @@ export default function DefinitionVerbalOverview(props) {
             Int data type is a 32-bit signed two's complement integer.
           </Typography>
         </ListItem>
-        
+
         <ListItem>
           <ListItemIcon>
             <ArrowForwardIosRoundedIcon />
@@ -155,7 +155,7 @@ export default function DefinitionVerbalOverview(props) {
             Float data type is a single-precision 32-bit IEEE 754 floating point
           </Typography>
         </ListItem>
-       
+
         <ListItem>
           <ListItemIcon>
             <ArrowForwardIosRoundedIcon />
@@ -171,7 +171,7 @@ export default function DefinitionVerbalOverview(props) {
             point
           </Typography>
         </ListItem>
-       
+
         <ListItem>
           <ListItemIcon>
             <ArrowForwardIosRoundedIcon />
@@ -186,7 +186,7 @@ export default function DefinitionVerbalOverview(props) {
             boolean data type represents one bit of information
           </Typography>
         </ListItem>
-        
+
         <ListItem>
           <ListItemIcon>
             <ArrowForwardIosRoundedIcon />
