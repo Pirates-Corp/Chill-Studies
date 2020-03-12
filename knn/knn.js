@@ -35,8 +35,6 @@ exports.getType = (input) => {
     const names = ['ABC_%','D_%','C_%','AAC_%','A_%','V_%','ABC_T','D_T','C_T','AAC_T','A_T','LS'];
     let data = [], X = [], Y = [];
 
-    console.log(csvFilePath)
-
     const csv = fs.readFileSync(csvFilePath,'utf-8')
 
     data = csvJSON(csv)
@@ -69,8 +67,6 @@ exports.getType = (input) => {
     knn = new KNN(X, Y, {k: 1});
 
     type = knn.predict(input);
-
-    console.log(type)
 
     return type
 }
