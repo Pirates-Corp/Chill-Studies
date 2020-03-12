@@ -500,57 +500,68 @@ var studentSchema = mongoose.Schema({
     ABC: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     },
     D: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     },
     C: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     },
     AAC: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     },
     A: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     },
     V: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     },
     ABC_T: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     },
     D_T: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     },
     C_T: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     },
     AAC_T: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     },
     A_T: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     }
   }
 });
@@ -2195,15 +2206,15 @@ var useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_9__["makeStyle
 }));
 
 var handleRoute = /*#__PURE__*/function () {
-  var _ref = _asyncToGenerator(function* (props, card, course) {
+  var _ref = _asyncToGenerator(function* (props, card, course, lsType) {
     var path = props.history.location.pathname + '';
+    lsType = path.includes('/home') ? (yield axios__WEBPACK_IMPORTED_MODULE_14___default.a.get('http://127.0.0.1:8000/api/v1/student/ml/get/' + sessionStorage.getItem('auth'))).data : lsType;
     var to = '';
-    var lsType = (yield path.includes('/home')) ? (yield axios__WEBPACK_IMPORTED_MODULE_14___default.a.get('http://127.0.0.1:8000/api/v1/student/ml/get/' + sessionStorage.getItem('auth'))).data : null;
     to = path === '/dashboard' ? "/course/".concat(card.name, "/home") : to = path.includes('/ls') ? "/course/".concat(course.name, "/ls/").concat(lsType, "/").concat(card) : to = path.includes('/home') ? card.includes('1') ? "/course/".concat(course.name) : "/course/".concat(course.name, "/ls/").concat(lsType) : to = "/course/".concat(course.name, "/").concat(card);
     props.history.push(to);
   });
 
-  return function handleRoute(_x, _x2, _x3) {
+  return function handleRoute(_x, _x2, _x3, _x4) {
     return _ref.apply(this, arguments);
   };
 }();
@@ -2212,9 +2223,10 @@ function Home(props) {
   var classes = useStyles();
   var path = props.history.location.pathname + '';
   var chapters = ['Chapter-1', 'Chapter-2'];
+  var lsType = props.match.params.ls_type;
   var cards = path.startsWith('/dashboard') ? _Data_courses__WEBPACK_IMPORTED_MODULE_12__["default"] : // its dhashboard
   path.includes('/home') ? chapters : // Its Course Home that includes Chapters
-  path.includes('/ls') ? _Shared_Data_learningStyles__WEBPACK_IMPORTED_MODULE_13__["default"].find(style => props.match.params.ls_type === style.type).contents : // Its the LS Predicted Course Chapter Home  
+  path.includes('/ls') ? _Shared_Data_learningStyles__WEBPACK_IMPORTED_MODULE_13__["default"].find(style => lsType === style.type).contents : // Its the LS Predicted Course Chapter Home  
   ['Overview', 'Definitons', 'Activity', 'Content', 'Visual', 'Summary']; // Its the default Course Chapter Home
 
   var course = path === '/dashboard' ? 'valid' : _Data_courses__WEBPACK_IMPORTED_MODULE_12__["default"].find(course => props.match.params.course === course.name);
@@ -2276,7 +2288,7 @@ function Home(props) {
     md: path.includes('/ls') || path.includes('/home') ? 6 : 4
   }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
     onClick: e => {
-      handleRoute(props, card, course);
+      handleRoute(props, card, course, lsType);
     }
   }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core_Card__WEBPACK_IMPORTED_MODULE_2___default.a, {
     className: classes.card
@@ -2366,8 +2378,8 @@ var useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["makeStyle
 function LS(props) {
   var classes = useStyles();
   var lsTypeParam = props.match.params.ls_type + '';
+  lsTypeParam = props.history.location.pathname.includes('invalid') ? 'invalid' : lsTypeParam;
   var ls = _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__["default"].find(ls => lsTypeParam === ls.type);
-  var [hide, setHide] = react__WEBPACK_IMPORTED_MODULE_0___default.a.useState(false);
   return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["AppBar"], {
     position: "relative"
   }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Toolbar"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
@@ -2387,7 +2399,7 @@ function LS(props) {
   }, "Hello there, to improve your ease of study, we use FLSM mapping techiques to asses your learning style and will give study materials according to that.")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
     gutterBottom: true,
     variant: "h4"
-  }, ls.name)), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
+  }, ls.name)), ls.type.includes('invalid') ? null : react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
     gutterBottom: true,
     variant: "body1"
   }, ls.type.charAt(0) === 'a' ? 'You like activites rathar than boring theories' : 'You learn from what you study')), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
@@ -2402,7 +2414,8 @@ function LS(props) {
   }, ls.type.charAt(0) === 's' ? 'You study sequencially (step by step)' : 'You prefer global view about the things')), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Divider"], null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
     gutterBottom: true,
     variant: "body1"
-  }, "In the upcomming chapters you will get the learning materials that matches your interests. Happly Learning !"))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Button"], {
+  }, "In the upcomming chapters you will get the learning materials that matches your interests. Happly Learning !")))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Button"], {
+    disabled: ls.type.includes('invalid'),
     variant: "outlined",
     color: "primary",
     className: classes.handleButton,
@@ -2418,128 +2431,17 @@ function LS(props) {
 /*!*********************************************************************!*\
   !*** ./React/Shared/Components/Course/LSMaterials/AcivityVerbal.js ***!
   \*********************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-
-
-/***/ }),
-
-/***/ "./React/Shared/Components/Course/LSMaterials/ActivityVisual.js":
-/*!**********************************************************************!*\
-  !*** ./React/Shared/Components/Course/LSMaterials/ActivityVisual.js ***!
-  \**********************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-
-
-/***/ }),
-
-/***/ "./React/Shared/Components/Course/LSMaterials/ContentVerbalDetailed.js":
-/*!*****************************************************************************!*\
-  !*** ./React/Shared/Components/Course/LSMaterials/ContentVerbalDetailed.js ***!
-  \*****************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-
-
-/***/ }),
-
-/***/ "./React/Shared/Components/Course/LSMaterials/ContentVerbalOverview.js":
-/*!*****************************************************************************!*\
-  !*** ./React/Shared/Components/Course/LSMaterials/ContentVerbalOverview.js ***!
-  \*****************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-
-
-/***/ }),
-
-/***/ "./React/Shared/Components/Course/LSMaterials/ContentVisualDetailed.js":
-/*!*****************************************************************************!*\
-  !*** ./React/Shared/Components/Course/LSMaterials/ContentVisualDetailed.js ***!
-  \*****************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-
-
-/***/ }),
-
-/***/ "./React/Shared/Components/Course/LSMaterials/ContentVisualOverview.js":
-/*!*****************************************************************************!*\
-  !*** ./React/Shared/Components/Course/LSMaterials/ContentVisualOverview.js ***!
-  \*****************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-
-
-/***/ }),
-
-/***/ "./React/Shared/Components/Course/LSMaterials/DefinitionVerbalDetailed.js":
-/*!********************************************************************************!*\
-  !*** ./React/Shared/Components/Course/LSMaterials/DefinitionVerbalDetailed.js ***!
-  \********************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-
-
-/***/ }),
-
-/***/ "./React/Shared/Components/Course/LSMaterials/DefinitionVerbalOverview.js":
-/*!********************************************************************************!*\
-  !*** ./React/Shared/Components/Course/LSMaterials/DefinitionVerbalOverview.js ***!
-  \********************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-
-
-/***/ }),
-
-/***/ "./React/Shared/Components/Course/LSMaterials/DefinitionVisualDetailed.js":
-/*!********************************************************************************!*\
-  !*** ./React/Shared/Components/Course/LSMaterials/DefinitionVisualDetailed.js ***!
-  \********************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-
-
-/***/ }),
-
-/***/ "./React/Shared/Components/Course/LSMaterials/DefinitionVisualOverview.js":
-/*!********************************************************************************!*\
-  !*** ./React/Shared/Components/Course/LSMaterials/DefinitionVisualOverview.js ***!
-  \********************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-
-
-/***/ }),
-
-/***/ "./React/Shared/Components/Course/LSMaterials/OverviewVerbal.js":
-/*!**********************************************************************!*\
-  !*** ./React/Shared/Components/Course/LSMaterials/OverviewVerbal.js ***!
-  \**********************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Summary; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return OverviewVerbal; });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core */ "@material-ui/core");
 /* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! axios */ "axios");
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../Data/learningStyles */ "./React/Shared/Data/learningStyles.js");
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
@@ -2591,117 +2493,1036 @@ var useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["makeStyle
 }));
 
 var handleSubmit = /*#__PURE__*/function () {
-  var _ref = _asyncToGenerator(function* (e, props, startTime, score) {
+  var _ref = _asyncToGenerator(function* (e, props) {
     e.preventDefault();
-    score *= 2;
-    var time = Math.round((Date.now() - startTime) / 1000 / 60);
-    time = time >= 9 ? 9 : time;
-    var authToken = sessionStorage.getItem('auth');
-    console.log("score" + score);
-    console.log("time" + time);
+    var category = props.match.params.category;
+    var lsType = props.match.params.ls_type;
+    var course = props.match.params.course;
+    var lsContents = _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__["default"].find(style => lsType === style.type).contents;
+    var path = lsContents.indexOf(category) + 1 < lsContents.length ? "/course/".concat(course, "/ls/").concat(lsType, "/").concat(lsContents[lsContents.indexOf(category) + 1]) : "/course/".concat(course, "/home");
+    props.history.push(path);
   });
 
-  return function handleSubmit(_x, _x2, _x3, _x4) {
+  return function handleSubmit(_x, _x2) {
     return _ref.apply(this, arguments);
   };
 }();
 
-function Summary(props) {
+function OverviewVerbal(props) {
   var classes = useStyles();
-  var startTime = Date.now();
-  var [java, setJava] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false);
-
-  var handleJava = () => {
-    setJava(true);
-  };
-
-  var [basics, setBasics] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false);
-
-  var handleBasics = () => {
-    setBasics(true);
-  };
-
-  var [inter, setInter] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false);
-
-  var handleInter = () => {
-    setInter(true);
-  };
-
-  var [oops, setOops] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false);
-
-  var handleOops = () => {
-    setOops(true);
-  };
-
-  var [adv, setAdv] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false);
-
-  var handleAdv = () => {
-    setAdv(true);
-  };
-
   return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Container"], {
     maxWidth: "sm"
   }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("form", {
     autoComplete: "off",
     noValidate: true
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["List"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Paper"], {
-    className: classes.heroButtons
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], {
-    onClick: handleJava
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "h5",
-    gutterBottom: true
-  }, "Java - Summary")), java ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1",
-    gutterBottom: true
-  }, "Java is a high-level programming language developed by Sun Microsystems. It was originally designed for developing programs for set-top boxes and handheld devices, but later became a popular choice for creating web applications."))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Paper"], {
-    className: classes.heroButtons
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], {
-    onClick: handleBasics
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "h5"
-  }, "Java Basics - Summary")), basics ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "So, the basic concepts of java are, just like any other programming languages, contional statements, loop statements, variables etc."))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Paper"], {
-    className: classes.heroButtons
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], {
-    onClick: handleInter
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "h5"
-  }, "Concepts In Java - Summary")), inter ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "Popular concepts that are used in java are Classes, Interfaces, Packages thess will get u started in Java."))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Paper"], {
-    className: classes.heroButtons
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], {
-    onClick: handleOops
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "h5"
-  }, "Object Oriented  Programming With Java")), oops ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "Object oriented concepts are mandatory things you should learn if you wanna use java. It will enable you to work with teams that means you will learn making loosely coupled applications using these concepts"))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Paper"], {
-    className: classes.heroButtons
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], {
-    onClick: handleAdv
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "h5"
-  }, "Advanced Java - Summary")), adv ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["ListItem"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "body1"
-  }, "Concepts like Threads and streams enables you to use Java effectively. With that you could build enterprice applications and applicatoons that runs in network. Also, Networking in java will help you build networking modules such as Gateways."))) : null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Divider"], {
-    variant: "middle"
-  })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Button"], {
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Button"], {
     variant: "contained",
     color: "primary",
     className: classes.handleButton,
     onClick: e => {
-      var score = 0;
-      java ? score++ : score;
-      inter ? score++ : score;
-      oops ? score++ : score;
-      adv ? score++ : score;
-      basics ? score++ : score;
-      handleSubmit(e, props, startTime, score);
+      handleSubmit(e, props);
     }
-  }, "Finish")));
+  }, "Next")));
+}
+
+/***/ }),
+
+/***/ "./React/Shared/Components/Course/LSMaterials/ActivityVisual.js":
+/*!**********************************************************************!*\
+  !*** ./React/Shared/Components/Course/LSMaterials/ActivityVisual.js ***!
+  \**********************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return OverviewVerbal; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core */ "@material-ui/core");
+/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../Data/learningStyles */ "./React/Shared/Data/learningStyles.js");
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
+
+
+
+var useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["makeStyles"])(theme => ({
+  icon: {
+    marginRight: theme.spacing(2)
+  },
+  link: {
+    textDecoration: 'none'
+  },
+  heroContent: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(8, 0, 6)
+  },
+  heroButtons: {
+    margin: theme.spacing(4)
+  },
+  cardGrid: {
+    paddingTop: theme.spacing(8),
+    paddingBottom: theme.spacing(8)
+  },
+  handleButton: {
+    margin: theme.spacing(4),
+    float: 'right'
+  },
+  card: {
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  cardMedia: {
+    paddingTop: '56.25%' // 16:9
+
+  },
+  cardContent: {
+    flexGrow: 1
+  },
+  footer: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(6)
+  },
+  Text: {
+    display: 'block'
+  }
+}));
+
+var handleSubmit = /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator(function* (e, props) {
+    e.preventDefault();
+    var category = props.match.params.category;
+    var lsType = props.match.params.ls_type;
+    var course = props.match.params.course;
+    var lsContents = _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__["default"].find(style => lsType === style.type).contents;
+    var path = lsContents.indexOf(category) + 1 < lsContents.length ? "/course/".concat(course, "/ls/").concat(lsType, "/").concat(lsContents[lsContents.indexOf(category) + 1]) : "/course/".concat(course, "/home");
+    props.history.push(path);
+  });
+
+  return function handleSubmit(_x, _x2) {
+    return _ref.apply(this, arguments);
+  };
+}();
+
+function OverviewVerbal(props) {
+  var classes = useStyles();
+  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Container"], {
+    maxWidth: "sm"
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("form", {
+    autoComplete: "off",
+    noValidate: true
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Button"], {
+    variant: "contained",
+    color: "primary",
+    className: classes.handleButton,
+    onClick: e => {
+      handleSubmit(e, props);
+    }
+  }, "Next")));
+}
+
+/***/ }),
+
+/***/ "./React/Shared/Components/Course/LSMaterials/ContentVerbalDetailed.js":
+/*!*****************************************************************************!*\
+  !*** ./React/Shared/Components/Course/LSMaterials/ContentVerbalDetailed.js ***!
+  \*****************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return OverviewVerbal; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core */ "@material-ui/core");
+/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../Data/learningStyles */ "./React/Shared/Data/learningStyles.js");
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
+
+
+
+var useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["makeStyles"])(theme => ({
+  icon: {
+    marginRight: theme.spacing(2)
+  },
+  link: {
+    textDecoration: 'none'
+  },
+  heroContent: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(8, 0, 6)
+  },
+  heroButtons: {
+    margin: theme.spacing(4)
+  },
+  cardGrid: {
+    paddingTop: theme.spacing(8),
+    paddingBottom: theme.spacing(8)
+  },
+  handleButton: {
+    margin: theme.spacing(4),
+    float: 'right'
+  },
+  card: {
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  cardMedia: {
+    paddingTop: '56.25%' // 16:9
+
+  },
+  cardContent: {
+    flexGrow: 1
+  },
+  footer: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(6)
+  },
+  Text: {
+    display: 'block'
+  }
+}));
+
+var handleSubmit = /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator(function* (e, props) {
+    e.preventDefault();
+    var category = props.match.params.category;
+    var lsType = props.match.params.ls_type;
+    var course = props.match.params.course;
+    var lsContents = _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__["default"].find(style => lsType === style.type).contents;
+    var path = lsContents.indexOf(category) + 1 < lsContents.length ? "/course/".concat(course, "/ls/").concat(lsType, "/").concat(lsContents[lsContents.indexOf(category) + 1]) : "/course/".concat(course, "/home");
+    props.history.push(path);
+  });
+
+  return function handleSubmit(_x, _x2) {
+    return _ref.apply(this, arguments);
+  };
+}();
+
+function OverviewVerbal(props) {
+  var classes = useStyles();
+  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Container"], {
+    maxWidth: "sm"
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("form", {
+    autoComplete: "off",
+    noValidate: true
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Button"], {
+    variant: "contained",
+    color: "primary",
+    className: classes.handleButton,
+    onClick: e => {
+      handleSubmit(e, props);
+    }
+  }, "Next")));
+}
+
+/***/ }),
+
+/***/ "./React/Shared/Components/Course/LSMaterials/ContentVerbalOverview.js":
+/*!*****************************************************************************!*\
+  !*** ./React/Shared/Components/Course/LSMaterials/ContentVerbalOverview.js ***!
+  \*****************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return OverviewVerbal; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core */ "@material-ui/core");
+/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../Data/learningStyles */ "./React/Shared/Data/learningStyles.js");
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
+
+
+
+var useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["makeStyles"])(theme => ({
+  icon: {
+    marginRight: theme.spacing(2)
+  },
+  link: {
+    textDecoration: 'none'
+  },
+  heroContent: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(8, 0, 6)
+  },
+  heroButtons: {
+    margin: theme.spacing(4)
+  },
+  cardGrid: {
+    paddingTop: theme.spacing(8),
+    paddingBottom: theme.spacing(8)
+  },
+  handleButton: {
+    margin: theme.spacing(4),
+    float: 'right'
+  },
+  card: {
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  cardMedia: {
+    paddingTop: '56.25%' // 16:9
+
+  },
+  cardContent: {
+    flexGrow: 1
+  },
+  footer: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(6)
+  },
+  Text: {
+    display: 'block'
+  }
+}));
+
+var handleSubmit = /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator(function* (e, props) {
+    e.preventDefault();
+    var category = props.match.params.category;
+    var lsType = props.match.params.ls_type;
+    var course = props.match.params.course;
+    var lsContents = _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__["default"].find(style => lsType === style.type).contents;
+    var path = lsContents.indexOf(category) + 1 < lsContents.length ? "/course/".concat(course, "/ls/").concat(lsType, "/").concat(lsContents[lsContents.indexOf(category) + 1]) : "/course/".concat(course, "/home");
+    props.history.push(path);
+  });
+
+  return function handleSubmit(_x, _x2) {
+    return _ref.apply(this, arguments);
+  };
+}();
+
+function OverviewVerbal(props) {
+  var classes = useStyles();
+  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Container"], {
+    maxWidth: "sm"
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("form", {
+    autoComplete: "off",
+    noValidate: true
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Button"], {
+    variant: "contained",
+    color: "primary",
+    className: classes.handleButton,
+    onClick: e => {
+      handleSubmit(e, props);
+    }
+  }, "Next")));
+}
+
+/***/ }),
+
+/***/ "./React/Shared/Components/Course/LSMaterials/ContentVisualDetailed.js":
+/*!*****************************************************************************!*\
+  !*** ./React/Shared/Components/Course/LSMaterials/ContentVisualDetailed.js ***!
+  \*****************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return OverviewVerbal; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core */ "@material-ui/core");
+/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../Data/learningStyles */ "./React/Shared/Data/learningStyles.js");
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
+
+
+
+var useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["makeStyles"])(theme => ({
+  icon: {
+    marginRight: theme.spacing(2)
+  },
+  link: {
+    textDecoration: 'none'
+  },
+  heroContent: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(8, 0, 6)
+  },
+  heroButtons: {
+    margin: theme.spacing(4)
+  },
+  cardGrid: {
+    paddingTop: theme.spacing(8),
+    paddingBottom: theme.spacing(8)
+  },
+  handleButton: {
+    margin: theme.spacing(4),
+    float: 'right'
+  },
+  card: {
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  cardMedia: {
+    paddingTop: '56.25%' // 16:9
+
+  },
+  cardContent: {
+    flexGrow: 1
+  },
+  footer: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(6)
+  },
+  Text: {
+    display: 'block'
+  }
+}));
+
+var handleSubmit = /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator(function* (e, props) {
+    e.preventDefault();
+    var category = props.match.params.category;
+    var lsType = props.match.params.ls_type;
+    var course = props.match.params.course;
+    var lsContents = _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__["default"].find(style => lsType === style.type).contents;
+    var path = lsContents.indexOf(category) + 1 < lsContents.length ? "/course/".concat(course, "/ls/").concat(lsType, "/").concat(lsContents[lsContents.indexOf(category) + 1]) : "/course/".concat(course, "/home");
+    props.history.push(path);
+  });
+
+  return function handleSubmit(_x, _x2) {
+    return _ref.apply(this, arguments);
+  };
+}();
+
+function OverviewVerbal(props) {
+  var classes = useStyles();
+  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Container"], {
+    maxWidth: "sm"
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("form", {
+    autoComplete: "off",
+    noValidate: true
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Button"], {
+    variant: "contained",
+    color: "primary",
+    className: classes.handleButton,
+    onClick: e => {
+      handleSubmit(e, props);
+    }
+  }, "Next")));
+}
+
+/***/ }),
+
+/***/ "./React/Shared/Components/Course/LSMaterials/ContentVisualOverview.js":
+/*!*****************************************************************************!*\
+  !*** ./React/Shared/Components/Course/LSMaterials/ContentVisualOverview.js ***!
+  \*****************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return OverviewVerbal; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core */ "@material-ui/core");
+/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../Data/learningStyles */ "./React/Shared/Data/learningStyles.js");
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
+
+
+
+var useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["makeStyles"])(theme => ({
+  icon: {
+    marginRight: theme.spacing(2)
+  },
+  link: {
+    textDecoration: 'none'
+  },
+  heroContent: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(8, 0, 6)
+  },
+  heroButtons: {
+    margin: theme.spacing(4)
+  },
+  cardGrid: {
+    paddingTop: theme.spacing(8),
+    paddingBottom: theme.spacing(8)
+  },
+  handleButton: {
+    margin: theme.spacing(4),
+    float: 'right'
+  },
+  card: {
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  cardMedia: {
+    paddingTop: '56.25%' // 16:9
+
+  },
+  cardContent: {
+    flexGrow: 1
+  },
+  footer: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(6)
+  },
+  Text: {
+    display: 'block'
+  }
+}));
+
+var handleSubmit = /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator(function* (e, props) {
+    e.preventDefault();
+    var category = props.match.params.category;
+    var lsType = props.match.params.ls_type;
+    var course = props.match.params.course;
+    var lsContents = _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__["default"].find(style => lsType === style.type).contents;
+    var path = lsContents.indexOf(category) + 1 < lsContents.length ? "/course/".concat(course, "/ls/").concat(lsType, "/").concat(lsContents[lsContents.indexOf(category) + 1]) : "/course/".concat(course, "/home");
+    props.history.push(path);
+  });
+
+  return function handleSubmit(_x, _x2) {
+    return _ref.apply(this, arguments);
+  };
+}();
+
+function OverviewVerbal(props) {
+  var classes = useStyles();
+  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Container"], {
+    maxWidth: "sm"
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("form", {
+    autoComplete: "off",
+    noValidate: true
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Button"], {
+    variant: "contained",
+    color: "primary",
+    className: classes.handleButton,
+    onClick: e => {
+      handleSubmit(e, props);
+    }
+  }, "Next")));
+}
+
+/***/ }),
+
+/***/ "./React/Shared/Components/Course/LSMaterials/DefinitionVerbalDetailed.js":
+/*!********************************************************************************!*\
+  !*** ./React/Shared/Components/Course/LSMaterials/DefinitionVerbalDetailed.js ***!
+  \********************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return OverviewVerbal; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core */ "@material-ui/core");
+/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../Data/learningStyles */ "./React/Shared/Data/learningStyles.js");
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
+
+
+
+var useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["makeStyles"])(theme => ({
+  icon: {
+    marginRight: theme.spacing(2)
+  },
+  link: {
+    textDecoration: 'none'
+  },
+  heroContent: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(8, 0, 6)
+  },
+  heroButtons: {
+    margin: theme.spacing(4)
+  },
+  cardGrid: {
+    paddingTop: theme.spacing(8),
+    paddingBottom: theme.spacing(8)
+  },
+  handleButton: {
+    margin: theme.spacing(4),
+    float: 'right'
+  },
+  card: {
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  cardMedia: {
+    paddingTop: '56.25%' // 16:9
+
+  },
+  cardContent: {
+    flexGrow: 1
+  },
+  footer: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(6)
+  },
+  Text: {
+    display: 'block'
+  }
+}));
+
+var handleSubmit = /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator(function* (e, props) {
+    e.preventDefault();
+    var category = props.match.params.category;
+    var lsType = props.match.params.ls_type;
+    var course = props.match.params.course;
+    var lsContents = _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__["default"].find(style => lsType === style.type).contents;
+    var path = lsContents.indexOf(category) + 1 < lsContents.length ? "/course/".concat(course, "/ls/").concat(lsType, "/").concat(lsContents[lsContents.indexOf(category) + 1]) : "/course/".concat(course, "/home");
+    props.history.push(path);
+  });
+
+  return function handleSubmit(_x, _x2) {
+    return _ref.apply(this, arguments);
+  };
+}();
+
+function OverviewVerbal(props) {
+  var classes = useStyles();
+  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Container"], {
+    maxWidth: "sm"
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("form", {
+    autoComplete: "off",
+    noValidate: true
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Button"], {
+    variant: "contained",
+    color: "primary",
+    className: classes.handleButton,
+    onClick: e => {
+      handleSubmit(e, props);
+    }
+  }, "Next")));
+}
+
+/***/ }),
+
+/***/ "./React/Shared/Components/Course/LSMaterials/DefinitionVerbalOverview.js":
+/*!********************************************************************************!*\
+  !*** ./React/Shared/Components/Course/LSMaterials/DefinitionVerbalOverview.js ***!
+  \********************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return OverviewVerbal; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core */ "@material-ui/core");
+/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../Data/learningStyles */ "./React/Shared/Data/learningStyles.js");
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
+
+
+
+var useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["makeStyles"])(theme => ({
+  icon: {
+    marginRight: theme.spacing(2)
+  },
+  link: {
+    textDecoration: 'none'
+  },
+  heroContent: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(8, 0, 6)
+  },
+  heroButtons: {
+    margin: theme.spacing(4)
+  },
+  cardGrid: {
+    paddingTop: theme.spacing(8),
+    paddingBottom: theme.spacing(8)
+  },
+  handleButton: {
+    margin: theme.spacing(4),
+    float: 'right'
+  },
+  card: {
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  cardMedia: {
+    paddingTop: '56.25%' // 16:9
+
+  },
+  cardContent: {
+    flexGrow: 1
+  },
+  footer: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(6)
+  },
+  Text: {
+    display: 'block'
+  }
+}));
+
+var handleSubmit = /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator(function* (e, props) {
+    e.preventDefault();
+    var category = props.match.params.category;
+    var lsType = props.match.params.ls_type;
+    var course = props.match.params.course;
+    var lsContents = _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__["default"].find(style => lsType === style.type).contents;
+    var path = lsContents.indexOf(category) + 1 < lsContents.length ? "/course/".concat(course, "/ls/").concat(lsType, "/").concat(lsContents[lsContents.indexOf(category) + 1]) : "/course/".concat(course, "/home");
+    props.history.push(path);
+  });
+
+  return function handleSubmit(_x, _x2) {
+    return _ref.apply(this, arguments);
+  };
+}();
+
+function OverviewVerbal(props) {
+  var classes = useStyles();
+  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Container"], {
+    maxWidth: "sm"
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("form", {
+    autoComplete: "off",
+    noValidate: true
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Button"], {
+    variant: "contained",
+    color: "primary",
+    className: classes.handleButton,
+    onClick: e => {
+      handleSubmit(e, props);
+    }
+  }, "Next")));
+}
+
+/***/ }),
+
+/***/ "./React/Shared/Components/Course/LSMaterials/DefinitionVisualDetailed.js":
+/*!********************************************************************************!*\
+  !*** ./React/Shared/Components/Course/LSMaterials/DefinitionVisualDetailed.js ***!
+  \********************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return OverviewVerbal; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core */ "@material-ui/core");
+/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../Data/learningStyles */ "./React/Shared/Data/learningStyles.js");
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
+
+
+
+var useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["makeStyles"])(theme => ({
+  icon: {
+    marginRight: theme.spacing(2)
+  },
+  link: {
+    textDecoration: 'none'
+  },
+  heroContent: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(8, 0, 6)
+  },
+  heroButtons: {
+    margin: theme.spacing(4)
+  },
+  cardGrid: {
+    paddingTop: theme.spacing(8),
+    paddingBottom: theme.spacing(8)
+  },
+  handleButton: {
+    margin: theme.spacing(4),
+    float: 'right'
+  },
+  card: {
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  cardMedia: {
+    paddingTop: '56.25%' // 16:9
+
+  },
+  cardContent: {
+    flexGrow: 1
+  },
+  footer: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(6)
+  },
+  Text: {
+    display: 'block'
+  }
+}));
+
+var handleSubmit = /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator(function* (e, props) {
+    e.preventDefault();
+    var category = props.match.params.category;
+    var lsType = props.match.params.ls_type;
+    var course = props.match.params.course;
+    var lsContents = _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__["default"].find(style => lsType === style.type).contents;
+    var path = lsContents.indexOf(category) + 1 < lsContents.length ? "/course/".concat(course, "/ls/").concat(lsType, "/").concat(lsContents[lsContents.indexOf(category) + 1]) : "/course/".concat(course, "/home");
+    props.history.push(path);
+  });
+
+  return function handleSubmit(_x, _x2) {
+    return _ref.apply(this, arguments);
+  };
+}();
+
+function OverviewVerbal(props) {
+  var classes = useStyles();
+  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Container"], {
+    maxWidth: "sm"
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("form", {
+    autoComplete: "off",
+    noValidate: true
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Button"], {
+    variant: "contained",
+    color: "primary",
+    className: classes.handleButton,
+    onClick: e => {
+      handleSubmit(e, props);
+    }
+  }, "Next")));
+}
+
+/***/ }),
+
+/***/ "./React/Shared/Components/Course/LSMaterials/DefinitionVisualOverview.js":
+/*!********************************************************************************!*\
+  !*** ./React/Shared/Components/Course/LSMaterials/DefinitionVisualOverview.js ***!
+  \********************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return OverviewVerbal; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core */ "@material-ui/core");
+/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../Data/learningStyles */ "./React/Shared/Data/learningStyles.js");
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
+
+
+
+var useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["makeStyles"])(theme => ({
+  icon: {
+    marginRight: theme.spacing(2)
+  },
+  link: {
+    textDecoration: 'none'
+  },
+  heroContent: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(8, 0, 6)
+  },
+  heroButtons: {
+    margin: theme.spacing(4)
+  },
+  cardGrid: {
+    paddingTop: theme.spacing(8),
+    paddingBottom: theme.spacing(8)
+  },
+  handleButton: {
+    margin: theme.spacing(4),
+    float: 'right'
+  },
+  card: {
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  cardMedia: {
+    paddingTop: '56.25%' // 16:9
+
+  },
+  cardContent: {
+    flexGrow: 1
+  },
+  footer: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(6)
+  },
+  Text: {
+    display: 'block'
+  }
+}));
+
+var handleSubmit = /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator(function* (e, props) {
+    e.preventDefault();
+    var category = props.match.params.category;
+    var lsType = props.match.params.ls_type;
+    var course = props.match.params.course;
+    var lsContents = _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__["default"].find(style => lsType === style.type).contents;
+    var path = lsContents.indexOf(category) + 1 < lsContents.length ? "/course/".concat(course, "/ls/").concat(lsType, "/").concat(lsContents[lsContents.indexOf(category) + 1]) : "/course/".concat(course, "/home");
+    props.history.push(path);
+  });
+
+  return function handleSubmit(_x, _x2) {
+    return _ref.apply(this, arguments);
+  };
+}();
+
+function OverviewVerbal(props) {
+  var classes = useStyles();
+  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Container"], {
+    maxWidth: "sm"
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("form", {
+    autoComplete: "off",
+    noValidate: true
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Button"], {
+    variant: "contained",
+    color: "primary",
+    className: classes.handleButton,
+    onClick: e => {
+      handleSubmit(e, props);
+    }
+  }, "Next")));
+}
+
+/***/ }),
+
+/***/ "./React/Shared/Components/Course/LSMaterials/OverviewVerbal.js":
+/*!**********************************************************************!*\
+  !*** ./React/Shared/Components/Course/LSMaterials/OverviewVerbal.js ***!
+  \**********************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return OverviewVerbal; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core */ "@material-ui/core");
+/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../Data/learningStyles */ "./React/Shared/Data/learningStyles.js");
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
+
+
+
+var useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["makeStyles"])(theme => ({
+  icon: {
+    marginRight: theme.spacing(2)
+  },
+  link: {
+    textDecoration: 'none'
+  },
+  heroContent: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(8, 0, 6)
+  },
+  heroButtons: {
+    margin: theme.spacing(4)
+  },
+  cardGrid: {
+    paddingTop: theme.spacing(8),
+    paddingBottom: theme.spacing(8)
+  },
+  handleButton: {
+    margin: theme.spacing(4),
+    float: 'right'
+  },
+  card: {
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  cardMedia: {
+    paddingTop: '56.25%' // 16:9
+
+  },
+  cardContent: {
+    flexGrow: 1
+  },
+  footer: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(6)
+  },
+  Text: {
+    display: 'block'
+  }
+}));
+
+var handleSubmit = /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator(function* (e, props) {
+    e.preventDefault();
+    var category = props.match.params.category;
+    var lsType = props.match.params.ls_type;
+    var course = props.match.params.course;
+    var lsContents = _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__["default"].find(style => lsType === style.type).contents;
+    var path = lsContents.indexOf(category) + 1 < lsContents.length ? "/course/".concat(course, "/ls/").concat(lsType, "/").concat(lsContents[lsContents.indexOf(category) + 1]) : "/course/".concat(course, "/home");
+    props.history.push(path);
+  });
+
+  return function handleSubmit(_x, _x2) {
+    return _ref.apply(this, arguments);
+  };
+}();
+
+function OverviewVerbal(props) {
+  var classes = useStyles();
+  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Container"], {
+    maxWidth: "sm"
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("form", {
+    autoComplete: "off",
+    noValidate: true
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Button"], {
+    variant: "contained",
+    color: "primary",
+    className: classes.handleButton,
+    onClick: e => {
+      handleSubmit(e, props);
+    }
+  }, "Next")));
 }
 
 /***/ }),
@@ -2710,10 +3531,99 @@ function Summary(props) {
 /*!**********************************************************************!*\
   !*** ./React/Shared/Components/Course/LSMaterials/OverviewVisual.js ***!
   \**********************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return OverviewVerbal; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core */ "@material-ui/core");
+/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../Data/learningStyles */ "./React/Shared/Data/learningStyles.js");
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
 
+
+
+var useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["makeStyles"])(theme => ({
+  icon: {
+    marginRight: theme.spacing(2)
+  },
+  link: {
+    textDecoration: 'none'
+  },
+  heroContent: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(8, 0, 6)
+  },
+  heroButtons: {
+    margin: theme.spacing(4)
+  },
+  cardGrid: {
+    paddingTop: theme.spacing(8),
+    paddingBottom: theme.spacing(8)
+  },
+  handleButton: {
+    margin: theme.spacing(4),
+    float: 'right'
+  },
+  card: {
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  cardMedia: {
+    paddingTop: '56.25%' // 16:9
+
+  },
+  cardContent: {
+    flexGrow: 1
+  },
+  footer: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(6)
+  },
+  Text: {
+    display: 'block'
+  }
+}));
+
+var handleSubmit = /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator(function* (e, props) {
+    e.preventDefault();
+    var category = props.match.params.category;
+    var lsType = props.match.params.ls_type;
+    var course = props.match.params.course;
+    var lsContents = _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__["default"].find(style => lsType === style.type).contents;
+    var path = lsContents.indexOf(category) + 1 < lsContents.length ? "/course/".concat(course, "/ls/").concat(lsType, "/").concat(lsContents[lsContents.indexOf(category) + 1]) : "/course/".concat(course, "/home");
+    props.history.push(path);
+  });
+
+  return function handleSubmit(_x, _x2) {
+    return _ref.apply(this, arguments);
+  };
+}();
+
+function OverviewVerbal(props) {
+  var classes = useStyles();
+  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Container"], {
+    maxWidth: "sm"
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("form", {
+    autoComplete: "off",
+    noValidate: true
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Button"], {
+    variant: "contained",
+    color: "primary",
+    className: classes.handleButton,
+    onClick: e => {
+      handleSubmit(e, props);
+    }
+  }, "Next")));
+}
 
 /***/ }),
 
@@ -2721,10 +3631,99 @@ function Summary(props) {
 /*!*********************************************************************!*\
   !*** ./React/Shared/Components/Course/LSMaterials/SummaryVerbal.js ***!
   \*********************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return OverviewVerbal; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core */ "@material-ui/core");
+/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../Data/learningStyles */ "./React/Shared/Data/learningStyles.js");
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
 
+
+
+var useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["makeStyles"])(theme => ({
+  icon: {
+    marginRight: theme.spacing(2)
+  },
+  link: {
+    textDecoration: 'none'
+  },
+  heroContent: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(8, 0, 6)
+  },
+  heroButtons: {
+    margin: theme.spacing(4)
+  },
+  cardGrid: {
+    paddingTop: theme.spacing(8),
+    paddingBottom: theme.spacing(8)
+  },
+  handleButton: {
+    margin: theme.spacing(4),
+    float: 'right'
+  },
+  card: {
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  cardMedia: {
+    paddingTop: '56.25%' // 16:9
+
+  },
+  cardContent: {
+    flexGrow: 1
+  },
+  footer: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(6)
+  },
+  Text: {
+    display: 'block'
+  }
+}));
+
+var handleSubmit = /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator(function* (e, props) {
+    e.preventDefault();
+    var category = props.match.params.category;
+    var lsType = props.match.params.ls_type;
+    var course = props.match.params.course;
+    var lsContents = _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__["default"].find(style => lsType === style.type).contents;
+    var path = lsContents.indexOf(category) + 1 < lsContents.length ? "/course/".concat(course, "/ls/").concat(lsType, "/").concat(lsContents[lsContents.indexOf(category) + 1]) : "/course/".concat(course, "/home");
+    props.history.push(path);
+  });
+
+  return function handleSubmit(_x, _x2) {
+    return _ref.apply(this, arguments);
+  };
+}();
+
+function OverviewVerbal(props) {
+  var classes = useStyles();
+  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Container"], {
+    maxWidth: "sm"
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("form", {
+    autoComplete: "off",
+    noValidate: true
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Button"], {
+    variant: "contained",
+    color: "primary",
+    className: classes.handleButton,
+    onClick: e => {
+      handleSubmit(e, props);
+    }
+  }, "Next")));
+}
 
 /***/ }),
 
@@ -2732,10 +3731,99 @@ function Summary(props) {
 /*!*********************************************************************!*\
   !*** ./React/Shared/Components/Course/LSMaterials/SummaryVisual.js ***!
   \*********************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return OverviewVerbal; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @material-ui/core */ "@material-ui/core");
+/* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../Data/learningStyles */ "./React/Shared/Data/learningStyles.js");
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
 
+
+
+var useStyles = Object(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["makeStyles"])(theme => ({
+  icon: {
+    marginRight: theme.spacing(2)
+  },
+  link: {
+    textDecoration: 'none'
+  },
+  heroContent: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(8, 0, 6)
+  },
+  heroButtons: {
+    margin: theme.spacing(4)
+  },
+  cardGrid: {
+    paddingTop: theme.spacing(8),
+    paddingBottom: theme.spacing(8)
+  },
+  handleButton: {
+    margin: theme.spacing(4),
+    float: 'right'
+  },
+  card: {
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  cardMedia: {
+    paddingTop: '56.25%' // 16:9
+
+  },
+  cardContent: {
+    flexGrow: 1
+  },
+  footer: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(6)
+  },
+  Text: {
+    display: 'block'
+  }
+}));
+
+var handleSubmit = /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator(function* (e, props) {
+    e.preventDefault();
+    var category = props.match.params.category;
+    var lsType = props.match.params.ls_type;
+    var course = props.match.params.course;
+    var lsContents = _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__["default"].find(style => lsType === style.type).contents;
+    var path = lsContents.indexOf(category) + 1 < lsContents.length ? "/course/".concat(course, "/ls/").concat(lsType, "/").concat(lsContents[lsContents.indexOf(category) + 1]) : "/course/".concat(course, "/home");
+    props.history.push(path);
+  });
+
+  return function handleSubmit(_x, _x2) {
+    return _ref.apply(this, arguments);
+  };
+}();
+
+function OverviewVerbal(props) {
+  var classes = useStyles();
+  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Container"], {
+    maxWidth: "sm"
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("form", {
+    autoComplete: "off",
+    noValidate: true
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Button"], {
+    variant: "contained",
+    color: "primary",
+    className: classes.handleButton,
+    onClick: e => {
+      handleSubmit(e, props);
+    }
+  }, "Next")));
+}
 
 /***/ }),
 
@@ -3368,33 +4456,20 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Components_Course_GeneralMaterials_Summary__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../Components/Course/GeneralMaterials/Summary */ "./React/Shared/Components/Course/GeneralMaterials/Summary.js");
 /* harmony import */ var _Components_Course_GeneralMaterials_Visual__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../Components/Course/GeneralMaterials/Visual */ "./React/Shared/Components/Course/GeneralMaterials/Visual.js");
 /* harmony import */ var _Components_Course_GeneralMaterials_Overview__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../Components/Course/GeneralMaterials/Overview */ "./React/Shared/Components/Course/GeneralMaterials/Overview.js");
-/* harmony import */ var _Components_Course_LSMaterials_AcivityVerbal__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../Components/Course/LSMaterials/AcivityVerbal */ "./React/Shared/Components/Course/LSMaterials/AcivityVerbal.js");
-/* harmony import */ var _Components_Course_LSMaterials_AcivityVerbal__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_AcivityVerbal__WEBPACK_IMPORTED_MODULE_6__);
-/* harmony import */ var _Components_Course_LSMaterials_ActivityVisual__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../Components/Course/LSMaterials/ActivityVisual */ "./React/Shared/Components/Course/LSMaterials/ActivityVisual.js");
-/* harmony import */ var _Components_Course_LSMaterials_ActivityVisual__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_ActivityVisual__WEBPACK_IMPORTED_MODULE_7__);
+/* harmony import */ var _Components_Course_LSMaterials_ActivityVisual__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../Components/Course/LSMaterials/ActivityVisual */ "./React/Shared/Components/Course/LSMaterials/ActivityVisual.js");
+/* harmony import */ var _Components_Course_LSMaterials_AcivityVerbal__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../Components/Course/LSMaterials/AcivityVerbal */ "./React/Shared/Components/Course/LSMaterials/AcivityVerbal.js");
 /* harmony import */ var _Components_Course_LSMaterials_ContentVerbalDetailed__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../Components/Course/LSMaterials/ContentVerbalDetailed */ "./React/Shared/Components/Course/LSMaterials/ContentVerbalDetailed.js");
-/* harmony import */ var _Components_Course_LSMaterials_ContentVerbalDetailed__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_ContentVerbalDetailed__WEBPACK_IMPORTED_MODULE_8__);
 /* harmony import */ var _Components_Course_LSMaterials_ContentVerbalOverview__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../Components/Course/LSMaterials/ContentVerbalOverview */ "./React/Shared/Components/Course/LSMaterials/ContentVerbalOverview.js");
-/* harmony import */ var _Components_Course_LSMaterials_ContentVerbalOverview__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_ContentVerbalOverview__WEBPACK_IMPORTED_MODULE_9__);
 /* harmony import */ var _Components_Course_LSMaterials_ContentVisualDetailed__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../Components/Course/LSMaterials/ContentVisualDetailed */ "./React/Shared/Components/Course/LSMaterials/ContentVisualDetailed.js");
-/* harmony import */ var _Components_Course_LSMaterials_ContentVisualDetailed__WEBPACK_IMPORTED_MODULE_10___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_ContentVisualDetailed__WEBPACK_IMPORTED_MODULE_10__);
 /* harmony import */ var _Components_Course_LSMaterials_ContentVisualOverview__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../Components/Course/LSMaterials/ContentVisualOverview */ "./React/Shared/Components/Course/LSMaterials/ContentVisualOverview.js");
-/* harmony import */ var _Components_Course_LSMaterials_ContentVisualOverview__WEBPACK_IMPORTED_MODULE_11___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_ContentVisualOverview__WEBPACK_IMPORTED_MODULE_11__);
 /* harmony import */ var _Components_Course_LSMaterials_DefinitionVerbalDetailed__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../Components/Course/LSMaterials/DefinitionVerbalDetailed */ "./React/Shared/Components/Course/LSMaterials/DefinitionVerbalDetailed.js");
-/* harmony import */ var _Components_Course_LSMaterials_DefinitionVerbalDetailed__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_DefinitionVerbalDetailed__WEBPACK_IMPORTED_MODULE_12__);
 /* harmony import */ var _Components_Course_LSMaterials_DefinitionVerbalOverview__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../Components/Course/LSMaterials/DefinitionVerbalOverview */ "./React/Shared/Components/Course/LSMaterials/DefinitionVerbalOverview.js");
-/* harmony import */ var _Components_Course_LSMaterials_DefinitionVerbalOverview__WEBPACK_IMPORTED_MODULE_13___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_DefinitionVerbalOverview__WEBPACK_IMPORTED_MODULE_13__);
 /* harmony import */ var _Components_Course_LSMaterials_DefinitionVisualDetailed__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../Components/Course/LSMaterials/DefinitionVisualDetailed */ "./React/Shared/Components/Course/LSMaterials/DefinitionVisualDetailed.js");
-/* harmony import */ var _Components_Course_LSMaterials_DefinitionVisualDetailed__WEBPACK_IMPORTED_MODULE_14___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_DefinitionVisualDetailed__WEBPACK_IMPORTED_MODULE_14__);
 /* harmony import */ var _Components_Course_LSMaterials_DefinitionVisualOverview__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../Components/Course/LSMaterials/DefinitionVisualOverview */ "./React/Shared/Components/Course/LSMaterials/DefinitionVisualOverview.js");
-/* harmony import */ var _Components_Course_LSMaterials_DefinitionVisualOverview__WEBPACK_IMPORTED_MODULE_15___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_DefinitionVisualOverview__WEBPACK_IMPORTED_MODULE_15__);
 /* harmony import */ var _Components_Course_LSMaterials_OverviewVerbal__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ../Components/Course/LSMaterials/OverviewVerbal */ "./React/Shared/Components/Course/LSMaterials/OverviewVerbal.js");
 /* harmony import */ var _Components_Course_LSMaterials_OverviewVisual__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ../Components/Course/LSMaterials/OverviewVisual */ "./React/Shared/Components/Course/LSMaterials/OverviewVisual.js");
-/* harmony import */ var _Components_Course_LSMaterials_OverviewVisual__WEBPACK_IMPORTED_MODULE_17___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_OverviewVisual__WEBPACK_IMPORTED_MODULE_17__);
 /* harmony import */ var _Components_Course_LSMaterials_SummaryVerbal__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ../Components/Course/LSMaterials/SummaryVerbal */ "./React/Shared/Components/Course/LSMaterials/SummaryVerbal.js");
-/* harmony import */ var _Components_Course_LSMaterials_SummaryVerbal__WEBPACK_IMPORTED_MODULE_18___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_SummaryVerbal__WEBPACK_IMPORTED_MODULE_18__);
 /* harmony import */ var _Components_Course_LSMaterials_SummaryVisual__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ../Components/Course/LSMaterials/SummaryVisual */ "./React/Shared/Components/Course/LSMaterials/SummaryVisual.js");
-/* harmony import */ var _Components_Course_LSMaterials_SummaryVisual__WEBPACK_IMPORTED_MODULE_19___default = /*#__PURE__*/__webpack_require__.n(_Components_Course_LSMaterials_SummaryVisual__WEBPACK_IMPORTED_MODULE_19__);
 
 
 
@@ -3438,49 +4513,49 @@ var categories = [{
   component: _Components_Course_LSMaterials_OverviewVerbal__WEBPACK_IMPORTED_MODULE_16__["default"]
 }, {
   name: 'Overview-Visual',
-  component: _Components_Course_LSMaterials_OverviewVisual__WEBPACK_IMPORTED_MODULE_17___default.a
+  component: _Components_Course_LSMaterials_OverviewVisual__WEBPACK_IMPORTED_MODULE_17__["default"]
 }, {
   name: 'Summary-Visual',
-  component: _Components_Course_LSMaterials_SummaryVisual__WEBPACK_IMPORTED_MODULE_19___default.a
+  component: _Components_Course_LSMaterials_SummaryVisual__WEBPACK_IMPORTED_MODULE_19__["default"]
 }, {
   name: 'Summary-Verbal',
-  component: _Components_Course_LSMaterials_SummaryVerbal__WEBPACK_IMPORTED_MODULE_18___default.a
+  component: _Components_Course_LSMaterials_SummaryVerbal__WEBPACK_IMPORTED_MODULE_18__["default"]
 }, {
   name: 'Activity-Verbal',
-  component: _Components_Course_LSMaterials_ActivityVisual__WEBPACK_IMPORTED_MODULE_7___default.a
+  component: _Components_Course_LSMaterials_AcivityVerbal__WEBPACK_IMPORTED_MODULE_7__["default"]
 }, {
   name: 'Activity-Visual',
-  component: _Components_Course_LSMaterials_AcivityVerbal__WEBPACK_IMPORTED_MODULE_6___default.a
+  component: _Components_Course_LSMaterials_ActivityVisual__WEBPACK_IMPORTED_MODULE_6__["default"]
 }, {
   name: 'Content-Verbal-Detailed',
-  component: _Components_Course_LSMaterials_ContentVerbalDetailed__WEBPACK_IMPORTED_MODULE_8___default.a
+  component: _Components_Course_LSMaterials_ContentVerbalDetailed__WEBPACK_IMPORTED_MODULE_8__["default"]
 }, {
   name: 'Content-Verbal-Overview',
-  component: _Components_Course_LSMaterials_ContentVerbalOverview__WEBPACK_IMPORTED_MODULE_9___default.a
+  component: _Components_Course_LSMaterials_ContentVerbalOverview__WEBPACK_IMPORTED_MODULE_9__["default"]
 }, {
   name: 'Content-Visual-Detailed',
-  component: _Components_Course_LSMaterials_ContentVisualDetailed__WEBPACK_IMPORTED_MODULE_10___default.a
+  component: _Components_Course_LSMaterials_ContentVisualDetailed__WEBPACK_IMPORTED_MODULE_10__["default"]
 }, {
   name: 'Content-Visual-Overview',
-  component: _Components_Course_LSMaterials_ContentVisualOverview__WEBPACK_IMPORTED_MODULE_11___default.a
+  component: _Components_Course_LSMaterials_ContentVisualOverview__WEBPACK_IMPORTED_MODULE_11__["default"]
 }, {
   name: 'Definition-Verbal-Detailed',
-  component: _Components_Course_LSMaterials_DefinitionVerbalDetailed__WEBPACK_IMPORTED_MODULE_12___default.a
+  component: _Components_Course_LSMaterials_DefinitionVerbalDetailed__WEBPACK_IMPORTED_MODULE_12__["default"]
 }, {
   name: 'Definition-Verbal-Overview',
-  component: _Components_Course_LSMaterials_DefinitionVerbalOverview__WEBPACK_IMPORTED_MODULE_13___default.a
+  component: _Components_Course_LSMaterials_DefinitionVerbalOverview__WEBPACK_IMPORTED_MODULE_13__["default"]
 }, {
   name: 'Definition-Visual-Detailed',
-  component: _Components_Course_LSMaterials_DefinitionVisualDetailed__WEBPACK_IMPORTED_MODULE_14___default.a
+  component: _Components_Course_LSMaterials_DefinitionVisualDetailed__WEBPACK_IMPORTED_MODULE_14__["default"]
 }, {
   name: 'Definition-Visual-Overview',
-  component: _Components_Course_LSMaterials_DefinitionVisualOverview__WEBPACK_IMPORTED_MODULE_15___default.a
+  component: _Components_Course_LSMaterials_DefinitionVisualOverview__WEBPACK_IMPORTED_MODULE_15__["default"]
 }, {
   name: 'Summary-Verbal',
-  component: _Components_Course_LSMaterials_SummaryVerbal__WEBPACK_IMPORTED_MODULE_18___default.a
+  component: _Components_Course_LSMaterials_SummaryVerbal__WEBPACK_IMPORTED_MODULE_18__["default"]
 }, {
   name: 'Summary-Visual',
-  component: _Components_Course_LSMaterials_SummaryVisual__WEBPACK_IMPORTED_MODULE_19___default.a
+  component: _Components_Course_LSMaterials_SummaryVisual__WEBPACK_IMPORTED_MODULE_19__["default"]
 }];
 /* harmony default export */ __webpack_exports__["default"] = (categories);
 
@@ -3597,6 +4672,10 @@ __webpack_require__.r(__webpack_exports__);
   type: "asvs",
   name: "Active Sensing Visual Sequential",
   contents: ['Overview-Visual', 'Content-Visual-Detailed', 'Activity-Visual', 'Summary-Visual']
+}, {
+  type: "invalid",
+  name: "Complete Chapter 1 First",
+  contents: ['Overview-Visual', 'Content-Visual-Detailed', 'Activity-Visual', 'Summary-Visual']
 }]);
 
 /***/ }),
@@ -3635,6 +4714,10 @@ var routes = [{
 }, {
   path: "/course/:course/home",
   component: _Components_Course_Home__WEBPACK_IMPORTED_MODULE_2__["default"],
+  exact: true
+}, {
+  path: "/course/:course/ls/invalid",
+  component: _Components_Course_LS_LS__WEBPACK_IMPORTED_MODULE_4__["default"],
   exact: true
 }, {
   path: "/course/:course/ls/:ls_type",
