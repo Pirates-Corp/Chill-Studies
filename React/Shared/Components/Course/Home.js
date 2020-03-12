@@ -75,13 +75,13 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const handleRoute = async (props,card,course,lsType) => {
+const handleRoute = async (props,card,course) => {
 
   const path = props.history.location.pathname+''
 
-  lsType =  path.includes('/home') ? (await axios.get('http://127.0.0.1:8000/api/v1/student/ml/get/'+sessionStorage.getItem('auth'))).data : lsType
-
   let to = ''
+
+  const lsType = await path.includes('/home') ? (await axios.get('http://127.0.0.1:8000/api/v1/student/ml/get/'+sessionStorage.getItem('auth'))).data : null
 
   to = path ==='/dashboard' ? `/course/${card.name}/home`:
     to = path.includes('/ls') ? `/course/${course.name}/ls/${lsType}/${card}` :
@@ -98,11 +98,9 @@ export default function Home(props) {
 
   const chapters = ['Chapter-1','Chapter-2']
 
-  const lsType = props.match.params.ls_type
-
   const cards = path.startsWith('/dashboard') ? courses :                                                         // its dhashboard
                   path.includes('/home') ? chapters :                                                              // Its Course Home that includes Chapters
-                    path.includes('/ls') ? learningStyles.find(style => lsType === style.type).contents  :     // Its the LS Predicted Course Chapter Home  
+                    path.includes('/ls') ? learningStyles.find(style => props.match.params.ls_type === style.type).contents  :     // Its the LS Predicted Course Chapter Home  
                         [ 'Overview','Definitons', 'Activity', 'Content','Visual','Summary'];                   // Its the default Course Chapter Home
 
   let course = (path==='/dashboard') ?  ('valid') : (courses.find((course) => props.match.params.course === course.name) )
@@ -155,7 +153,7 @@ export default function Home(props) {
               <Grid container spacing={2}>
                   {cards.map((card,i) => (
                       <Grid item key={card} xs={12} sm={6} md={ (path.includes('/ls')||path.includes('/home')) ? 6: 4}> 
-                          <div onClick={(e) => {handleRoute(props,card,course,lsType)}}>
+                          <div onClick={(e) => {handleRoute(props,card,course)}}>
                               <Card className={classes.card}>
                               <CardMedia
                                   className={classes.cardMedia}

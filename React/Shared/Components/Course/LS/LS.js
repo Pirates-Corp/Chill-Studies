@@ -60,9 +60,10 @@ export default function LS (props) {
 
     let lsTypeParam = props.match.params.ls_type+''
 
-    lsTypeParam =  (props.history.location.pathname).includes('invalid') ? 'invalid' : lsTypeParam
 
     const ls =  LearningStyles.find((ls) => lsTypeParam === ls.type)
+
+    const [hide,setHide] = React.useState(false)
 
     return(
         <React.Fragment>
@@ -88,8 +89,6 @@ export default function LS (props) {
                                     {ls.name}
                                 </Typography>
                             </ListItem>
-                            { ls.type.includes('invalid') ?  null :
-                            <React.Fragment>
                             <ListItem>
                                 <Typography gutterBottom variant="body1">
                                     {
@@ -140,10 +139,8 @@ export default function LS (props) {
                                 In the upcomming chapters you will get the learning materials that matches your interests. Happly Learning !
                                 </Typography>
                             </ListItem>
-                            </React.Fragment>
-                        }
                         </List>
-                        <Button  disabled ={ ls.type.includes('invalid') } variant="outlined" color="primary" className={classes.handleButton} onClick={(e)=>{  props.history.push( '/course/'+props.match.params.course+'/ls/'+ls.type) }}
+                        <Button variant="outlined" color="primary" className={classes.handleButton} onClick={(e)=>{  props.history.push( '/course/'+props.match.params.course+'/ls/'+ls.type) }}
                         >
                             Proceed  !     
                         </Button>
