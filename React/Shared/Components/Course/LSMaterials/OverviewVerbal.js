@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React  from "react";
 import {
   Typography,
-  Paper,
   makeStyles,
   Button,
   List,
   ListItem,
   Divider,
-  Container
 } from "@material-ui/core";
 import learningStyles from "../../../Data/learningStyles";
 
@@ -81,6 +79,9 @@ export default function OverviewVerbal(props) {
     <form autoComplete="off" noValidate>
       <List>
         <ListItem>
+          <Typography variant="h2">Data Types in Java</Typography>
+        </ListItem>
+        <ListItem>
           <Typography variant="body1">
             There are two data types available in Java
           </Typography>
@@ -112,6 +113,7 @@ export default function OverviewVerbal(props) {
         <ListItem>
           <Typography variant="body1">* char</Typography>
         </ListItem>
+        <Divider variant="middle" />
         <ListItem>
           <Typography variant="h6">Reference/Object Data Types</Typography>
         </ListItem>

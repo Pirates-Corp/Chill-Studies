@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React  from "react";
 import {
   Typography,
   makeStyles,
@@ -94,6 +94,9 @@ export default function DefinitionVisualDetailed(props) {
     <Container>
       <form autoComplete="off" noValidate>
         <List>
+          <ListItem>
+            <Typography variant="h2">Data Types in Java</Typography>
+          </ListItem>
           <ListItem>
             <Card className={classes.root}>
               <CardActionArea>

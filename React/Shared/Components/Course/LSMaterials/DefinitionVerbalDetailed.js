@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React  from "react";
 import {
   Typography,
-  Paper,
   makeStyles,
   Button,
   List,
   ListItem,
   ListItemIcon,
   Divider,
-  Container
 } from "@material-ui/core";
 import learningStyles from "../../../Data/learningStyles";
 import ArrowForwardIosRoundedIcon from "@material-ui/icons/ArrowForwardIosRounded";
@@ -85,6 +83,9 @@ export default function DefinitionVerbalDetailed(props) {
   return (
     <form autoComplete="off" noValidate>
       <List>
+        <ListItem>
+          <Typography variant="h2">Data Types in Java</Typography>
+        </ListItem>
         <ListItem>
           <Typography variant="h4"> Primitive Data Types </Typography>
         </ListItem>
@@ -317,6 +318,7 @@ export default function DefinitionVerbalDetailed(props) {
             char data type is a single 16-bit Unicode character
           </Typography>
         </ListItem>
+        <Divider variant="middle" />
         <ListItem>
           <Typography variant="h4"> Reference Datatypes </Typography>
         </ListItem>

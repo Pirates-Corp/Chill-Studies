@@ -1,13 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   Typography,
-  Paper,
   makeStyles,
   Button,
   List,
   ListItem,
-  Divider,
-  Container
 } from "@material-ui/core";
 import learningStyles from "../../../Data/learningStyles";
 
@@ -80,6 +77,9 @@ export default function OverviewVerbal(props) {
   return (
     <form autoComplete="off" noValidate>
       <List>
+        <ListItem>
+          <Typography variant="h2">Data Types in Java</Typography>
+        </ListItem>
         <ListItem>
           <Typography varient="body2">
             So that was all about the non-primitive data types. Now let’s

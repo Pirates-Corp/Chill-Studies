@@ -1,14 +1,17 @@
 import React from "react";
-import AppBar from "@material-ui/core/AppBar";
-import Card from "@material-ui/core/Card";
-import CardContent from "@material-ui/core/CardContent";
-import CardMedia from "@material-ui/core/CardMedia";
-import CssBaseline from "@material-ui/core/CssBaseline";
-import Grid from "@material-ui/core/Grid";
-import Toolbar from "@material-ui/core/Toolbar";
-import Typography from "@material-ui/core/Typography";
-import { makeStyles, IconButton } from "@material-ui/core";
-import Container from "@material-ui/core/Container";
+import {
+  makeStyles,
+  IconButton,
+  AppBar,
+  Card,
+  CardContent,
+  CardMedia,
+  CssBaseline,
+  Grid,
+  Toolbar,
+  Typography,
+  Container
+} from "@material-ui/core";
 import { Link as Linkto } from "react-router-dom";
 import courses from "../../Data/courses";
 import learningStyles from "../../../Shared/Data/learningStyles";
@@ -161,6 +164,20 @@ export default function Home(props) {
                   >
                     <Typography gutterBottom variant="body1">
                       Dashboard
+                    </Typography>
+                  </IconButton>
+                  <IconButton
+                    edge="start"
+                    color="inherit"
+                    aria-label="home"
+                    onClick={e => {
+                      e.preventDefault();
+                      sessionStorage.clear();
+                      props.history.push("/");
+                    }}
+                  >
+                    <Typography gutterBottom variant="body1">
+                      Log Out
                     </Typography>
                   </IconButton>
                 </React.Fragment>

@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   Typography,
-  Paper,
   makeStyles,
   Button,
   List,
   ListItem,
   Divider,
-  Container
 } from "@material-ui/core";
 import learningStyles from "../../../Data/learningStyles";
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   Typography,
   makeStyles,
@@ -84,6 +84,9 @@ export default function SummaryVisual(props) {
       <form autoComplete="off" noValidate>
         <List>
           <ListItem>
+            <Typography variant="h2">Data Types in Java</Typography>
+          </ListItem>
+          <ListItem>
             <Card className={classes.root}>
               <CardActionArea>
                 <CardMedia
@@ -102,7 +105,7 @@ export default function SummaryVisual(props) {
                     color="textSecondary"
                     component="p"
                   >
-                    The Above Diagram Shows the summary of Java Data Types 
+                    The Above Diagram Shows the summary of Java Data Types
                   </Typography>
                 </CardContent>
               </CardActionArea>

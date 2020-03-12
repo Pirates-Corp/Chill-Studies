@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React  from "react";
 import {
   Typography,
   makeStyles,
   Card,
   CardActionArea,
-  CardMedia,
   CardContent,
   Button,
   List,
@@ -79,49 +78,52 @@ const handleSubmit = async (e, props) => {
 
 export default function SummaryVisual(props) {
   const classes = useStyles();
-    return (
-      <Container>
-        <form autoComplete="off" noValidate>
-          <List>
-            <ListItem>
-              <Card className={classes.root}>
-                <CardActionArea>
-                  <CardContent>
-                    <iframe
-                      width="720"
-                      height="480"
-                      src="https://www.youtube.com/embed/vhV97hyV0fc"
-                      frameborder="0"
-                      allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                      allowfullscreen
-                    ></iframe>
-                    <Typography gutterBottom variant="h5" component="h2">
-                      Java Data Types
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="textSecondary"
-                      component="p"
-                    >
-                     We Summaries The Java Variabled In The Above Video
-                    </Typography>
-                  </CardContent>
-                </CardActionArea>
-              </Card>
-            </ListItem>
-          </List>
+  return (
+    <Container>
+      <form autoComplete="off" noValidate>
+        <List>
+          <ListItem>
+            <Typography variant="h2">Data Types in Java</Typography>
+          </ListItem>
+          <ListItem>
+            <Card className={classes.root}>
+              <CardActionArea>
+                <CardContent>
+                  <iframe
+                    width="720"
+                    height="480"
+                    src="https://www.youtube.com/embed/vhV97hyV0fc"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen
+                  ></iframe>
+                  <Typography gutterBottom variant="h5" component="h2">
+                    Java Data Types
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="textSecondary"
+                    component="p"
+                  >
+                    We Summaries The Java Variabled In The Above Video
+                  </Typography>
+                </CardContent>
+              </CardActionArea>
+            </Card>
+          </ListItem>
+        </List>
 
-          <Button
-            variant="contained"
-            color="primary"
-            className={classes.handleButton}
-            onClick={e => {
-              handleSubmit(e, props);
-            }}
-          >
-            Next
-          </Button>
-        </form>
-      </Container>
-    );
+        <Button
+          variant="contained"
+          color="primary"
+          className={classes.handleButton}
+          onClick={e => {
+            handleSubmit(e, props);
+          }}
+        >
+          Next
+        </Button>
+      </form>
+    </Container>
+  );
 }
