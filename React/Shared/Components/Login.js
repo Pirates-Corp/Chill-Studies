@@ -140,10 +140,6 @@ export default function Login(props) {
                   id="password"
                   autoComplete="current-password"
                 />
-                <FormControlLabel
-                  control={<Checkbox value="remember" color="primary" />}
-                  label="Remember me"
-                />
                 <Button
                   type="submit"
                   fullWidth
@@ -156,7 +152,6 @@ export default function Login(props) {
                 >
                   Sign In
                 </Button>
-                {/* <Linkto className={classes.link} to="/signup"> */}
                 <Button
                   fullWidth
                   variant="outlined"
@@ -169,19 +164,6 @@ export default function Login(props) {
                 >
                   Sign Up
                 </Button>
-                {/* </Linkto> */}
-                <Grid container>
-                  <Grid item xs>
-                    <Link href="#" variant="body2">
-                      Forgot password?
-                    </Link>
-                  </Grid>
-                  <Grid item>
-                    <Link href="#" variant="body2">
-                      {"Don't have an account? Sign Up"}
-                    </Link>
-                  </Grid>
-                </Grid>
                 <Box mt={5}>
                   <Copyright />
                 </Box>
