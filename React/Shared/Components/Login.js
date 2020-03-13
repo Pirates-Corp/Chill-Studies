@@ -72,12 +72,15 @@ async function handleClick(e, props) {
   e.preventDefault();
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
+  console.log('res');
 
   try {
     const res = await axios.post("http://127.0.0.1:8000/api/v1/student/login", {
       studentId: email,
       password: password
     });
+
+    console.log(res)
 
     if (res.status === 201) {
       sessionStorage.setItem("auth", res.data.data.student._id);
