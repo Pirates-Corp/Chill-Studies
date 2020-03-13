@@ -160,11 +160,15 @@ export default function Home(props) {
                         aria-label="home"
                         onClick={e => {
                           e.preventDefault();
-                          props.history.push("/dashboard");
+                          props.history.push(
+                            path.includes("/ls/")
+                              ? `/course/${course.name}/home`
+                              : "/dashboard"
+                          );
                         }}
                       >
                         <Typography gutterBottom variant="body1">
-                          Dashboard
+                          {path.includes("/ls/") ? "Course Home" : "Dashboard"}
                         </Typography>
                       </IconButton>
                     )}

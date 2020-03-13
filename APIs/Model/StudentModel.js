@@ -48,57 +48,68 @@ const studentSchema = mongoose.Schema({
     ABC: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     },
     D: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     },
     C: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     },
     AAC: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     },
     A: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     },
     V: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     },
     ABC_T: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     },
     D_T: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     },
     C_T: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     },
     AAC_T: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     },
     A_T: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     }
   }
 });

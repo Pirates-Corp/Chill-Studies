@@ -73,8 +73,6 @@ const handleSubmit = async (e, props) => {
         }`
       : `/course/${course}/home`;
 
-  console.log("Vijay");
-
   props.history.push(path);
 };
 

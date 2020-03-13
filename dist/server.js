@@ -500,57 +500,68 @@ var studentSchema = mongoose.Schema({
     ABC: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     },
     D: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     },
     C: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     },
     AAC: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     },
     A: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     },
     V: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     },
     ABC_T: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     },
     D_T: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     },
     C_T: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     },
     AAC_T: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     },
     A_T: {
       type: Number,
       min: 0,
-      max: 9
+      max: 9,
+      default: 0
     }
   }
 });
@@ -2203,12 +2214,12 @@ function Home(props) {
     "aria-label": "home",
     onClick: e => {
       e.preventDefault();
-      props.history.push("/dashboard");
+      props.history.push(path.includes("/ls/") ? "/course/".concat(course.name, "/home") : "/dashboard");
     }
   }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
     gutterBottom: true,
     variant: "body1"
-  }, "Dashboard")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["IconButton"], {
+  }, path.includes("/ls/") ? "Course Home" : "Dashboard")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["IconButton"], {
     edge: "start",
     color: "inherit",
     "aria-label": "home",
@@ -3470,7 +3481,6 @@ var handleSubmit = /*#__PURE__*/function () {
     var course = props.match.params.course;
     var lsContents = _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__["default"].find(style => lsType === style.type).contents;
     var path = lsContents.indexOf(category) + 1 < lsContents.length ? "/course/".concat(course, "/ls/").concat(lsType, "/").concat(lsContents[lsContents.indexOf(category) + 1]) : "/course/".concat(course, "/home");
-    console.log("Vijay");
     props.history.push(path);
   });
 
@@ -4666,8 +4676,8 @@ function Page(props) {
   var classes = useStyles();
   var course = _Data_courses__WEBPACK_IMPORTED_MODULE_1__["default"].find(course => props.match.params.course === course.name);
   var category = _Data_categories__WEBPACK_IMPORTED_MODULE_3__["default"].find(category => props.match.params.category === category.name);
-  var [auth, setAuth] = useState(null);
-  useEffect(() => {
+  var [auth, setAuth] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(null);
+  Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(() => {
     setAuth(sessionStorage.getItem("auth"));
   });
   return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, auth === null ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, " login required ") : react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, course ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["AppBar"], {
