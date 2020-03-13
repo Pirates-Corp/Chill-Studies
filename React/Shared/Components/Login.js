@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect,useState } from "react";
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import axios from "axios";
 import { Link as Linkto } from "react-router-dom";
@@ -11,9 +11,6 @@ import {
   Grid,
   Box,
   Paper,
-  Link,
-  Checkbox,
-  FormControlLabel,
   TextField,
   CssBaseline,
   Button
@@ -89,91 +86,104 @@ async function handleClick(e, props) {
       alert("Pls Enter Valid Details");
     }
   } catch (err) {
-    alert(err);
+    alert('Login Failed. Try Again');
   }
 }
 
 export default function Login(props) {
   const classes = useStyles();
 
-  const [signIn, setSingIn] = React.useState(true);
+  const [signIn, setSingIn] = useState(true);
 
-  const handleSignup = () => {
+  const signupToggle = () => {
     signIn ? setSingIn(false) : setSingIn(true);
   };
 
+  const [auth, setAuth] = useState(null);
+
+  useEffect(() => {
+    setAuth(sessionStorage.getItem("auth"));
+  });
+
+
   return (
-    <Grid container component="main" className={classes.root}>
-      <CssBaseline />
-      <Grid item xs={false} sm={4} md={7} className={classes.image} />
-      <Grid item xs={12} sm={8} md={5} component={Paper}>
-        {signIn ? (
-          <Container component="main" maxWidth="sm">
-            <CssBaseline />
-            <div className={classes.paper}>
-              <Avatar className={classes.avatar}>
-                <LockOutlinedIcon />
-              </Avatar>
-              <Typography component="h1" variant="h5">
-                Sign in
-              </Typography>
-              <form className={classes.form} noValidate>
-                <TextField
-                  variant="outlined"
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="email"
-                  label="Email Address"
-                  name="email"
-                  autoComplete="email"
-                  autoFocus
-                />
-                <TextField
-                  variant="outlined"
-                  margin="normal"
-                  required
-                  fullWidth
-                  name="password"
-                  label="Password"
-                  type="password"
-                  id="password"
-                  autoComplete="current-password"
-                />
-                <Button
-                  type="submit"
-                  fullWidth
-                  variant="contained"
-                  color="primary"
-                  className={classes.submit}
-                  onClick={e => {
-                    handleClick(e, props);
-                  }}
-                >
-                  Sign In
-                </Button>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  color="primary"
-                  className={classes.submit}
-                  onClick={e => {
-                    e.preventDefault();
-                    handleSignup();
-                  }}
-                >
-                  Sign Up
-                </Button>
-                <Box mt={5}>
-                  <Copyright />
-                </Box>
-              </form>
-            </div>
-          </Container>
-        ) : (
-          <SignUp handleSignup={handleSignup} />
-        )}
-      </Grid>
-    </Grid>
+    <React.Fragment>
+      {auth ? (
+        props.history.push("/dashboard")
+      ) : (
+        <Grid container component="main" className={classes.root}>
+          <CssBaseline />
+          <Grid item xs={false} sm={4} md={7} className={classes.image} />
+          <Grid item xs={12} sm={8} md={5} component={Paper}>
+            {signIn ? (
+              <Container component="main" maxWidth="sm">
+                <CssBaseline />
+                <div className={classes.paper}>
+                  <Avatar className={classes.avatar}>
+                    <LockOutlinedIcon />
+                  </Avatar>
+                  <Typography component="h1" variant="h5">
+                    Sign in
+                  </Typography>
+                  <form className={classes.form} noValidate>
+                    <TextField
+                      variant="outlined"
+                      margin="normal"
+                      required
+                      fullWidth
+                      id="email"
+                      label="Email Address"
+                      name="email"
+                      autoComplete="email"
+                      autoFocus
+                    />
+                    <TextField
+                      variant="outlined"
+                      margin="normal"
+                      required
+                      fullWidth
+                      name="password"
+                      label="Password"
+                      type="password"
+                      id="password"
+                      autoComplete="current-password"
+                    />
+                    <Button
+                      type="submit"
+                      fullWidth
+                      variant="contained"
+                      color="primary"
+                      className={classes.submit}
+                      onClick={e => {
+                        handleClick(e, props);
+                      }}
+                    >
+                      Sign In
+                    </Button>
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      color="primary"
+                      className={classes.submit}
+                      onClick={e => {
+                        e.preventDefault();
+                        signupToggle();
+                      }}
+                    >
+                      Sign Up
+                    </Button>
+                    <Box mt={5}>
+                      <Copyright />
+                    </Box>
+                  </form>
+                </div>
+              </Container>
+            ) : (
+                <SignUp signupToggle={signupToggle} {...props}/>  
+            )}
+          </Grid>
+        </Grid>
+      )}
+    </React.Fragment>
   );
 }

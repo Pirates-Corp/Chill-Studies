@@ -65,64 +65,78 @@ export default function Page(props) {
     category => props.match.params.category === category.name
   );
 
+  const [auth, setAuth] = useState(null);
+
+  useEffect(() => {
+    setAuth(sessionStorage.getItem("auth"));
+  });
+
   return (
-    <div>
-      {course ? (
-        <React.Fragment>
-          <AppBar position="relative">
-            <Toolbar>
-              <Typography
-                variant="h6"
-                className={classes.title}
-                color="inherit"
-                noWrap
-              >
-                {course.name + " " + category.name}
-              </Typography>
-              <IconButton
-                edge="start"
-                color="inherit"
-                aria-label="home"
-                onClick={e => {
-                  e.preventDefault();
-                  props.history.push("/course/" + course.name + "/home");
-                }}
-              >
-                <Typography gutterBottom variant="body1">
-                  Course Home
-                </Typography>
-              </IconButton>
-              <IconButton
-                edge="start"
-                color="inherit"
-                aria-label="home"
-                onClick={e => {
-                  e.preventDefault();
-                  sessionStorage.clear();
-                  props.history.push("/");
-                }}
-              >
-                <Typography gutterBottom variant="body1">
-                  Log Out
-                </Typography>
-              </IconButton>
-            </Toolbar>
-          </AppBar>
-          <Card className={classes.card}>
-            <Container maxWidth="md">
-              <CardContent className={classes.cardContent}>
-                <Typography gutterBottom variant="h5" component="h2">
-                  {category.name}
-                </Typography>
-                {<category.component {...props} />}
-                <br />
-              </CardContent>
-            </Container>
-          </Card>
-        </React.Fragment>
+    <React.Fragment>
+      {
+        auth === null ? (
+        <h1> login required </h1>
       ) : (
-        <h1> 404 Error </h1>
-      )}
-    </div>
+            <div>
+              {course ? (
+                <React.Fragment>
+                  <AppBar position="relative">
+                    <Toolbar>
+                      <Typography
+                        variant="h6"
+                        className={classes.title}
+                        color="inherit"
+                        noWrap
+                      >
+                        {course.name + " " + category.name}
+                      </Typography>
+                      <IconButton
+                        edge="start"
+                        color="inherit"
+                        aria-label="home"
+                        onClick={e => {
+                          e.preventDefault();
+                          props.history.push("/course/" + course.name + "/home");
+                        }}
+                      >
+                        <Typography gutterBottom variant="body1">
+                          Course Home
+                </Typography>
+                      </IconButton>
+                      <IconButton
+                        edge="start"
+                        color="inherit"
+                        aria-label="home"
+                        onClick={e => {
+                          e.preventDefault();
+                          sessionStorage.clear();
+                          props.history.push("/");
+                        }}
+                      >
+                        <Typography gutterBottom variant="body1">
+                          Log Out
+                </Typography>
+                      </IconButton>
+                    </Toolbar>
+                  </AppBar>
+                  <Card className={classes.card}>
+                    <Container maxWidth="md">
+                      <CardContent className={classes.cardContent}>
+                        <Typography gutterBottom variant="h5" component="h2">
+                          {category.name}
+                        </Typography>
+                        {<category.component {...props} />}
+                        <br />
+                      </CardContent>
+                    </Container>
+                  </Card>
+                </React.Fragment>
+              ) : (
+                  <h1> 404 Error </h1>
+                )
+              }
+            </div> )
+      }
+      </React.Fragment>
   );
 }
