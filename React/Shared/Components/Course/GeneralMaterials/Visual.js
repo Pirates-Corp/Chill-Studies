@@ -57,7 +57,7 @@ const useStyles = makeStyles(theme => ({
 
 const handleSubmit = async (e, props, startTime, score) => {
   e.preventDefault();
-  let time = (Date.now() - startTime) / 1000 / 60;
+  let time = Math.round((Date.now() - startTime) / 1000 / 10); 
 
   score *= 2;
   score = score >= 9 ? 9 : score;

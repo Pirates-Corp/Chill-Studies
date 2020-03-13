@@ -56,7 +56,8 @@ const useStyles = makeStyles(theme => ({
 const handleSubmit = async (e, props, startTime, score) => {
   e.preventDefault();
   score *= 2;
-  let time = Math.round((Date.now() - startTime) / 1000 / 60);
+  let time = Math.round((Date.now() - startTime) / 1000 / 10); 
+  score = score > 9 ? 9 : score; 
   time = time >= 9 ? 9 : time;
 
   const authToken = sessionStorage.getItem("auth");
@@ -69,7 +70,7 @@ const handleSubmit = async (e, props, startTime, score) => {
       "http://127.0.0.1:8000/api/v1/student/ml/post/" + authToken,
       {
         AAC: score,
-        AAC_T: time * 3
+        AAC_T: time
       }
     );
 

@@ -69,7 +69,8 @@ const handleSubmit = async (e, props, startTime) => {
   if (q5.includes("java development kit")) score++;
 
   score *= 2;
-  let time = Math.round((Date.now() - startTime) / 1000 / 60);
+  let time = Math.round((Date.now() - startTime) / 1000 / 10); 
+  score = score > 9 ? 9 : score; 
   time = time >= 9 ? 9 : time;
 
   const authToken = sessionStorage.getItem("auth");
@@ -79,7 +80,7 @@ const handleSubmit = async (e, props, startTime) => {
       "http://127.0.0.1:8000/api/v1/student/ml/post/" + authToken,
       {
         A: score,
-        A_T: time * 3
+        A_T: time
       }
     );
 

@@ -56,7 +56,11 @@ const useStyles = makeStyles(theme => ({
 const handleSubmit = async (e, props, startTime, score) => {
   e.preventDefault();
   score *= 2;
-  let time = Math.round((Date.now() - startTime) / 1000 / 60);
+
+  score = score > 9 ? 9 : score 
+  time = time >= 9 ? 9 : time
+  
+  let time = Math.round((Date.now() - startTime) / 1000 / 10); 
 
   const authToken = sessionStorage.getItem("auth");
 
@@ -65,7 +69,7 @@ const handleSubmit = async (e, props, startTime, score) => {
       "http://127.0.0.1:8000/api/v1/student/ml/post/" + authToken,
       {
         D: score,
-        D_T: time * 3
+        D_T: time
       }
     );
 
@@ -78,7 +82,6 @@ const handleSubmit = async (e, props, startTime, score) => {
     alert(err);
   }
 
-  time = time >= 9 ? 9 : time;
   console.log("score" + score);
   console.log("time" + time);
 
