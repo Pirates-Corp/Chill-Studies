@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   makeStyles,
   IconButton,
@@ -126,158 +126,172 @@ export default function Home(props) {
       ? "valid"
       : courses.find(course => props.match.params.course === course.name);
 
+  const [auth, setAuth] = useState(null);
+
+  useEffect(() => {
+    setAuth(sessionStorage.getItem("auth"));
+  });
+
   return (
     <React.Fragment>
-      {course ? (
+      {auth === null ? (
+        <h1> login required </h1>
+      ) : (
         <React.Fragment>
-          <CssBaseline />
-          <AppBar position="relative">
-            <Toolbar>
-              {path === "/dashboard" ? (
-                <Typography
-                  variant="h6"
-                  color="inherit"
-                  noWrap
-                  className={classes.title}
-                >
-                  Dashboard
-                </Typography>
-              ) : (
-                <React.Fragment>
+          {course ? (
+            <React.Fragment>
+              <CssBaseline />
+              <AppBar position="relative">
+                <Toolbar>
                   <Typography
                     variant="h6"
                     color="inherit"
                     noWrap
                     className={classes.title}
                   >
-                    {course.name}
+                    {path === "/dashboard" ? "Dashboard" : course.name}
                   </Typography>
-                  <IconButton
-                    edge="start"
-                    className={classes.HomeButton}
-                    color="inherit"
-                    aria-label="home"
-                    onClick={e => {
-                      e.preventDefault();
-                      props.history.push("/dashboard");
-                    }}
-                  >
-                    <Typography gutterBottom variant="body1">
-                      Dashboard
-                    </Typography>
-                  </IconButton>
-                  <IconButton
-                    edge="start"
-                    color="inherit"
-                    aria-label="home"
-                    onClick={e => {
-                      e.preventDefault();
-                      sessionStorage.clear();
-                      props.history.push("/");
-                    }}
-                  >
-                    <Typography gutterBottom variant="body1">
-                      Log Out
-                    </Typography>
-                  </IconButton>
-                </React.Fragment>
-              )}
-            </Toolbar>
-          </AppBar>
-          <main>
-            <div className={classes.heroContent}>
-              <Container maxWidth="sm">
-                <Typography
-                  component="h1"
-                  variant="h2"
-                  align="center"
-                  color="textPrimary"
-                  gutterBottom
-                >
-                  {path === "/dashboard"
-                    ? `Welcome to your Dashboard !`
-                    : `Welcome to ${course.name}!`}
-                </Typography>
-                {path === "/dashboard" ? (
-                  <Typography
-                    variant="h5"
-                    align="center"
-                    color="textSecondary"
-                    paragraph
-                  >
-                    You can find your subscribed courses below.
-                  </Typography>
-                ) : null}
-                <Typography
-                  variant="h5"
-                  align="center"
-                  color="textSecondary"
-                  paragraph
-                >
-                  Happy Learning
-                </Typography>
-              </Container>
-            </div>
-            <Container className={classes.cardGrid} maxWidth="md">
-              <Grid container spacing={2}>
-                {cards.map((card, i) => (
-                  <Grid
-                    item
-                    key={card}
-                    xs={12}
-                    sm={6}
-                    md={path.includes("/ls") || path.includes("/home") ? 6 : 4}
-                  >
-                    <div
+                  <React.Fragment>
+                    {path === "/dashboard" ? null : (
+                      <IconButton
+                        edge="start"
+                        className={classes.HomeButton}
+                        color="inherit"
+                        aria-label="home"
+                        onClick={e => {
+                          e.preventDefault();
+                          props.history.push("/dashboard");
+                        }}
+                      >
+                        <Typography gutterBottom variant="body1">
+                          Dashboard
+                        </Typography>
+                      </IconButton>
+                    )}
+
+                    <IconButton
+                      edge="start"
+                      color="inherit"
+                      aria-label="home"
                       onClick={e => {
-                        handleRoute(props, card, course, lsType);
+                        e.preventDefault();
+                        sessionStorage.clear();
+                        props.history.push("/");
                       }}
                     >
-                      <Card className={classes.card}>
-                        <CardMedia
-                          className={classes.cardMedia}
-                          image={
-                            path === "/dashboard" ? card.image : course.image
-                          }
-                          title={
-                            path === "/dashboard"
-                              ? card.name
-                              : `${course.name} ${card}`
-                          }
-                        />
-                        <CardContent className={classes.cardContent}>
-                          <Typography gutterBottom variant="h5" component="h2">
-                            {path === "/dashboard" ? card.name : card}
-                          </Typography>
-                          <Typography>
-                            {path === "/dashboard" ? card.desc : course.desc}
-                          </Typography>
-                        </CardContent>
-                      </Card>
-                    </div>
+                      <Typography gutterBottom variant="body1">
+                        Log Out
+                      </Typography>
+                    </IconButton>
+                  </React.Fragment>
+                </Toolbar>
+              </AppBar>
+              <main>
+                <div className={classes.heroContent}>
+                  <Container maxWidth="sm">
+                    <Typography
+                      component="h1"
+                      variant="h2"
+                      align="center"
+                      color="textPrimary"
+                      gutterBottom
+                    >
+                      {path === "/dashboard"
+                        ? `Welcome to your Dashboard !`
+                        : `Welcome to ${course.name}!`}
+                    </Typography>
+                    {path === "/dashboard" ? (
+                      <Typography
+                        variant="h5"
+                        align="center"
+                        color="textSecondary"
+                        paragraph
+                      >
+                        You can find your subscribed courses below.
+                      </Typography>
+                    ) : null}
+                    <Typography
+                      variant="h5"
+                      align="center"
+                      color="textSecondary"
+                      paragraph
+                    >
+                      Happy Learning
+                    </Typography>
+                  </Container>
+                </div>
+                <Container className={classes.cardGrid} maxWidth="md">
+                  <Grid container spacing={2}>
+                    {cards.map((card, i) => (
+                      <Grid
+                        item
+                        key={card}
+                        xs={12}
+                        sm={6}
+                        md={
+                          path.includes("/ls") || path.includes("/home") ? 6 : 4
+                        }
+                      >
+                        <div
+                          onClick={e => {
+                            handleRoute(props, card, course, lsType);
+                          }}
+                        >
+                          <Card className={classes.card}>
+                            <CardMedia
+                              className={classes.cardMedia}
+                              image={
+                                path === "/dashboard"
+                                  ? card.image
+                                  : course.image
+                              }
+                              title={
+                                path === "/dashboard"
+                                  ? card.name
+                                  : `${course.name} ${card}`
+                              }
+                            />
+                            <CardContent className={classes.cardContent}>
+                              <Typography
+                                gutterBottom
+                                variant="h5"
+                                component="h2"
+                              >
+                                {path === "/dashboard" ? card.name : card}
+                              </Typography>
+                              <Typography>
+                                {path === "/dashboard"
+                                  ? card.desc
+                                  : course.desc}
+                              </Typography>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      </Grid>
+                    ))}
                   </Grid>
-                ))}
-              </Grid>
-            </Container>
-          </main>
-          <footer className={classes.footer}>
-            <Typography variant="h6" align="center" gutterBottom>
-              “Study hard what interests you the most in the most undisciplined,
-              irreverent and original manner possible.”
-            </Typography>
-            <Typography
-              variant="subtitle1"
-              align="center"
-              color="textSecondary"
-              component="p"
-            >
-              Richard P. Feynman
-            </Typography>
-            <Copyright />
-          </footer>
+                </Container>
+              </main>
+              <footer className={classes.footer}>
+                <Typography variant="h6" align="center" gutterBottom>
+                  “Study hard what interests you the most in the most
+                  undisciplined, irreverent and original manner possible.”
+                </Typography>
+                <Typography
+                  variant="subtitle1"
+                  align="center"
+                  color="textSecondary"
+                  component="p"
+                >
+                  Richard P. Feynman
+                </Typography>
+                <Copyright />
+              </footer>
+            </React.Fragment>
+          ) : (
+            <h1> 404 Error </h1>
+          )}
         </React.Fragment>
-      ) : (
-        <h1> 404 Error </h1>
       )}
     </React.Fragment>
   );

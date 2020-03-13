@@ -2185,19 +2185,18 @@ function Home(props) {
   : ["Overview", "Definitons", "Activity", "Content", "Visual", "Summary"]; // Its the default Course Chapter Home
 
   var course = path === "/dashboard" ? "valid" : _Data_courses__WEBPACK_IMPORTED_MODULE_3__["default"].find(course => props.match.params.course === course.name);
-  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, course ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["CssBaseline"], null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["AppBar"], {
+  var [auth, setAuth] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(null);
+  Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(() => {
+    setAuth(sessionStorage.getItem("auth"));
+  });
+  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, auth === null ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, " login required ") : react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, course ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["CssBaseline"], null), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["AppBar"], {
     position: "relative"
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Toolbar"], null, path === "/dashboard" ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Toolbar"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
     variant: "h6",
     color: "inherit",
     noWrap: true,
     className: classes.title
-  }, "Dashboard") : react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
-    variant: "h6",
-    color: "inherit",
-    noWrap: true,
-    className: classes.title
-  }, course.name), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["IconButton"], {
+  }, path === "/dashboard" ? "Dashboard" : course.name), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, path === "/dashboard" ? null : react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["IconButton"], {
     edge: "start",
     className: classes.HomeButton,
     color: "inherit",
@@ -2280,7 +2279,7 @@ function Home(props) {
     align: "center",
     color: "textSecondary",
     component: "p"
-  }, "Richard P. Feynman"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Copyright, null))) : react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, " 404 Error "));
+  }, "Richard P. Feynman"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Copyright, null))) : react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, " 404 Error ")));
 }
 
 /***/ }),
@@ -2347,7 +2346,11 @@ function LS(props) {
   var lsTypeParam = props.match.params.ls_type + "";
   var ls = _Data_learningStyles__WEBPACK_IMPORTED_MODULE_2__["default"].find(ls => lsTypeParam === ls.type);
   var [hide, setHide] = react__WEBPACK_IMPORTED_MODULE_0___default.a.useState(false);
-  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["AppBar"], {
+  var [auth, setAuth] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(null);
+  Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(() => {
+    setAuth(sessionStorage.getItem("auth"));
+  });
+  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, auth === null ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, " login required ") : react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["AppBar"], {
     position: "relative"
   }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Toolbar"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_1__["Typography"], {
     variant: "h6",
@@ -2388,7 +2391,7 @@ function LS(props) {
     onClick: e => {
       props.history.push("/course/" + props.match.params.course + "/ls/" + ls.type);
     }
-  }, "Proceed !"))))));
+  }, "Proceed !")))))));
 }
 
 /***/ }),
@@ -4663,7 +4666,11 @@ function Page(props) {
   var classes = useStyles();
   var course = _Data_courses__WEBPACK_IMPORTED_MODULE_1__["default"].find(course => props.match.params.course === course.name);
   var category = _Data_categories__WEBPACK_IMPORTED_MODULE_3__["default"].find(category => props.match.params.category === category.name);
-  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, course ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["AppBar"], {
+  var [auth, setAuth] = useState(null);
+  useEffect(() => {
+    setAuth(sessionStorage.getItem("auth"));
+  });
+  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, auth === null ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, " login required ") : react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, course ? react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["AppBar"], {
     position: "relative"
   }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Toolbar"], null, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Typography"], {
     variant: "h6",
@@ -4703,7 +4710,7 @@ function Page(props) {
     gutterBottom: true,
     variant: "h5",
     component: "h2"
-  }, category.name), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(category.component, props), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null))))) : react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, " 404 Error "));
+  }, category.name), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(category.component, props), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("br", null))))) : react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, " 404 Error ")));
 }
 
 /***/ }),
@@ -4729,6 +4736,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Signup__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./Signup */ "./React/Shared/Components/Signup.js");
 /* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @material-ui/core */ "@material-ui/core");
 /* harmony import */ var _material_ui_core__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_material_ui_core__WEBPACK_IMPORTED_MODULE_5__);
+function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
@@ -4810,7 +4819,7 @@ function _handleClick() {
         alert("Pls Enter Valid Details");
       }
     } catch (err) {
-      alert(err);
+      alert('Login Failed. Try Again');
     }
   });
   return _handleClick.apply(this, arguments);
@@ -4818,13 +4827,17 @@ function _handleClick() {
 
 function Login(props) {
   var classes = useStyles();
-  var [signIn, setSingIn] = react__WEBPACK_IMPORTED_MODULE_0___default.a.useState(true);
+  var [signIn, setSingIn] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(true);
 
-  var handleSignup = () => {
+  var signupToggle = () => {
     signIn ? setSingIn(false) : setSingIn(true);
   };
 
-  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_5__["Grid"], {
+  var [auth, setAuth] = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(null);
+  Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(() => {
+    setAuth(sessionStorage.getItem("auth"));
+  });
+  return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, auth ? props.history.push("/dashboard") : react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_5__["Grid"], {
     container: true,
     component: "main",
     className: classes.root
@@ -4873,12 +4886,6 @@ function Login(props) {
     type: "password",
     id: "password",
     autoComplete: "current-password"
-  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_5__["FormControlLabel"], {
-    control: react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_5__["Checkbox"], {
-      value: "remember",
-      color: "primary"
-    }),
-    label: "Remember me"
   }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_5__["Button"], {
     type: "submit",
     fullWidth: true,
@@ -4895,26 +4902,13 @@ function Login(props) {
     className: classes.submit,
     onClick: e => {
       e.preventDefault();
-      handleSignup();
+      signupToggle();
     }
-  }, "Sign Up"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_5__["Grid"], {
-    container: true
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_5__["Grid"], {
-    item: true,
-    xs: true
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_5__["Link"], {
-    href: "#",
-    variant: "body2"
-  }, "Forgot password?")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_5__["Grid"], {
-    item: true
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_5__["Link"], {
-    href: "#",
-    variant: "body2"
-  }, "Don't have an account? Sign Up"))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_5__["Box"], {
+  }, "Sign Up"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_5__["Box"], {
     mt: 5
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Copyright, null))))) : react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_Signup__WEBPACK_IMPORTED_MODULE_4__["default"], {
-    handleSignup: handleSignup
-  })));
+  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Copyright, null))))) : react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_Signup__WEBPACK_IMPORTED_MODULE_4__["default"], _extends({
+    signupToggle: signupToggle
+  }, props)))));
 }
 
 /***/ }),
@@ -5013,14 +5007,15 @@ function _handleClick() {
         var res = yield axios__WEBPACK_IMPORTED_MODULE_4___default.a.post("http://127.0.0.1:8000/api/v1/student/signup", data);
 
         if (res.status === 201) {
-          alert("You Successfully Signed Up !!! \n Now Sign In To Continue");
+          alert("You Successfully Signed Up !!!");
+          sessionStorage.setItem("auth", res.data.data.student._id);
         }
       } catch (err) {
-        alert(err);
+        alert('Failed to Sign Up. Try Again');
         console.log(err);
       }
 
-      props.handleSignup();
+      props.signupToggle();
     }
   });
   return _handleClick.apply(this, arguments);
@@ -5081,12 +5076,6 @@ function SignUp(props) {
     type: "password",
     id: "confirmPassword",
     autoComplete: "current-password"
-  }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["FormControlLabel"], {
-    control: react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Checkbox"], {
-      value: "remember",
-      color: "primary"
-    }),
-    label: "Remember me"
   }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Button"], {
     fullWidth: true,
     variant: "contained",
@@ -5099,22 +5088,9 @@ function SignUp(props) {
     color: "primary",
     className: classes.submit,
     onClick: e => {
-      props.handleSignup();
+      props.signupToggle();
     }
-  }, "Sign In"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Grid"], {
-    container: true
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Grid"], {
-    item: true,
-    xs: true
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Link"], {
-    href: "#",
-    variant: "body2"
-  }, "Forgot password?")), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Grid"], {
-    item: true
-  }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Link"], {
-    href: "#",
-    variant: "body2"
-  }, "Don't have an account? Sign Up"))))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Box"], {
+  }, "Sign In"))), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_material_ui_core__WEBPACK_IMPORTED_MODULE_2__["Box"], {
     mt: 8
   }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(Copyright, null)));
 }
@@ -5414,10 +5390,6 @@ __webpack_require__.r(__webpack_exports__);
 var routes = [{
   path: "/",
   component: _Components_Login__WEBPACK_IMPORTED_MODULE_0__["default"],
-  exact: true
-}, {
-  path: "/signup",
-  component: _Components_Signup__WEBPACK_IMPORTED_MODULE_1__["default"],
   exact: true
 }, {
   path: "/course/:course/ls:ls_type",
