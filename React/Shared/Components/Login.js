@@ -1,114 +1,114 @@
-import React from 'react';
-import Avatar from '@material-ui/core/Avatar';
-import Button from '@material-ui/core/Button';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import TextField from '@material-ui/core/TextField';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
-import Link from '@material-ui/core/Link';
-import Paper from '@material-ui/core/Paper';
-import Box from '@material-ui/core/Box';
-import Grid from '@material-ui/core/Grid';
-import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
-import Typography from '@material-ui/core/Typography';
-import { makeStyles } from '@material-ui/core/styles';
-import axios from 'axios';
-import {Link as Linkto} from 'react-router-dom'
-import SignUp from './Signup';
-import { Container } from '@material-ui/core';
+import React from "react";
+import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
+import axios from "axios";
+import { Link as Linkto } from "react-router-dom";
+import SignUp from "./Signup";
+import {
+  Container,
+  Avatar,
+  makeStyles,
+  Typography,
+  Grid,
+  Box,
+  Paper,
+  Link,
+  Checkbox,
+  FormControlLabel,
+  TextField,
+  CssBaseline,
+  Button
+} from "@material-ui/core";
 
 function Copyright() {
   const classes = useStyles();
   return (
     <Typography variant="body2" color="textSecondary" align="center">
-      {'Copyright © '}
-        <Linkto to='/' className={classes.link}>
-            Chill Studies
-        </Linkto>
-      {' '}
+      {"Copyright © "}
+      <Linkto to="/" className={classes.link}>
+        Chill Studies
+      </Linkto>{" "}
       {new Date().getFullYear()}
-      {'.'}
+      {"."}
     </Typography>
   );
 }
 
-
 const useStyles = makeStyles(theme => ({
   root: {
-    height: '100vh',
+    height: "100vh"
   },
-  link : {
-    textDecoration : 'none',
-    marginTop: '5px%',
+  link: {
+    textDecoration: "none",
+    marginTop: "5px%"
   },
   image: {
-    backgroundImage: 'url(https://images.unsplash.com/photo-1503676260728-1c00da094a0b?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80)',
-    backgroundRepeat: 'no-repeat',
+    backgroundImage:
+      "url(https://images.unsplash.com/photo-1503676260728-1c00da094a0b?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80)",
+    backgroundRepeat: "no-repeat",
     backgroundColor:
-      theme.palette.type === 'dark' ? theme.palette.grey[900] : theme.palette.grey[50],
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
+      theme.palette.type === "dark"
+        ? theme.palette.grey[900]
+        : theme.palette.grey[50],
+    backgroundSize: "cover",
+    backgroundPosition: "center"
   },
   paper: {
     margin: theme.spacing(8, 4),
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center"
   },
   avatar: {
     margin: theme.spacing(1),
-    backgroundColor: theme.palette.secondary.main,
+    backgroundColor: theme.palette.secondary.main
   },
   form: {
-    width: '100%', // Fix IE 11 issue.
-    marginTop: theme.spacing(1),
+    width: "100%", // Fix IE 11 issue.
+    marginTop: theme.spacing(1)
   },
   submit: {
-    margin: theme.spacing(3, 0, 2),
-  },
+    margin: theme.spacing(3, 0, 2)
+  }
 }));
 
-
-async function handleClick (e,props) {
+async function handleClick(e, props) {
   e.preventDefault();
-  const email = document.getElementById('email').value
-  const password = document.getElementById('password').value
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
   try {
-    const res = await axios.post('http://127.0.0.1:8000/api/v1/student/login',
-    {
-      "studentId":email,
-      "password":password
-    })
+    const res = await axios.post("http://127.0.0.1:8000/api/v1/student/login", {
+      studentId: email,
+      password: password
+    });
 
-    if(res.status === 201) {
-      sessionStorage.setItem('auth',res.data.data.student._id)
-      props.history.push('/dashboard')
-    }
-    else {
+    if (res.status === 201) {
+      sessionStorage.setItem("auth", res.data.data.student._id);
+      props.history.push("/dashboard");
+    } else {
       alert("Pls Enter Valid Details");
     }
-  } catch(err ){
-    alert(err)
+  } catch (err) {
+    alert(err);
   }
 }
 
 export default function Login(props) {
   const classes = useStyles();
 
-  const [signIn,setSingIn] = React.useState(true)
+  const [signIn, setSingIn] = React.useState(true);
 
   const handleSignup = () => {
-    signIn ? setSingIn(false) : setSingIn(true)
-  }
+    signIn ? setSingIn(false) : setSingIn(true);
+  };
 
   return (
     <Grid container component="main" className={classes.root}>
       <CssBaseline />
       <Grid item xs={false} sm={4} md={7} className={classes.image} />
-      <Grid item xs={12} sm={8} md={5} component={Paper} >
-        { signIn ? (
-          <Container component="main" maxWidth="sm" >
+      <Grid item xs={12} sm={8} md={5} component={Paper}>
+        {signIn ? (
+          <Container component="main" maxWidth="sm">
             <CssBaseline />
             <div className={classes.paper}>
               <Avatar className={classes.avatar}>
@@ -150,23 +150,25 @@ export default function Login(props) {
                   variant="contained"
                   color="primary"
                   className={classes.submit}
-                  onClick = { (e) => { handleClick(e,props) } }
+                  onClick={e => {
+                    handleClick(e, props);
+                  }}
                 >
                   Sign In
                 </Button>
                 {/* <Linkto className={classes.link} to="/signup"> */}
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                    color="primary"
-                    className={classes.submit}
-                    onClick = { (e) => {
-                      e.preventDefault()
-                      handleSignup()
-                    } }
-                  >
-                    Sign Up
-                  </Button>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  color="primary"
+                  className={classes.submit}
+                  onClick={e => {
+                    e.preventDefault();
+                    handleSignup();
+                  }}
+                >
+                  Sign Up
+                </Button>
                 {/* </Linkto> */}
                 <Grid container>
                   <Grid item xs>
@@ -184,13 +186,11 @@ export default function Login(props) {
                   <Copyright />
                 </Box>
               </form>
-            </div> 
-          </Container>)
-        : 
-        (
-          <SignUp handleSignup={ handleSignup } />
-        )
-      }
+            </div>
+          </Container>
+        ) : (
+          <SignUp handleSignup={handleSignup} />
+        )}
       </Grid>
     </Grid>
   );
