@@ -1,5 +1,5 @@
 import express from "express";
-import { ServerStyleSheets, ThemeProvidern,CssBaseline } from "@material-ui/core";
+import { ServerStyleSheets, ThemeProvider,CssBaseline } from "@material-ui/core";
 import React from "react";
 import { renderToString } from "react-dom/server";
 import App from "../Shared/Components/App";
