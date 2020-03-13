@@ -1,12 +1,17 @@
 import React from "react";
+import courses from "../../../Data/courses";
 import {
   Typography,
   makeStyles,
+  TextField,
   Button,
   List,
   ListItem,
-  Divider,
+  ListItemIcon,
+  Divider
 } from "@material-ui/core";
+import ArrowForwardIosRoundedIcon from "@material-ui/icons/ArrowForwardIosRounded";
+
 import learningStyles from "../../../Data/learningStyles";
 
 const useStyles = makeStyles(theme => ({
@@ -79,106 +84,73 @@ export default function OverviewVerbal(props) {
     <form autoComplete="off" noValidate>
       <List>
         <ListItem>
-          <Typography variant="h2">Data Types in Java</Typography>
+          <ListItemIcon>
+            <ArrowForwardIosRoundedIcon />
+          </ListItemIcon>
+          <ListItem>
+            <Typography variant="subtitle1">
+              Int belong to what datatypes ?
+            </Typography>
+          </ListItem>
+          <ListItem>
+            {" "}
+            <TextField id="q1" label="Answer" />{" "}
+          </ListItem>
         </ListItem>
         <ListItem>
-          <Typography varient="body1">1) Primitive data types</Typography>
+          <ListItemIcon>
+            <ArrowForwardIosRoundedIcon />
+          </ListItemIcon>
+          <ListItem>
+            <Typography variant="subtitle1">
+              How much bit does byte takes
+            </Typography>
+          </ListItem>
+          <ListItem>
+            <TextField id="q2" label="Answer" />
+          </ListItem>
         </ListItem>
         <ListItem>
-          <Typography varient="body1">2) Non - Primitive data types</Typography>
-        </ListItem>
-
-        <ListItem>
-          <Typography variant="h4">Primitive data types</Typography>
-        </ListItem>
-
-        <ListItem>
-          <Typography variant="body1">
-            In Java, we have eight primitive data types: boolean, char, byte,
-            short, int, long, float and double. Java developers included these
-            data types to maintain the portability of java as the size of these
-            primitive data types do not change from one operating system to
-            another.
-          </Typography>
-        </ListItem>
-
-        <ListItem>
-          <Typography variant="h6">Byte</Typography>
+          <ListItemIcon>
+            <ArrowForwardIosRoundedIcon />
+          </ListItemIcon>
+          <ListItem>
+            <Typography variant="subtitle1">Array starts from</Typography>
+          </ListItem>
+          <ListItem>
+            <TextField id="q3" label="Answer" />
+          </ListItem>
         </ListItem>
         <ListItem>
-          <Typography variant="body1">
-            This can hold whole number between -128 and 127.
-          </Typography>
-        </ListItem>
-
-        <ListItem>
-          <Typography variant="h6">Short</Typography>
-        </ListItem>
-        <ListItem>
-          <Typography variant="body1">
-            This is greater than byte in terms of size and less than integer.
-            Its range is -32,768 to 32767. Default size of this data type: 2
-            byte
-          </Typography>
-        </ListItem>
-
-        <ListItem>
-          <Typography variant="h6">Long</Typography>
+          <ListItemIcon>
+            <ArrowForwardIosRoundedIcon />
+          </ListItemIcon>
+          <ListItem>
+            <Typography variant="subtitle1">
+              boolean is what kind of datatype ?
+            </Typography>
+          </ListItem>
+          <ListItem>
+            <TextField id="q4" label="Answer" />
+          </ListItem>
         </ListItem>
         <ListItem>
-          <Typography variant="body1">
-            Used when int is not large enough to hold the value, it has wider
-            range than int data type, ranging from -9,223,372,036,854,775,808 to
-            9,223,372,036,854,775,807. size: 8 bytes Default value: 0
-          </Typography>
+          <ListItemIcon>
+            <ArrowForwardIosRoundedIcon />
+          </ListItemIcon>
+          <ListItem>
+            <Typography variant="subtitle1">
+              we can't define functions in interface , true or flase?
+            </Typography>
+          </ListItem>
+          <ListItem>
+            <TextField id="q5" label="Answer" />
+          </ListItem>
         </ListItem>
-
-        <ListItem>
-          <Typography variant="h6">Double</Typography>
-        </ListItem>
-        <ListItem>
-          <Typography variant="body1">
-            Sufficient for holding 15 decimal digits size: 8 bytes
-          </Typography>
-        </ListItem>
-
-        <ListItem>
-          <Typography variant="h6">Float</Typography>
-        </ListItem>
-        <ListItem>
-          <Typography variant="body1">
-            Sufficient for holding 6 to 7 decimal digits size: 4 bytes
-          </Typography>
-        </ListItem>
-
-        <ListItem>
-          <Typography variant="h6">Boolean</Typography>
-        </ListItem>
-        <ListItem>
-          <Typography variant="body1">holds either true of false.</Typography>
-        </ListItem>
-
         <Divider variant="middle" />
-
-        <ListItem>
-          <Typography variant="h3">Non - Primitive data types</Typography>
-        </ListItem>
-        <ListItem>
-          <Typography variant="h6">String</Typography>
-        </ListItem>
-
-        <ListItem>
-          <Typography variant="h6">Arrays</Typography>
-        </ListItem>
-
-        <ListItem>
-          <Typography variant="h6">Classes</Typography>
-        </ListItem>
-
-        <ListItem>
-          <Typography variant="h6">Interface</Typography>
-        </ListItem>
       </List>
+      <br />
+
       <Button
         variant="contained"
         color="primary"

@@ -11,11 +11,6 @@ const routes = [
     exact: true
   },
   {
-    path: "/signup",
-    component: Signup,
-    exact: true
-  },
-  {
     path: "/course/:course/ls:ls_type",
     component: LS,
     exact: true

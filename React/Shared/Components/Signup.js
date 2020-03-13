@@ -4,10 +4,7 @@ import {
   makeStyles,
   Typography,
   Box,
-  Grid,
   Link,
-  Checkbox,
-  FormControlLabel,
   CssBaseline,
   TextField,
   Button,
@@ -80,13 +77,14 @@ async function handleClick(e, props) {
         data
       );
       if (res.status === 201) {
-        alert("You Successfully Signed Up !!! \n Now Sign In To Continue");
+        alert("You Successfully Signed Up !!!");
+        sessionStorage.setItem("auth", res.data.data.student._id);
       }
     } catch (err) {
-      alert(err);
+      alert('Failed to Sign Up. Try Again');
       console.log(err);
     }
-    props.handleSignup();
+    props.signupToggle();
   }
 }
 
@@ -163,7 +161,7 @@ export default function SignUp(props) {
             color="primary"
             className={classes.submit}
             onClick={e => {
-              props.handleSignup();
+              props.signupToggle();  
             }}
           >
             Sign In
