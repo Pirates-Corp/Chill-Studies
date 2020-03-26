@@ -11,6 +11,10 @@ const initState = {
 };
 
 const reducer = (state = initState, action) => { 
+  if (action.type == "App") {
+    console.log("reducer Called")
+    action.do()
+  }
     return state;
 }
 

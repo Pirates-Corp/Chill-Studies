@@ -1,9 +1,12 @@
 import React from "react";
 import { Switch, Route } from "react-router-dom";
 import { connect } from "react-redux"
+import reducer from '../Data/reducer'
 
 class App extends React.Component {
   render() {
+    { this.props.log() }
+    console.log(this.props)
     return (
       <div>
         <Switch>
@@ -23,7 +26,9 @@ const mapStateToProps = (state) => {
 }
 
 const mapDispatchToProps = (dispatch) => { 
-  return {}
+  return {
+    log: () => dispatch({ type: "App", do: () => console.log("dispatch called") })
+  }
 }
 
 export default connect(mapStateToProps,mapDispatchToProps)(App);
