@@ -64,7 +64,7 @@ const handleSubmit = async (e, props, startTime, score) => {
 
   try {
     const res = await axios.patch(
-      "http://127.0.0.1:8000/api/v1/student/ml/post/" + authToken,
+      "http://chillstudies.ddns.net:8000/api/v1/student/ml/post/" + authToken,
       {
         ABC: score,
         ABC_T: time 

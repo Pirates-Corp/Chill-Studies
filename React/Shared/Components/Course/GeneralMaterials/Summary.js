@@ -67,7 +67,7 @@ const handleSubmit = async (e, props, startTime, score) => {
 
   try {
     const res = await axios.patch(
-      "http://127.0.0.1:8000/api/v1/student/ml/post/" + authToken,
+      "http://chillstudies.ddns.net:8000/api/v1/student/ml/post/" + authToken,
       {
         AAC: score,
         AAC_T: time
@@ -87,7 +87,7 @@ const handleSubmit = async (e, props, startTime, score) => {
 
   try {
     const res = await axios.get(
-      "http://127.0.0.1:8000/api/v1/student/ml/get/" + authToken
+      "http://chillstudies.ddns.net:8000/api/v1/student/ml/get/" + authToken
     );
 
     if (res.status === 200) {

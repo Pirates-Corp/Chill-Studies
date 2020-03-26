@@ -1,5 +1,4 @@
 import React from "react";
-import courses from "../../../Data/courses";
 import {
   Typography,
   makeStyles,
@@ -77,7 +76,7 @@ const handleSubmit = async (e, props, startTime) => {
 
   try {
     const res = await axios.patch(
-      "http://127.0.0.1:8000/api/v1/student/ml/post/" + authToken,
+      "http://chillstudies.ddns.net:8000/api/v1/student/ml/post/" + authToken,
       {
         A: score,
         A_T: time
@@ -98,7 +97,7 @@ const handleSubmit = async (e, props, startTime) => {
   props.history.push("/course/" + props.match.params.course + "/Content");
 };
 
-export default function Activity(props) {
+const Activity = (props) =>  {
   const classes = useStyles();
 
   const startTime = Date.now();
@@ -188,3 +187,5 @@ export default function Activity(props) {
     </form>
   );
 }
+
+export default Activity

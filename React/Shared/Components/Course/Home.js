@@ -13,8 +13,9 @@ import {
   Container
 } from "@material-ui/core";
 import { Link as Linkto } from "react-router-dom";
-import courses from "../../Data/courses";
-import learningStyles from "../../../Shared/Data/learningStyles";
+import { connect } from "react-redux"
+
+
 import axios from "axios";
 
 function Copyright() {
@@ -84,7 +85,7 @@ const handleRoute = async (props, card, course, lsType) => {
   lsType = path.includes("/home")
     ? (
         await axios.get(
-          "http://127.0.0.1:8000/api/v1/student/ml/get/" +
+          "http://chillstudies.ddns.net:8000/api/v1/student/ml/get/" +
             sessionStorage.getItem("auth")
         )
       ).data
@@ -104,7 +105,7 @@ const handleRoute = async (props, card, course, lsType) => {
   props.history.push(to);
 };
 
-export default function Home(props) {
+function Home(props) {
   const classes = useStyles();
 
   const path = props.history.location.pathname + "";
@@ -114,17 +115,17 @@ export default function Home(props) {
   const lsType = props.match.params.ls_type;
 
   const cards = path.startsWith("/dashboard")
-    ? courses // its dhashboard
+    ? props.courses // its dhashboard
     : path.includes("/home")
     ? chapters // Its Course Home that includes Chapters
     : path.includes("/ls")
-    ? learningStyles.find(style => lsType === style.type).contents // Its the LS Predicted Course Chapter Home
-    : ["Overview", "Definitons", "Activity", "Content", "Visual", "Summary"]; // Its the default Course Chapter Home
+    ? props.learningStyles.find(style => lsType === style.type).contents // Its the LS Predicted Course Chapter Home
+        : ["Overview", "Definitons", "Activity", "Content", "Visual", "Summary"]; // Its the default Course Chapter Home
 
   let course =
     path === "/dashboard"
       ? "valid"
-      : courses.find(course => props.match.params.course === course.name);
+      : props.courses.find(course => props.match.params.course === course.name);
 
   const [auth, setAuth] = useState(null);
 
@@ -300,3 +301,13 @@ export default function Home(props) {
     </React.Fragment>
   );
 }
+
+const mapStateToProps = state => {
+  return state;
+};
+
+const mapDispatchToProps = dispatch => {
+  return {};
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Home);

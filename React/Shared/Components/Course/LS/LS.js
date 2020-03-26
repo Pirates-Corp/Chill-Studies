@@ -13,7 +13,7 @@ import {
   Container
 } from "@material-ui/core";
 
-import LearningStyles from "../../../Data/learningStyles";
+import { connect } from "react-redux";
 
 const useStyles = makeStyles(theme => ({
   icon: {
@@ -54,14 +54,12 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function LS(props) {
+const LS = (props) => {
   const classes = useStyles();
 
   let lsTypeParam = props.match.params.ls_type + "";
 
-  const ls = LearningStyles.find(ls => lsTypeParam === ls.type);
-
-  const [hide, setHide] = React.useState(false);
+  const ls = props.learningStyles.find(ls => lsTypeParam === ls.type);
 
   const [auth, setAuth] = useState(null);
 
@@ -163,3 +161,13 @@ export default function LS(props) {
     </React.Fragment>
   );
 }
+
+const mapStateToProps = state => {
+  return state;
+};
+
+const mapDispatchToProps = dispatch => {
+  return {};
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(LS);

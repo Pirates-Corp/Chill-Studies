@@ -10,7 +10,7 @@ import {
   ListItem,
   Container
 } from "@material-ui/core";
-import learningStyles from "../../../Data/learningStyles";
+import { connect } from "react-redux";
 
 const useStyles = makeStyles(theme => ({
   icon: {
@@ -63,7 +63,7 @@ const handleSubmit = async (e, props) => {
 
   const course = props.match.params.course;
 
-  const lsContents = learningStyles.find(style => lsType === style.type)
+  const lsContents = props.learningStyles.find(style => lsType === style.type)
     .contents;
 
   const path =
@@ -76,7 +76,7 @@ const handleSubmit = async (e, props) => {
   props.history.push(path);
 };
 
-export default function SummaryVisual(props) {
+const ActivityVisual = (props) => {
   const classes = useStyles();
   return (
     <Container>
@@ -127,3 +127,13 @@ export default function SummaryVisual(props) {
     </Container>
   );
 }
+
+const mapStateToProps = state => {
+  return state;
+};
+
+const mapDispatchToProps = dispatch => {
+  return {};
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(ActivityVisual);

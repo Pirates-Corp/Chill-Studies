@@ -73,7 +73,7 @@ async function handleClick(e, props) {
     };
     try {
       const res = await axios.post(
-        "http://127.0.0.1:8000/api/v1/student/signup",
+        "http://chillstudies.ddns.net:8000/api/v1/student/signup",
         data
       );
       if (res.status === 201) {

@@ -7,7 +7,7 @@ import {
   ListItem,
   Divider,
 } from "@material-ui/core";
-import learningStyles from "../../../Data/learningStyles";
+import { connect } from "react-redux";
 
 const useStyles = makeStyles(theme => ({
   icon: {
@@ -60,7 +60,7 @@ const handleSubmit = async (e, props) => {
 
   const course = props.match.params.course;
 
-  const lsContents = learningStyles.find(style => lsType === style.type)
+  const lsContents = props.learningStyles.find(style => lsType === style.type)
     .contents;
 
   const path =
@@ -73,7 +73,7 @@ const handleSubmit = async (e, props) => {
   props.history.push(path);
 };
 
-export default function ContentVerbalDetailed(props) {
+const ContentVerbalDetailed = (props) => {
   const classes = useStyles();
   return (
     <form autoComplete="off" noValidate>
@@ -664,3 +664,13 @@ export default function ContentVerbalDetailed(props) {
     </form>
   );
 }
+
+const mapStateToProps = state => {
+  return state;
+};
+
+const mapDispatchToProps = dispatch => {
+  return {};
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(ContentVerbalDetailed);

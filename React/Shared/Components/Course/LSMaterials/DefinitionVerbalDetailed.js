@@ -8,7 +8,8 @@ import {
   ListItemIcon,
   Divider,
 } from "@material-ui/core";
-import learningStyles from "../../../Data/learningStyles";
+import { connect } from "react-redux";
+
 import ArrowForwardIosRoundedIcon from "@material-ui/icons/ArrowForwardIosRounded";
 import KeyboardArrowRightOutlinedIcon from "@material-ui/icons/KeyboardArrowRightOutlined";
 
@@ -63,7 +64,7 @@ const handleSubmit = async (e, props) => {
 
   const course = props.match.params.course;
 
-  const lsContents = learningStyles.find(style => lsType === style.type)
+  const lsContents = props.learningStyles.find(style => lsType === style.type)
     .contents;
 
   const path =
@@ -76,7 +77,7 @@ const handleSubmit = async (e, props) => {
   props.history.push(path);
 };
 
-export default function DefinitionVerbalDetailed(props) {
+function DefinitionVerbalDetailed(props) {
   const classes = useStyles();
   return (
     <form autoComplete="off" noValidate>
@@ -379,3 +380,14 @@ export default function DefinitionVerbalDetailed(props) {
     </form>
   );
 }
+
+const mapStateToProps = state => {
+  return state;
+};
+
+const mapDispatchToProps = dispatch => {
+  return {};
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(DefinitionVerbalDetailed);
+

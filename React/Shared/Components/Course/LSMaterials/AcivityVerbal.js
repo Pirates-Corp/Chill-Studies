@@ -1,5 +1,5 @@
 import React from "react";
-import courses from "../../../Data/courses";
+import { connect } from "react-redux";
 import {
   Typography,
   makeStyles,
@@ -11,8 +11,6 @@ import {
   Divider
 } from "@material-ui/core";
 import ArrowForwardIosRoundedIcon from "@material-ui/icons/ArrowForwardIosRounded";
-
-import learningStyles from "../../../Data/learningStyles";
 
 const useStyles = makeStyles(theme => ({
   icon: {
@@ -65,7 +63,7 @@ const handleSubmit = async (e, props) => {
 
   const course = props.match.params.course;
 
-  const lsContents = learningStyles.find(style => lsType === style.type)
+  const lsContents = props.learningStyles.find(style => lsType === style.type)
     .contents;
 
   const path =
@@ -78,7 +76,7 @@ const handleSubmit = async (e, props) => {
   props.history.push(path);
 };
 
-export default function OverviewVerbal(props) {
+const ActivityVerbal = (props) => {
   const classes = useStyles();
   return (
     <form autoComplete="off" noValidate>
@@ -164,3 +162,14 @@ export default function OverviewVerbal(props) {
     </form>
   );
 }
+
+const mapStateToProps = (state) => { 
+  return state;
+}
+
+const mapDispatchToProps = (dispatch) => { 
+  return {}
+}
+
+export default connect(mapStateToProps,mapDispatchToProps)(ActivityVerbal);
+

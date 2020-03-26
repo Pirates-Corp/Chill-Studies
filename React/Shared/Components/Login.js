@@ -15,6 +15,7 @@ import {
   CssBaseline,
   Button
 } from "@material-ui/core";
+import { connect } from "react-redux";
 
 function Copyright() {
   const classes = useStyles();
@@ -75,12 +76,13 @@ async function handleClick(e, props) {
   console.log('res');
 
   try {
-    const res = await axios.post("http://127.0.0.1:8000/api/v1/student/login", {
-      studentId: email,
-      password: password
-    });
-
-    console.log(res)
+    const res = await axios.post(
+      "http://chillstudies.ddns.net:8000/api/v1/student/login",
+      {
+        studentId: email,
+        password: password
+      }
+    );
 
     if (res.status === 201) {
       sessionStorage.setItem("auth", res.data.data.student._id);
@@ -93,7 +95,7 @@ async function handleClick(e, props) {
   }
 }
 
-export default function Login(props) {
+const Login = (props) => {
   const classes = useStyles();
 
   const [signIn, setSingIn] = useState(true);
@@ -108,6 +110,7 @@ export default function Login(props) {
     setAuth(sessionStorage.getItem("auth"));
   });
 
+  console.log(props)
 
   return (
     <React.Fragment>
@@ -190,3 +193,13 @@ export default function Login(props) {
     </React.Fragment>
   );
 }
+
+const mapStateToProps = state => {
+  return state;
+};
+
+const mapDispatchToProps = dispatch => {
+  return {};
+};
+
+export default connect(mapStateToProps,mapDispatchToProps)(Login)

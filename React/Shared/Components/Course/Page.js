@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import courses from "../../Data/courses";
+import { connect } from "react-redux";
 import {
   Typography,
   makeStyles,
@@ -11,7 +11,6 @@ import {
   Container
 } from "@material-ui/core";
 
-import categories from "../../Data/categories";
 
 const useStyles = makeStyles(theme => ({
   icon: {
@@ -55,13 +54,13 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function Page(props) {
+function Page(props) {
   const classes = useStyles();
 
-  const course = courses.find(
+  const course = props.courses.find(
     course => props.match.params.course === course.name
   );
-  const category = categories.find(
+  const category = props.categories.find(
     category => props.match.params.category === category.name
   );
 
@@ -140,3 +139,13 @@ export default function Page(props) {
       </React.Fragment>
   );
 }
+
+const mapStateToProps = state => {
+  return state;
+};
+
+const mapDispatchToProps = dispatch => {
+  return {};
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Page);
