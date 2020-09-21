@@ -9,14 +9,14 @@
     "dev": "rm -rf dist && webpack --mode development --progress",
     "build": "rm -rf dist && webpack --mode production --progress"
   },
-  "author": "Siva,jamil,Vj",
+  "author": "Pavan, Siranjeevi, Vijay",
   "license": "MIT",
   "dependencies": {
     "@material-ui/core": "latest",
     "@material-ui/icons": "latest",
     "aws-sdk": "latest",
     "axios": "^0.19.2",
-    "bcrypt": "^3.0.8",
+    "bcrypt": "latest",
     "cors": "latest",
     "csvtojson": "^1.1.12",
     "dotenv": "latest",
