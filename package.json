@@ -15,7 +15,7 @@
     "@material-ui/core": "latest",
     "@material-ui/icons": "latest",
     "aws-sdk": "latest",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "bcrypt": "latest",
     "cors": "latest",
     "csvtojson": "^1.1.12",
